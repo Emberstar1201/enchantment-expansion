@@ -1,0 +1,9 @@
+{
+  "enchantment.examplemod.quick_draw": "Quick Draw",
+  "enchantment.examplemod.quick_draw.desc": "Increases bow charge speed and arrow flight velocity. Higher levels provide diminishing returns, capped at Level X (1.95x).",
+  "enchantment.examplemod.wind_ripple": "Wind Ripple",
+  "enchantment.examplemod.wind_ripple.desc": "Faster on land, walk on water",
+  "item.examplemod.example_item": "Example Item",
+  "block.examplemod.example_block": "Example Block",
+  "creative_tab.examplemod.example_tab": "Example Mod Tab"
+}

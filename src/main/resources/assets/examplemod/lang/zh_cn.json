@@ -1,0 +1,9 @@
+{
+  "enchantment.examplemod.quick_draw": "速射",
+  "enchantment.examplemod.quick_draw.desc": "提升弓的蓄力速度与箭矢飞行速度，随等级提升收益递减，X级达到上限（1.95倍）。",
+  "enchantment.examplemod.wind_ripple": "风踏涟漪",
+  "enchantment.examplemod.wind_ripple.desc": "陆上疾行，水面如履平地",
+  "item.examplemod.example_item": "示例物品",
+  "block.examplemod.example_block": "示例方块",
+  "creative_tab.examplemod.example_tab": "示例模组标签"
+}
