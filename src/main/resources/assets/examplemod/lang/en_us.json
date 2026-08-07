@@ -1,6 +1,8 @@
 {
-  "enchantment.examplemod.quick_draw": "Quick Draw",
-  "enchantment.examplemod.quick_draw.desc": "Increases bow charge speed and arrow flight velocity. Higher levels provide diminishing returns, capped at Level X (1.95x).",
+  "enchantment.examplemod.ancient_yunlai": "Ancient YunLai Archery",
+  "enchantment.examplemod.ancient_yunlai.desc": "An ancient archery technique from YunLai sect. Greatly increases bow draw speed and arrow flight velocity",
+  "enchantment.examplemod.yunlai_archery": "YunLai Archery",
+  "enchantment.examplemod.yunlai_archery.desc": "Increases bow draw speed",
   "enchantment.examplemod.wind_ripple": "Wind Ripple",
   "enchantment.examplemod.wind_ripple.desc": "Faster on land, walk on water",
   "item.examplemod.example_item": "Example Item",

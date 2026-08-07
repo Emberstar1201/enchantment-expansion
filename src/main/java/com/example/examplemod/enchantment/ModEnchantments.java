@@ -13,12 +13,27 @@ public class ModEnchantments {
     public static final DeferredRegister<Enchantment> ENCHANTMENTS =
             DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, ExampleMod.MODID);
 
-    // 注册"速射"附魔
-    // RegistryObject 是 Forge 提供的延迟引用对象，在注册完成后才会持有实际附魔实例
-    public static final RegistryObject<QuickDrawEnchantment> QUICK_DRAW =
-            ENCHANTMENTS.register("quick_draw", QuickDrawEnchantment::new);
+    // ========================================================================
+    // 注册"古·云来弓法"附魔（原"速射"重命名）
+    // 弓专属：蓄力加速 + 箭矢飞行加速，10级上限
+    // 注册ID：ancient_yunlai
+    // ========================================================================
+    public static final RegistryObject<AncientYunLaiEnchantment> ANCIENT_YUNLAI =
+            ENCHANTMENTS.register("ancient_yunlai", AncientYunLaiEnchantment::new);
 
+    // ========================================================================
+    // 注册"云来弓法（基础版）"附魔
+    // 弓专属：仅蓄力加速，不改变箭矢速度，10级上限
+    // 与古·云来弓法不冲突（两者可叠加）
+    // 注册ID：yunlai_archery
+    // ========================================================================
+    public static final RegistryObject<YunLaiArcheryEnchantment> YUNLAI_ARCHERY =
+            ENCHANTMENTS.register("yunlai_archery", YunLaiArcheryEnchantment::new);
+
+    // ========================================================================
     // 注册"风踏涟漪"附魔 - 靴子专属：陆地加速+水面行走
+    // 注册ID：wind_ripple
+    // ========================================================================
     public static final RegistryObject<WindRippleEnchantment> WIND_RIPPLE =
             ENCHANTMENTS.register("wind_ripple", WindRippleEnchantment::new);
 

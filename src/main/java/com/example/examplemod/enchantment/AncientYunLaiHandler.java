@@ -12,10 +12,17 @@ import net.minecraftforge.fml.common.Mod;
 
 import static com.example.examplemod.ExampleMod.MODID;
 
-// 速射附魔事件处理器
+// 古·云来弓法 附魔事件处理器
 // 处理两个核心效果：1. 缩短弓蓄力时间  2. 提升箭矢飞行速度
+//
+// 【蓄力加速与"云来弓法"共存规则】：
+//   由于古·云来弓法与基础版"云来弓法"互不冲突（用户要求可共存），
+//   两个附魔会同时作用于蓄力。为避免两者进度覆盖互相干扰，
+//   两个 Handler 各自使用独立的 PersistentData key 管理小数累积，
+//   且分别调用 AncientYunLai/YunLaiArchery 各自的附魔等级查询，
+//   累加效果即"两者倍率分别算出的 extraProgress 之和"。
 @Mod.EventBusSubscriber(modid = MODID)
-public class QuickDrawHandler {
+public class AncientYunLaiHandler {
 
     // ========================================================================
     // 【效果一】缩短弓的蓄力时间（加速拉弓）
@@ -36,15 +43,15 @@ public class QuickDrawHandler {
             return;
         }
 
-        // 获取弓上"速射"附魔的等级
+        // 获取弓上"古·云来弓法"附魔的等级
         int enchantLevel = net.minecraft.world.item.enchantment.EnchantmentHelper
-                .getItemEnchantmentLevel(ModEnchantments.QUICK_DRAW.get(), usingItem);
+                .getItemEnchantmentLevel(ModEnchantments.ANCIENT_YUNLAI.get(), usingItem);
         if (enchantLevel <= 0) {
             return;
         }
 
         // 获取蓄力加速倍率（查表法，每个等级对应独立数值）
-        double chargeMultiplier = QuickDrawEnchantment.getChargeSpeedMultiplier(enchantLevel);
+        double chargeMultiplier = AncientYunLaiEnchantment.getChargeSpeedMultiplier(enchantLevel);
 
         // 倍率 <= 1.0 时无需加速
         if (chargeMultiplier <= 1.0) {
@@ -60,9 +67,7 @@ public class QuickDrawHandler {
         int wholeSkips = (int) extraProgress;
         // 通过循环多次触发"推进使用物品"效果
         for (int i = 0; i < wholeSkips; i++) {
-            // 手动执行一次使用物品tick（相当于蓄力进度+1）
-            // Forge原版通过LivingEntity#tick()中触发，此处我们手动模拟
-            // 更稳妥的方式是直接修改duration（剩余使用时长）
+            // 直接修改 duration（剩余使用时长）：每循环减 1 表示多前进 1 tick 的蓄力
             int newDuration = event.getDuration() - 1;
             if (newDuration <= 0) {
                 newDuration = 1; // 防止直接使用完成，交给原版判定
@@ -74,7 +79,8 @@ public class QuickDrawHandler {
         // 例如0.3倍小数，则每tick累积0.3，到>=1.0时额外多跳1tick
         float fractional = (float) (extraProgress - wholeSkips);
         if (fractional > 0) {
-            String accumKey = "QuickDraw_FractionalAccum_" + usingItem.getDescriptionId();
+            // 【关键】：独立key，与"云来弓法基础版" YunLaiArcheryHandler 的累积器互不干扰
+            String accumKey = "AncientYunLai_FractionalAccum_" + usingItem.getDescriptionId();
             float accumulated = player.getPersistentData().getFloat(accumKey);
             accumulated += fractional;
             if (accumulated >= 1.0f) {
@@ -93,7 +99,7 @@ public class QuickDrawHandler {
     // ========================================================================
     // 【效果二】提升箭矢射出后的飞行速度
     // 原理：在箭矢实体加入世界（EntityJoinLevelEvent）时，
-    //       判断其发射者（owner）是否手持带有速射附魔的弓，
+    //       判断其发射者（owner）是否手持带有古·云来弓法附魔的弓，
     //       若是，则将箭矢的运动向量（motion）直接乘以速度倍率。
     // 实现方式：修改 AbstractArrow#setDeltaMovement（即motion x/y/z）
     // ========================================================================
@@ -120,15 +126,15 @@ public class QuickDrawHandler {
             }
         }
 
-        // 获取速射附魔等级
+        // 获取"古·云来弓法"附魔等级
         int enchantLevel = net.minecraft.world.item.enchantment.EnchantmentHelper
-                .getItemEnchantmentLevel(ModEnchantments.QUICK_DRAW.get(), bow);
+                .getItemEnchantmentLevel(ModEnchantments.ANCIENT_YUNLAI.get(), bow);
         if (enchantLevel <= 0) {
             return;
         }
 
         // 获取箭矢飞行速度倍率（查表法，与蓄力加速为两套独立数值）
-        double flightMultiplier = QuickDrawEnchantment.getFlightSpeedMultiplier(enchantLevel);
+        double flightMultiplier = AncientYunLaiEnchantment.getFlightSpeedMultiplier(enchantLevel);
         if (flightMultiplier <= 1.0) {
             return;
         }
@@ -144,17 +150,16 @@ public class QuickDrawHandler {
 
         // 同时同步箭矢的基础伤害：原版箭伤害与速度正相关（粗略公式 damage = speed * 0.6）
         // 这里将基础伤害也乘以飞行倍率，让高速箭造成更高伤害，更符合直觉
-        // 注意：这是可选增强，如果不想要伤害加成可注释掉下一行
         arrow.setBaseDamage(arrow.getBaseDamage() * flightMultiplier);
     }
 
     // ========================================================================
-    // 辅助方法：获取玩家身上速射附魔等级（支持主手和副手，虽然副手弓几乎不会用）
+    // 辅助方法：获取玩家身上"古·云来弓法"附魔等级（支持主手和副手，虽然副手弓几乎不会用）
     // 目前只在主手生效，因为弓的使用必须在主手
     // ========================================================================
-    private static int getQuickDrawLevel(LivingEntity entity) {
+    private static int getAncientYunLaiLevel(LivingEntity entity) {
         ItemStack mainHand = entity.getMainHandItem();
         return net.minecraft.world.item.enchantment.EnchantmentHelper
-                .getItemEnchantmentLevel(ModEnchantments.QUICK_DRAW.get(), mainHand);
+                .getItemEnchantmentLevel(ModEnchantments.ANCIENT_YUNLAI.get(), mainHand);
     }
 }

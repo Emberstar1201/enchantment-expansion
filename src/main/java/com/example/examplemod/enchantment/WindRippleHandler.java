@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -116,21 +117,48 @@ public class WindRippleHandler {
             // ---------- 水面行走模式 ----------
             applyState(player, MovementState.WATER_WALK, level);
 
-            // 核心：将玩家"钉"在水面上（视觉上踩在水面方块表面）
-            // Y坐标 = 脚下水方块Y + 1（水方块表面），减去玩家脚部与实体中心的偏移
-            BlockPos feetPos = player.blockPosition();
-            // 修正玩家位置：如果脚部正下方是水，则把Y轴对齐到水面
-            double waterSurfaceY = feetPos.getY() + 1.0;
-            double playerFeetY = player.getY(); // player.getY() 即实体脚底Y
-            // 如果玩家低于水面，就把他抬起来；如果刚好在水面上，则维持
-            if (playerFeetY < waterSurfaceY - 0.001) {
-                // 设置运动向量Y为微正数（防止下沉）
-                Vec3 motion = player.getDeltaMovement();
-                player.setDeltaMovement(motion.x, Math.max(motion.y, 0.01), motion.z);
+            // ========================================================================
+            // 【问题二修复】：消除水面行走顿挫感 + 高处下落被托住
+            //
+            // 关键：使用 getWaterSurfaceY() 统一获取目标水面 Y 坐标
+            //   - 标准情况（脚下是水）：表面 = below.y + 1
+            //   - 穿过水面情况（脚部在水方块内）：表面 = feet.y + 1
+            //     这种情况发生在玩家从高处下落，一帧位移 > 1 格直接穿过水面
+            // ========================================================================
+            Double surfaceYOpt = getWaterSurfaceY(player, level);
+            if (surfaceYOpt == null) {
+                // 理论上不会发生（isStandingOnWater 已返回 true），防御性返回
+                return;
             }
-            // 强制在地面上：防止跳跃/下落判定
+            double waterSurfaceY = surfaceYOpt;
+            double playerFeetY = player.getY();
+            double dy = waterSurfaceY - playerFeetY;
+            Vec3 motion = player.getDeltaMovement();
+
+            // 【跳跃保护】：玩家主动上升（按空格起跳 / 被弹起）时不硬拉回水面
+            // 判定条件：motion.y > 0 → 玩家有上升趋势，不拦截，允许正常跳起来
+            boolean isJumpingUp = motion.y > 0;
+
+            if (!isJumpingUp) {
+                // 只有当位置偏差超过 0.001 时才强制对齐（避免每 tick 都改位置）
+                // 这样正常站着不会动，只有重力把玩家拉下去一点点时才被拉回
+                if (Math.abs(dy) > 0.001) {
+                    // 直接设置 X/Z 不变，Y 对齐到精确表面
+                    player.setPos(player.getX(), waterSurfaceY, player.getZ());
+                }
+
+                // 运动 Y 轴强制归零：抵消重力，不再出现 "下沉 → 拉起 → 再下沉" 的拉锯
+                // 高处下落时 motion.y 可能是 -1.0 ~ -3.0，归零后玩家立即停止下沉
+                player.setDeltaMovement(motion.x, 0.0, motion.z);
+            }
+
+            // 强制标记为在地面上：
+            // - 保证疾跑、跳跃等原版移动逻辑按"陆地"处理
+            // - 保证移动系统不会因为"认为在空中"而额外施加减速度
+            // （注意：跳跃中虽然不强制对齐位置，但依然标记 onGround 让跳跃正常触发）
             player.setOnGround(true);
-            // 重置摔落距离：水面行走不会摔落
+
+            // 重置摔落距离（水面行走不会摔落，从高处落下也不受伤）
             player.fallDistance = 0.0f;
 
             // 水面行走粒子效果：脚底生成滴水粒子（水花）
@@ -209,31 +237,75 @@ public class WindRippleHandler {
     }
 
     // ========================================================================
-    // 判断玩家是否"站在水面上"
-    // 判定条件：
-    //   1. 脚部所在方块（player.blockPosition()）不是水（玩家实体不在水方块内）
-    //   2. 脚部正下方一格（blockPosition().below()）是水方块（水源或流动水）
-    // 这样玩家视觉上正好踩在水方块的表面
+    // 获取玩家应该站立的水面 Y 坐标（统一计算逻辑，避免重复代码）
+    //
+    // 返回值：
+    //   - Double（封装的 double）：玩家应该被托到的水面 Y 坐标
+    //   - null：玩家附近没有可站立的水面
+    //
+    // 两种识别模式：
+    //   模式 A（标准）：脚下方块含水 → 表面 = belowFeet.y + 1.0
+    //   模式 B（穿过水面）：脚部本身是纯水源方块，且上方是空气
+    //     → 仅在真正"水面"附近触发，水深时不会误判
+    //     → 高处下落一帧穿水时由本模式接住
     // ========================================================================
-    private static boolean isStandingOnWater(Player player, Level level) {
+    private static Double getWaterSurfaceY(Player player, Level level) {
         BlockPos feetBlockPos = player.blockPosition();
         BlockPos belowFeet = feetBlockPos.below();
         BlockState belowState = level.getBlockState(belowFeet);
-
-        // 脚下是水方块（水源或流动水）
-        boolean belowIsWater = belowState.is(Blocks.WATER);
-
-        // 脚部所在位置不是水（否则玩家已经"在水中"而不是"站在水面"）
         BlockState feetState = level.getBlockState(feetBlockPos);
-        boolean feetNotInWater = !feetState.is(Blocks.WATER);
 
-        // 同时要求玩家Y坐标不高于水面太多（避免跳在空中时也算水面行走）
-        // player.getY() 是脚底，水方块表面是 belowFeet.getY() + 1
-        double surfaceY = belowFeet.getY() + 1.0;
+        // 模式 A：脚下方块含水（纯水源或 waterlogged 方块）
+        boolean belowHasWater = belowState.getFluidState().is(Fluids.WATER)
+                || belowState.is(Blocks.WATER);
+        if (belowHasWater) {
+            // 表面 = 水方块顶部 = below.y + 1
+            return belowFeet.getY() + 1.0;
+        }
+
+        // 模式 B：玩家已穿过水面（脚部在纯水源方块内）
+        // 【关键限制】：必须同时满足"上方一格是空气"
+        //   - 水深 1 格：上方是空气 → 触发托举 ✅
+        //   - 水深多格（玩家完全沉入水中）：上方也是水 → 不触发，让原版浮力处理 ✅
+        // 这样可避免玩家从深水底主动上浮时被错误地"瞬移"到中间水层
+        if (feetState.is(Blocks.WATER)) {
+            BlockState aboveState = level.getBlockState(feetBlockPos.above());
+            if (aboveState.isAir()) {
+                // 表面 = 脚部水方块顶部 = feet.y + 1
+                return feetBlockPos.getY() + 1.0;
+            }
+        }
+
+        // 附近没有可识别的水面
+        return null;
+    }
+
+    // ========================================================================
+    // 判断玩家是否"站在水面上"（含三种情况）
+    //
+    // 情况 1：标准水面行走 - 脚下是水/含水方块，玩家在表面附近
+    // 情况 2：高处下落穿水 - 玩家一帧位移 > 1 格，从水面上方直接跳到水面下方
+    //         此时脚部是纯水源方块，需要立即托起到表面
+    // 情况 3：含水草方块 - 通过 getFluidState().is(Fluids.WATER) 识别 waterlogged 方块
+    //
+    // 容差设计：
+    //   上限 +0.5：玩家正在下落接近水面（提前 0.5 格触发托举，避免一帧穿过）
+    //   下限 -1.5：玩家已穿过水面但还在水方块上半部分（高处下落穿水时托起）
+    //   下限不能太深（如 -2.0 会让玩家从水底主动上浮时也被托住，不符合"完全沉入水中失效"）
+    // ========================================================================
+    private static boolean isStandingOnWater(Player player, Level level) {
+        Double surfaceYOpt = getWaterSurfaceY(player, level);
+        if (surfaceYOpt == null) {
+            return false;
+        }
+        double surfaceY = surfaceYOpt;
         double playerFeetY = player.getY();
-        boolean closeToSurface = (playerFeetY >= surfaceY - 0.3) && (playerFeetY <= surfaceY + 0.1);
 
-        return belowIsWater && feetNotInWater && closeToSurface;
+        // 容差：玩家脚底距水面 -1.5 到 +0.5 格
+        // - 上限 +0.5：高处下落接近水面时提前托住（避免一帧穿过水面）
+        // - 下限 -1.5：玩家已穿过水面但在水方块上半部分（仍可托起）
+        // - 不能放宽到 -2.0 以下，否则玩家从深处主动上浮会被错误托住
+        return playerFeetY >= surfaceY - 1.5 && playerFeetY <= surfaceY + 0.5;
     }
 
     // ========================================================================
