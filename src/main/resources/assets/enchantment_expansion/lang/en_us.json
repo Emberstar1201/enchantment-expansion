@@ -7,6 +7,12 @@
   "enchantment.enchantment_expansion.wind_ripple.desc": "Faster on land, walk on water",
   "enchantment.enchantment_expansion.creation_from_nothing": "Creation from Nothing",
   "enchantment.enchantment_expansion.creation_from_nothing.desc": "Breaking blocks has a chance to drop rare treasures",
+  "enchantment.enchantment_expansion.yunlai_swordmanship": "YunLai Swordmanship",
+  "enchantment.enchantment_expansion.yunlai_swordmanship.desc": "Increases attack reach and speed",
+  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship": "Ancient YunLai Swordmanship",
+  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship.desc": "Ancient YunLai sword technique with AOE power",
+  "enchantment.enchantment_expansion.elegant_catwalk": "Elegant Catwalk",
+  "enchantment.enchantment_expansion.elegant_catwalk.desc": "Swift as a cat, light as a cat",
   "item.examplemod.example_item": "Example Item",
   "block.examplemod.example_block": "Example Block",
   "creative_tab.examplemod.example_tab": "Example Mod Tab"

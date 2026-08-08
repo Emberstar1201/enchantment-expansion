@@ -9,7 +9,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 // 附魔注册类：统一管理模组所有自定义附魔的注册
 public class ModEnchantments {
-    // 创建附魔的延迟注册器，所有附魔都将通过它注册到 "examplemod" 命名空间下
+    // 创建附魔的延迟注册器，所有附魔都将通过它注册到 "enchantment_expansion" 命名空间下
     public static final DeferredRegister<Enchantment> ENCHANTMENTS =
             DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, EnchantmentExpansion.MODID);
 
@@ -40,6 +40,27 @@ public class ModEnchantments {
     // 注册ID：creation_from_nothing
     public static final RegistryObject<CreationFromNothingEnchantment> CREATION_FROM_NOTHING =
             ENCHANTMENTS.register("creation_from_nothing", CreationFromNothingEnchantment::new);
+
+    // ========================================================================
+    // 注册"云来剑法"附魔 - 剑专属：攻击距离+冷却缩减，5级上限
+    // 注册ID：yunlai_swordmanship
+    // ========================================================================
+    public static final RegistryObject<YunLaiSwordmanshipEnchantment> YUNLAI_SWORDMANSHIP =
+            ENCHANTMENTS.register("yunlai_swordmanship", YunLaiSwordmanshipEnchantment::new);
+
+    // ========================================================================
+    // 注册"古·云来剑法"附魔 - 剑专属：继承云来剑法+AOE之力，1级，仅宝箱获取
+    // 注册ID：ancient_yunlai_swordmanship
+    // ========================================================================
+    public static final RegistryObject<AncientYunLaiSwordmanshipEnchantment> ANCIENT_YUNLAI_SWORDMANSHIP =
+            ENCHANTMENTS.register("ancient_yunlai_swordmanship", AncientYunLaiSwordmanshipEnchantment::new);
+
+    // ========================================================================
+    // 注册"优雅猫步"附魔 - 靴子专属：移速1.45倍+免疫掉落伤害
+    // 注册ID：elegant_catwalk
+    // ========================================================================
+    public static final RegistryObject<ElegantCatwalkEnchantment> ELEGANT_CATWALK =
+            ENCHANTMENTS.register("elegant_catwalk", ElegantCatwalkEnchantment::new);
 
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {

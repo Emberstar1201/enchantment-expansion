@@ -7,6 +7,12 @@
   "enchantment.enchantment_expansion.wind_ripple.desc": "陆上疾行，水面如履平地",
   "enchantment.enchantment_expansion.creation_from_nothing": "无中生有",
   "enchantment.enchantment_expansion.creation_from_nothing.desc": "破坏方块时有概率掉落稀有宝物",
+  "enchantment.enchantment_expansion.yunlai_swordmanship": "云来剑法",
+  "enchantment.enchantment_expansion.yunlai_swordmanship.desc": "提升攻击距离与攻击速度",
+  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship": "古·云来剑法",
+  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship.desc": "传承自古老云来宗门的剑术，蕴含AOE之力",
+  "enchantment.enchantment_expansion.elegant_catwalk": "优雅猫步",
+  "enchantment.enchantment_expansion.elegant_catwalk.desc": "如猫般迅捷，如猫般轻盈",
   "item.examplemod.example_item": "示例物品",
   "block.examplemod.example_block": "示例方块",
   "creative_tab.examplemod.example_tab": "示例模组标签"
