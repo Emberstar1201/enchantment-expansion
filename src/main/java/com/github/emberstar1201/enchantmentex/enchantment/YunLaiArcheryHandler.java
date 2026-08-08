@@ -1,4 +1,4 @@
-package com.example.examplemod.enchantment;
+package com.github.emberstar1201.enchantmentex.enchantment;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
@@ -7,7 +7,7 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import static com.example.examplemod.ExampleMod.MODID;
+import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 
 // ========================================================================
 // 云来弓法（基础版）附魔事件处理器

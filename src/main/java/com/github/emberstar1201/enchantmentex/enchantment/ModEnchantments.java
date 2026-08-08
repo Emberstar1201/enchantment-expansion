@@ -1,6 +1,6 @@
-package com.example.examplemod.enchantment;
+package com.github.emberstar1201.enchantmentex.enchantment;
 
-import com.example.examplemod.ExampleMod;
+import com.github.emberstar1201.enchantmentex.EnchantmentExpansion;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -11,7 +11,7 @@ import net.minecraftforge.registries.RegistryObject;
 public class ModEnchantments {
     // 创建附魔的延迟注册器，所有附魔都将通过它注册到 "examplemod" 命名空间下
     public static final DeferredRegister<Enchantment> ENCHANTMENTS =
-            DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, ExampleMod.MODID);
+            DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, EnchantmentExpansion.MODID);
 
     // ========================================================================
     // 注册"古·云来弓法"附魔（原"速射"重命名）

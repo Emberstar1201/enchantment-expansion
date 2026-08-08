@@ -1,4 +1,4 @@
-package com.example.examplemod.enchantment;
+package com.github.emberstar1201.enchantmentex.enchantment;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -10,7 +10,7 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import static com.example.examplemod.ExampleMod.MODID;
+import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 
 // 古·云来弓法 附魔事件处理器
 // 处理两个核心效果：1. 缩短弓蓄力时间  2. 提升箭矢飞行速度

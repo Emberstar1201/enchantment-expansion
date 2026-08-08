@@ -1,4 +1,4 @@
-package com.example.examplemod.enchantment;
+package com.github.emberstar1201.enchantmentex.enchantment;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -20,7 +20,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
-import static com.example.examplemod.ExampleMod.MODID;
+import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 
 // ========================================================================
 // 【风踏涟漪】附魔事件处理器

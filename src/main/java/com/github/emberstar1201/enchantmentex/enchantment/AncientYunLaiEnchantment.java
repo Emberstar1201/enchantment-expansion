@@ -1,4 +1,4 @@
-package com.example.examplemod.enchantment;
+package com.github.emberstar1201.enchantmentex.enchantment;
 
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.BowItem;

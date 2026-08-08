@@ -1,10 +1,10 @@
 {
-  "enchantment.examplemod.ancient_yunlai": "古·云来弓法",
-  "enchantment.examplemod.ancient_yunlai.desc": "传承自古老云来宗门的弓术(已经失传)，大幅提升拉弓速度与箭矢飞行速度",
-  "enchantment.examplemod.yunlai_archery": "云来弓法",
-  "enchantment.examplemod.yunlai_archery.desc": "云来弓术的基础心法，仅提升拉弓速度，适合入门修习",
-  "enchantment.examplemod.wind_ripple": "风踏涟漪",
-  "enchantment.examplemod.wind_ripple.desc": "陆上疾行，水面如履平地",
+  "enchantment.enchantment_expansion.ancient_yunlai": "古·云来弓法",
+  "enchantment.enchantment_expansion.ancient_yunlai.desc": "传承自古老云来宗门的弓术(已经失传)，大幅提升拉弓速度与箭矢飞行速度",
+  "enchantment.enchantment_expansion.yunlai_archery": "云来弓法",
+  "enchantment.enchantment_expansion.yunlai_archery.desc": "云来弓术的基础心法，仅提升拉弓速度，适合入门修习",
+  "enchantment.enchantment_expansion.wind_ripple": "风踏涟漪",
+  "enchantment.enchantment_expansion.wind_ripple.desc": "陆上疾行，水面如履平地",
   "item.examplemod.example_item": "示例物品",
   "block.examplemod.example_block": "示例方块",
   "creative_tab.examplemod.example_tab": "示例模组标签"
