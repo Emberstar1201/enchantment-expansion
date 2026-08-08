@@ -5,6 +5,8 @@
   "enchantment.enchantment_expansion.yunlai_archery.desc": "Increases bow draw speed",
   "enchantment.enchantment_expansion.wind_ripple": "Wind Ripple",
   "enchantment.enchantment_expansion.wind_ripple.desc": "Faster on land, walk on water",
+  "enchantment.enchantment_expansion.creation_from_nothing": "Creation from Nothing",
+  "enchantment.enchantment_expansion.creation_from_nothing.desc": "Breaking blocks has a chance to drop rare treasures",
   "item.examplemod.example_item": "Example Item",
   "block.examplemod.example_block": "Example Block",
   "creative_tab.examplemod.example_tab": "Example Mod Tab"
