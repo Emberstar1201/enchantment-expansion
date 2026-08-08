@@ -1,12 +1,10 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
-import net.minecraftforge.registries.ForgeRegistries;
 
 // ========================================================================
 // "云来弓法"附魔 - 弓专属（入门基础版）
@@ -31,16 +29,6 @@ public class YunLaiArcheryEnchantment extends Enchantment {
 
     // 满级等级上限：10级（与古·云来弓法保持一致）
     private static final int MAX_LEVEL = 10;
-
-    // ========================================================================
-    // 原版"力量"附魔的 ResourceLocation（用于 checkCompatibility 兼容判定）
-    // 【为什么用 RL 而非 Enchantments.POWER】：
-    //   在不同 mapping 版本（official / parchment / MCP）中，字段名可能不同
-    //   （如 MCP 中力量叫 ARROW_DAMAGE，official 中叫 POWER）。
-    //   使用 ResourceLocation("minecraft:power") 通过注册表查询，完全不依赖
-    //   mapping 字段名，跨 mapping 版本最稳健。
-    // ========================================================================
-    private static final ResourceLocation POWER_RL = new ResourceLocation("minecraft", "power");
 
     public YunLaiArcheryEnchantment() {
         // Rarity.RARE：稀有度设置为"稀有"
@@ -114,40 +102,6 @@ public class YunLaiArcheryEnchantment extends Enchantment {
     public static double getChargeSpeedMultiplier(int level) {
         // 委托给古·云来弓法的查表，保证两套蓄力速度数值完全一致
         return AncientYunLaiEnchantment.getChargeSpeedMultiplier(level);
-    }
-
-    // ========================================================================
-    // 冲突规则（关键方法）
-    //
-    // 用户需求：
-    //   1. 与力量附魔兼容（POWER）→ 返回 true（兼容）
-    //   2. 与"古·云来弓法"不冲突（两个都能附上）→ 返回 true（兼容）
-    // 其他附魔：按 super.checkCompatibility() 逻辑
-    //   - 原版无限/火矢/冲击 同属于 EnchantmentCategory.BOW
-    //     super.checkCompatibility 会对 "other.category == this.category && other != this"
-    //     的情况返回 false（同类互斥）。
-    //   力量附魔在原版也是 BOW 分类，所以需要单独放行。
-    //
-    // 【实现方式】：用 ResourceLocation 比较附魔身份，不依赖 mapping 字段名
-    // ========================================================================
-    @Override
-    protected boolean checkCompatibility(Enchantment other) {
-        // 用户明确要求：与力量附魔兼容
-        // 通过注册表获取 other 的 ResourceLocation，与 "minecraft:power" 比较
-        ResourceLocation otherRL = ForgeRegistries.ENCHANTMENTS.getKey(other);
-        if (POWER_RL.equals(otherRL)) {
-            return true;
-        }
-        // 用户明确要求：与"古·云来弓法"不冲突，两者可共存
-        if (other == ModEnchantments.ANCIENT_YUNLAI.get()) {
-            return true;
-        }
-        // 自身与自身当然不兼容
-        if (other == this) {
-            return false;
-        }
-        // 其他附魔：沿用原版逻辑（BOW 分类中 无限/火矢/冲击 仍互斥）
-        return super.checkCompatibility(other);
     }
 
     // 检查此附魔是否可应用到给定物品栈（仅弓可以附魔）

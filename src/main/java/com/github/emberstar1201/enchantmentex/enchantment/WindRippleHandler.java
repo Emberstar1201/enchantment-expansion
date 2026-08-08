@@ -9,6 +9,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -79,8 +80,7 @@ public class WindRippleHandler {
 
         // 1. 检查靴子上是否有风踏涟漪附魔
         ItemStack boots = player.getItemBySlot(EquipmentSlot.FEET);
-        int enchantLevel = net.minecraft.world.item.enchantment.EnchantmentHelper
-                .getItemEnchantmentLevel(ModEnchantments.WIND_RIPPLE.get(), boots);
+        int enchantLevel = EnchantmentHelper.getTagEnchantmentLevel(ModEnchantments.WIND_RIPPLE.get(), boots);
         if (enchantLevel <= 0) {
             // 没有附魔：如果之前加过modifier，要移除掉并重置状态
             removeSpeedModifier(player);
