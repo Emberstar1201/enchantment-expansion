@@ -14,7 +14,7 @@
   "enchantment.enchantment_expansion.elegant_catwalk": "优雅猫步",
   "enchantment.enchantment_expansion.elegant_catwalk.desc": "如猫般迅捷，如猫般轻盈",
   "enchantment.enchantment_expansion.snatch": "攫取",
-  "enchantment.enchantment_expansion.snatch.desc": "概率抢夺敌方装备，等级越高概率越大",
+  "enchantment.enchantment_expansion.snatch.desc": "攻击时有概率打落敌方武器与盔甲",
   "enchantment.enchantment_expansion.plunder": "强夺",
   "enchantment.enchantment_expansion.plunder.desc": "稀有战利品必定掉落，等级影响数量",
   "item.examplemod.example_item": "示例物品",

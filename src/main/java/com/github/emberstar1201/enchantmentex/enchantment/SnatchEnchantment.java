@@ -1,22 +1,36 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.resources.ResourceLocation;
 
 // ========================================================================
-// 【攫取】附魔 - 剑类武器专属
-// 效果：击杀生物时，按概率抢夺其身上的装备（武器、盔甲）
-//   抢夺的装备保留原有附魔/耐久/NBT，直接进入击杀者背包，满则掉地上
-// 概率（每个装备槽独立判定）：
-//   Lv I = 10%    Lv II = 20%    Lv III = 40%    Lv IV = 60%    Lv V = 80%
+// 【攫取】附魔 - 近战武器通用（剑、斧、三叉戟）
+//
+// 效果（v2.0 缴械版，替代原"抢夺装备"机制）：
+//   攻击生物时，按附魔等级触发"缴械"：
+//     ① 概率判定 → 打落目标主手武器（目标进入空手状态）
+//     ② 再单独判定（概率为武器的一半，向下取整）→ 随机打落一件护甲
+//   被打落的物品保留原有 NBT（附魔、耐久、自定义名等），生成在目标位置地上，玩家可拾取
+//   对没有武器/盔甲的目标对应槽位不生效
+//
+// 概率表（每个槽独立判定）：
+//   Lv I = 10%（武器）/ 5%（盔甲）
+//   Lv II = 20% / 10%
+//   Lv III = 40% / 20%
+//   Lv IV = 60% / 30%
+//   Lv V = 80% / 40%
+//
 // 获取方式：
 //   Lv I-III：附魔台可直接获得
-//   Lv IV-V ：仅遗迹宝箱获取（附魔台无法获得，通过 minCost > 30 机制过滤）
+//   Lv IV-V ：仅遗迹宝箱获取（通过 minCost > 30 机制过滤，附魔台抽不到）
+//
 // 冲突：抢夺（Looting）——同属"击杀掉落强化"类附魔，互斥
 // ========================================================================
 public class SnatchEnchantment extends Enchantment {
@@ -35,7 +49,7 @@ public class SnatchEnchantment extends Enchantment {
     // ========================================================================
     private static final int[] MIN_COSTS = { 3, 12, 22, 50, 80 };
 
-    // 攫取触发概率表（每个装备槽独立）
+    // 攫取"武器缴械"概率表
     //   [0] = 1 级（10%）... [4] = 5 级（80%）
     private static final double[] TRIGGER_CHANCES = { 0.10, 0.20, 0.40, 0.60, 0.80 };
 
@@ -44,8 +58,8 @@ public class SnatchEnchantment extends Enchantment {
 
     public SnatchEnchantment() {
         // Rarity.RARE：稀有度稀有（稀有附魔：I-III 在附魔台仍合理可见）
-        // EnchantmentCategory.WEAPON：剑/斧等武器类（实际判定用 canEnchant 限制为剑）
-        // 主手武器生效（但实际效果触发基于击杀时手持判定，非槽位限制）
+        // EnchantmentCategory.WEAPON：剑/斧/三叉戟等武器类（实际判定用 canEnchant 扩展）
+        // 主手武器生效（基于攻击时手持判定）
         super(
                 Rarity.RARE,
                 EnchantmentCategory.WEAPON,
@@ -99,7 +113,7 @@ public class SnatchEnchantment extends Enchantment {
         return true;
     }
 
-    // 允许附魔书在铁砧上应用到剑
+    // 允许附魔书在铁砧上应用到剑/斧/三叉戟
     @Override
     public boolean isAllowedOnBooks() {
         return true;
@@ -107,9 +121,8 @@ public class SnatchEnchantment extends Enchantment {
 
     // ========================================================================
     // 【冲突设置】与"抢夺"（Looting）互斥
-    // 两者同属"击杀时强化掉落"类附魔：抢夺增加掉落物数量，攫取抢夺装备
-    //   → 机制相近，按用户要求互斥（checkCompatibility 返回 false）
-    // 兼容其他 WEAPON 附魔（锋利、亡灵杀手、节肢杀手、击退、火焰附加、抢夺外的全部）
+    // 两者同属"近战强化掉落"类附魔：抢夺增加掉落物数量，攫取缴械敌方装备
+    //   → 按用户要求互斥（checkCompatibility 返回 false）
     // ========================================================================
     @Override
     protected boolean checkCompatibility(Enchantment other) {
@@ -123,21 +136,38 @@ public class SnatchEnchantment extends Enchantment {
 
     // ========================================================================
     // 检查此附魔是否可应用到给定物品栈
-    // 用户明确要求：适用装备：剑（EnchantmentCategory.WEAPON）
-    // 严格限制为 SwordItem（仅剑），斧等武器不可附魔（符合"攫取剑法"主题）
+    // 用户明确要求扩展：剑、斧、三叉戟等近战武器
+    //   - SwordItem：剑（钻石剑、铁剑、下界合金剑等）
+    //   - AxeItem：斧（可作武器用）
+    //   - TridentItem：三叉戟（近战/远程通用）
+    // 注意：弓/弩不在范围内（属于 RANGED 类，不在 WEAPON 分类下）
     // ========================================================================
     @Override
     public boolean canEnchant(ItemStack stack) {
-        return stack.getItem() instanceof SwordItem;
+        return stack.getItem() instanceof SwordItem
+                || stack.getItem() instanceof AxeItem
+                || stack.getItem() instanceof TridentItem;
     }
 
     // ========================================================================
-    // 工具方法：给定附魔等级，返回"每个装备槽"的抢夺概率
+    // 工具方法：给定附魔等级，返回"武器缴械"概率
     // 等级超出范围则钳制：<1 按 1 级（10%），>5 按 5 级（80%）
-    //   例如：铁砧与指令拿到的 6 级，按 80% 上限处理
     // ========================================================================
     public static double getTriggerChance(int level) {
         int idx = Math.max(0, Math.min(level - 1, MAX_LEVEL - 1));
         return TRIGGER_CHANCES[idx];
+    }
+
+    // ========================================================================
+    // 工具方法：给定附魔等级，返回"盔甲缴械"概率
+    // 用户要求：盔甲缴械概率为武器缴械概率的一半（向下取整）
+    //   Lv I = 10% / 2 = 5%   （0.10/2=0.05）
+    //   Lv II = 20% / 2 = 10% （0.20/2=0.10）
+    //   Lv III = 40% / 2 = 20% （0.40/2=0.20）
+    //   Lv IV = 60% / 2 = 30% （0.60/2=0.30）
+    //   Lv V = 80% / 2 = 40%  （0.80/2=0.40）
+    // ========================================================================
+    public static double getArmorTriggerChance(int level) {
+        return getTriggerChance(level) / 2.0;
     }
 }
