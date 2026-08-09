@@ -17,6 +17,8 @@
   "enchantment.enchantment_expansion.snatch.desc": "Chance to knock enemy weapons and armor out of their hands",
   "enchantment.enchantment_expansion.plunder": "Plunder",
   "enchantment.enchantment_expansion.plunder.desc": "Rare loot always drops, level affects quantity",
+  "enchantment.enchantment_expansion.dawn": "At Dawn",
+  "enchantment.enchantment_expansion.dawn.desc": "Power grows with the night, peaking at midnight",
   "item.examplemod.example_item": "Example Item",
   "block.examplemod.example_block": "Example Block",
   "creative_tab.examplemod.example_tab": "Example Mod Tab"

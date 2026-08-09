@@ -80,6 +80,15 @@ public class ModEnchantments {
     public static final RegistryObject<PlunderEnchantment> PLUNDER =
             ENCHANTMENTS.register("plunder", PlunderEnchantment::new);
 
+    // ========================================================================
+    // 注册"拂晓"附魔 - 近战武器通用：随昼夜变化调整伤害与冷却
+    // 1级、VERY_RARE、仅宝箱获取（treasureOnly=true）
+    // 时段：白天无加成 / 傍晚+50% / 夜晚+100% / 午夜+300%伤害+无冷却
+    // 注册ID：dawn
+    // ========================================================================
+    public static final RegistryObject<DawnEnchantment> DAWN =
+            ENCHANTMENTS.register("dawn", DawnEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);
