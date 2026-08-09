@@ -62,6 +62,24 @@ public class ModEnchantments {
     public static final RegistryObject<ElegantCatwalkEnchantment> ELEGANT_CATWALK =
             ENCHANTMENTS.register("elegant_catwalk", ElegantCatwalkEnchantment::new);
 
+    // ========================================================================
+    // 注册"攫取"附魔 - 剑专属：击杀时按概率抢夺敌方装备
+    // 5级：I-III附魔台可获得，IV-V仅宝箱获取（minCost>30过滤）
+    // 与抢夺（Looting）互斥
+    // 注册ID：snatch
+    // ========================================================================
+    public static final RegistryObject<SnatchEnchantment> SNATCH =
+            ENCHANTMENTS.register("snatch", SnatchEnchantment::new);
+
+    // ========================================================================
+    // 注册"强夺"附魔 - 剑专属：稀有战利品必掉+爬行者必掉唱片
+    // 3级、VERY_RARE、仅宝箱获取（treasureOnly=true）
+    // 与抢夺（Looting）互斥
+    // 注册ID：plunder
+    // ========================================================================
+    public static final RegistryObject<PlunderEnchantment> PLUNDER =
+            ENCHANTMENTS.register("plunder", PlunderEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);
