@@ -54,7 +54,7 @@ public class SnatchEnchantment extends Enchantment {
     private static final double[] TRIGGER_CHANCES = { 0.10, 0.20, 0.40, 0.60, 0.80 };
 
     // 抢夺附魔的稳定注册表 ID：minecraft:looting（避免 mapping 字段名差异）
-    private static final ResourceLocation LOOTING_RL = new ResourceLocation("minecraft", "looting");
+    private static final ResourceLocation LOOTING_RL = ResourceLocation.parse("minecraft:looting");
 
     public SnatchEnchantment() {
         // Rarity.RARE：稀有度稀有（稀有附魔：I-III 在附魔台仍合理可见）
