@@ -1,0 +1,40 @@
+{
+  "display": {
+    "icon": {
+      "item": "enchantment_expansion:end_star"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.the_end_new_beginning.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.the_end_new_beginning.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "minecraft:end/root",
+  "criteria": {
+    "has_end_star": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "enchantment_expansion:end_star"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_end_star"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  }
+}

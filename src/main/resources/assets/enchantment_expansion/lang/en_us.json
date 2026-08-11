@@ -14,12 +14,13 @@
   "enchantment.enchantment_expansion.elegant_catwalk": "Elegant Catwalk",
   "enchantment.enchantment_expansion.elegant_catwalk.desc": "Swift as a cat, light as a cat",
   "enchantment.enchantment_expansion.snatch": "Snatch",
-  "enchantment.enchantment_expansion.snatch.desc": "Chance to knock enemy weapons and armor out of their hands",
+  "enchantment.enchantment_expansion.snatch.desc": "Chance to steal enemy equipment, higher level = higher chance",
   "enchantment.enchantment_expansion.plunder": "Plunder",
   "enchantment.enchantment_expansion.plunder.desc": "Rare loot always drops, level affects quantity",
-  "enchantment.enchantment_expansion.dawn": "At Dawn",
-  "enchantment.enchantment_expansion.dawn.desc": "Power grows with the night, peaking at midnight",
-  "item.examplemod.example_item": "Example Item",
-  "block.examplemod.example_block": "Example Block",
-  "creative_tab.examplemod.example_tab": "Example Mod Tab"
+  "enchantment.enchantment_expansion.dawn": "Dawn",
+  "enchantment.enchantment_expansion.dawn.desc": "You and I are weak like the reeds, but chasing flames is carved into creed. Cleave the darkness, seize the light. Daybreak's meant to be free. We are gonna shatter the ties.",
+  "item.enchantment_expansion.end_star": "End Star",
+  "item.enchantment_expansion.end_star.desc": "The End's core still pulses.",
+  "advancements.enchantment_expansion.the_end_new_beginning.title": "The End, A New Beginning",
+  "advancements.enchantment_expansion.the_end_new_beginning.description": "The End is not the end. (Obtain the End Star to start a new game experience)"
 }
