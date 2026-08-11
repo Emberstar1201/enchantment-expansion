@@ -29,7 +29,7 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //
 // 职责 1（末影龙击败）：LivingDeathEvent 监听 EnderDragon 死亡
 //   - 死亡位置为末地（Level.END）
-//   - 在返回传送门中心 BlockPos(0, 63, 0) 上方 2.5 格生成悬浮 ItemEntity
+//   - 在(0, 70, 0) 生成悬浮 ItemEntity
 //   - 该 ItemEntity 有以下属性：
 //       setNoGravity(true)           不受重力，悬浮在空中
 //       setPickUpDelay(60)           3 秒内无法被拾取
@@ -40,7 +40,7 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //
 // 职责 2（服务端每 tick 维护）：ServerTickEvent 每 tick 遍历 trackedItems
 //   - 验证 ItemEntity 仍存在，否则移除追踪
-//   - 锁定位置到 (0, 63, 0) + 2.5 = y=65.5（受水流/推挤时立即拉回）
+//   - 锁定位置到 (0, 70, 0)
 //   - 缓慢旋转：每 tick 2~3 度（通过设置 ItemEntity.xRot/yRot）
 //   - 生成 PORTAL 紫色传送门粒子（视觉提示，每 3 tick 生成一次）
 //   - 达到 END_STAR_DESPAWN_TIME tick 时手动移除（原版 ItemEntity.lifetime 也会处理）
@@ -53,20 +53,9 @@ public class FloatingItemManager {
     // 日志器：用于输出调试信息（事件触发、坐标、生成结果等）
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    // 返回传送门中心坐标（末影龙击败后生成终界之星的位置）
-    // 【坐标精确说明】原版末地返回传送门结构：
-    //   - 基岩柱：y=55 到 y=63（共 9 层实心基岩）
-    //     基岩顶部 Y = 63
-    //   - 传送门方块层：y=64（EndPortal / EndPortalFrame，玩家返回的出口）
-    //   - 龙蛋生成：y=65（击败末影龙后，传送门柱顶上方 1 格）
-    //
-    // 终界之星生成位置：基岩顶部 Y (63) + 2.5 = y = 65.5
-    //   - 绝对不会卡在基岩内部（基岩只到 y=63）
-    //   - 位于传送门方块（y=64）上方 1.5 格，玩家站在传送门中心伸手即可拾取
-    //   - 位于龙蛋（y=65）下方 0.5 格~上方 0.5 格之间，与龙蛋高度错开，不重叠
-    //   - SPAWN_X/SPAWN_Z 使用 0.5 让物品正好在 BlockPos(0,63,0) 方块的中心
+    // 终界之星生成位置：基岩顶部上方 y = 70
     private static final double SPAWN_X = 0.5;      // 方块中心偏移 0.5
-    private static final double SPAWN_Y = 65.5;     // 基岩顶部(63) + 2.5 格
+    private static final double SPAWN_Y = 70.5;     // 基岩顶部(63) + 2.5 格
     private static final double SPAWN_Z = 0.5;
     // 对应 Vec3 缓存（用于每 tick 锁定位置）
     private static final Vec3 LOCKED_POS = new Vec3(SPAWN_X, SPAWN_Y, SPAWN_Z);
@@ -89,7 +78,7 @@ public class FloatingItemManager {
             this.spawnTick = spawnTick;
             this.rotationDegrees = 0.0f;
             // 2~3 度随机（每 tick），360 度一圈约 120~180 tick（6~9 秒）
-            this.rotationSpeed = 2.0f + level.random.nextFloat() * 1.0f;
+            this.rotationSpeed = 2.0f + level.random.nextFloat();
         }
     }
 

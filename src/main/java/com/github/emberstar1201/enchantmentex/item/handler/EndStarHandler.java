@@ -178,12 +178,9 @@ public class EndStarHandler {
 
             // 读取减伤百分比（0.0~1.0），默认 0.8（80%）
             double reduction = Config.endStarDamageReductionPercent;
-            if (reduction > 1.0) {
-                reduction = 1.0;   // 钳制：>1 时当作无敌处理
-            }
-            if (reduction <= 0.0) {
+            reduction = Math.min(reduction, 1);
+            if (reduction >= 0.0) {
                 // 减伤为 0，不处理
-            } else {
                 float oldAmount = event.getAmount();
                 float newAmount = oldAmount * (1.0f - (float) reduction);
 
@@ -239,8 +236,7 @@ public class EndStarHandler {
     private static boolean isHoldingEndStar(Player player) {
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
-        return (mainHand != null && mainHand.is(ModItems.END_STAR.get()))
-                || (offHand != null && offHand.is(ModItems.END_STAR.get()));
+        return mainHand.is(ModItems.END_STAR.get()) || offHand.is(ModItems.END_STAR.get());
     }
 
     // ========================================================================
