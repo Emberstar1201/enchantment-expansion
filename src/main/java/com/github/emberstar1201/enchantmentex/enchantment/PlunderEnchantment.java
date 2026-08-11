@@ -27,7 +27,7 @@ public class PlunderEnchantment extends Enchantment {
     private static final int MAX_LEVEL = 3;
 
     // 抢夺附魔的稳定注册表 ID：minecraft:looting（避免 mapping 字段名差异）
-    private static final ResourceLocation LOOTING_RL = new ResourceLocation("minecraft", "looting");
+    private static final ResourceLocation LOOTING_RL = ResourceLocation.parse("minecraft:looting");
 
     public PlunderEnchantment() {
         // Rarity.VERY_RARE：非常稀有（与原版 冰霜行者/经验修补 同级别）
