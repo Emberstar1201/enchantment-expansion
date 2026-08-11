@@ -1,6 +1,6 @@
 package com.github.emberstar1201.enchantmentex.item.handler;
 
-import com.github.emberstar1201.enchantmentex.config.EndStarConfig;
+import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
@@ -200,7 +200,7 @@ public class FloatingItemManager {
         }
 
         long currentTick = event.getServer().getTickCount();
-        int despawnTime = EndStarConfig.END_STAR_DESPAWN_TIME.get();
+        int despawnTime = Config.endStarDespawnTime;
 
         // 迭代所有追踪中的星星（允许在循环中移除失效条目）
         Iterator<Map.Entry<UUID, SpawnedStarInfo>> iterator = TRACKED_STARS.entrySet().iterator();

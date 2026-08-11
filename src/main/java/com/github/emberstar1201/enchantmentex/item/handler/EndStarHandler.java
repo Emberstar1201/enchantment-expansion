@@ -1,6 +1,6 @@
 package com.github.emberstar1201.enchantmentex.item.handler;
 
-import com.github.emberstar1201.enchantmentex.config.EndStarConfig;
+import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.particles.ParticleTypes;
@@ -54,7 +54,7 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //     使玩家更容易发现被丢弃的终界之星
 //     【关键】粒子逻辑全部在客户端处理，避免服务端 addParticle 无效的问题
 //
-//  所有效果支持 EndStarConfig 中的开关与数值配置。
+//  所有效果支持 Config 中的开关与数值配置。
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID)
 public class EndStarHandler {
@@ -81,7 +81,7 @@ public class EndStarHandler {
         // ================================================================
         // 效果 1：创造模式飞行（可通过配置开关）
         // ================================================================
-        if (EndStarConfig.ENABLE_END_STAR_FLIGHT.get()) {
+        if (Config.enableEndStarFlight) {
             // 上一 tick 状态（用于检测边缘切换）
             boolean wasHolding = player.getPersistentData()
                     .getBoolean(LAST_HOLDING_ENDSTAR_KEY);
@@ -173,11 +173,11 @@ public class EndStarHandler {
         // 方向 A：玩家受伤（伤害减免）
         // --------------------------------------------------------------
         if (victim != null
-                && EndStarConfig.ENABLE_END_STAR_DAMAGE_REDUCTION.get()
+                && Config.enableEndStarDamageReduction
                 && isHoldingEndStar(victim)) {
 
             // 读取减伤百分比（0.0~1.0），默认 0.8（80%）
-            double reduction = EndStarConfig.END_STAR_DAMAGE_REDUCTION_PERCENT.get();
+            double reduction = Config.endStarDamageReductionPercent;
             if (reduction > 1.0) {
                 reduction = 1.0;   // 钳制：>1 时当作无敌处理
             }
@@ -201,7 +201,7 @@ public class EndStarHandler {
         // --------------------------------------------------------------
         if (attacker == null
                 || victim == attacker  // 排除自伤
-                || !EndStarConfig.ENABLE_END_STAR_DAMAGE_BONUS.get()
+                || !Config.enableEndStarDamageBonus
                 || !isHoldingEndStar(attacker)) {
             return;
         }
@@ -212,7 +212,7 @@ public class EndStarHandler {
         int bonusPercent = Math.floorDiv(attacker.experienceLevel, 10) * 100;
 
         // 钳制上限：从配置读取（默认 1000%）
-        int maxBonus = EndStarConfig.END_STAR_MAX_BONUS_PERCENT.get();
+        int maxBonus = Config.endStarMaxBonusPercent;
         if (bonusPercent > maxBonus) {
             bonusPercent = maxBonus;
         }
