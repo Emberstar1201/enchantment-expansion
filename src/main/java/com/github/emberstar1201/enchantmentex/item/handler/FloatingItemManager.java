@@ -5,7 +5,9 @@ import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -19,6 +21,7 @@ import org.slf4j.Logger;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -113,8 +116,49 @@ public class FloatingItemManager {
 
         LOGGER.info("[终界之星] 维度校验通过，准备在 {} 生成终界之星", LOCKED_POS);
 
-        // 3. 在 (0.5, 66.5, 0.5) 位置生成终界之星
+        // 3. 在生成终界之星之前，向所有玩家发送聊天栏提示消息
+        //    【关键】必须在 spawnFloatingEndStar() 之前发送，确保玩家先看到消息再看到物品
+        //    消息内容：§5祭坛上好像有什么东西出现了……（§5 = 紫色，符合末地主题）
+        broadcastSpawnMessage(serverLevel);
+
+        // 4. 在 (0.5, 70.5, 0.5) 位置生成终界之星
         spawnFloatingEndStar(serverLevel);
+    }
+
+    // ========================================================================
+    // 向所有玩家发送"终界之星即将出现"的聊天栏提示消息
+    //
+    // 【设计要点】
+    //   - 击败末影龙是全服事件，所有在线玩家都应收到提示
+    //   - 消息在终界之星生成【之前】发送，让玩家有心理预期
+    //   - 使用 §5 颜色代码（紫色），与终界之星 EPIC 稀有度颜色一致
+    //   - 必须用 ServerPlayer.sendSystemMessage()，不能用 level.broadcast()
+    //     （后者在 1.20.1 中已废弃且无法发送给玩家）
+    // ========================================================================
+    private static void broadcastSpawnMessage(ServerLevel serverLevel) {
+        // 构造紫色提示消息（§5 = 紫色字符代码）
+        Component message = Component.literal("§5祭坛上好像有什么东西出现了……");
+
+        // 获取服务端所有在线玩家
+        // 【关键】getPlayers() 返回 List<ServerPlayer>，getPlayerList() 返回 PlayerList 对象
+        List<ServerPlayer> players = serverLevel.getServer().getPlayerList().getPlayers();
+        LOGGER.info("[终界之星] 准备向 {} 名在线玩家发送提示消息", players.size());
+
+        // 遍历所有玩家，逐个发送消息
+        for (ServerPlayer player : players) {
+            try {
+                // 使用 sendSystemMessage 发送系统消息（显示在聊天栏）
+                player.sendSystemMessage(message);
+                LOGGER.debug("[终界之星] 已向玩家 {} 发送提示消息",
+                        player.getName().getString());
+            } catch (Exception e) {
+                // 捕获异常防止单个玩家发送失败影响其他玩家
+                LOGGER.error("[终界之星] 向玩家 {} 发送消息失败！异常={}",
+                        player.getName().getString(), e.getMessage());
+            }
+        }
+
+        LOGGER.info("[终界之星] ✅ 提示消息发送完成，共发送给 {} 名玩家", players.size());
     }
 
     // ========================================================================
