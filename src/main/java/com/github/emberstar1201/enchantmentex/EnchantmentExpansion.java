@@ -30,6 +30,7 @@ public class EnchantmentExpansion {
         // 注册配置文件（终界之星 5 项配置：飞行、减伤、拾取延迟、消失时间）
         // 配置文件路径：config/enchantment_expansion-common.toml
         // ================================================================
+
         MinecraftForge.EVENT_BUS.register(this);
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
