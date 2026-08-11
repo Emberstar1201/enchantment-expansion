@@ -19,8 +19,10 @@
   "enchantment.enchantment_expansion.plunder.desc": "稀有戰利品必定掉落，等級影響數量",
   "enchantment.enchantment_expansion.dawn": "拂曉",
   "enchantment.enchantment_expansion.dawn.desc": "隨晝夜變化，夜晚越深，力量越強（在黎明到來前，總要有人照亮長夜）",
+  "enchantment.enchantment_expansion.end_approaches": "終末將至",
+  "enchantment.enchantment_expansion.end_approaches.desc": "武器傷害提升250%，攻擊冷卻縮短90%",
   "item.enchantment_expansion.end_star": "終界之星",
   "item.enchantment_expansion.end_star.desc": "末地之核仍在脈動。",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "終末已至，新的開始",
-  "advancements.enchantment_expansion.the_end_new_beginning.description": "末地並非終點。（在末地之核脈動時，即可獲得終界之星，開啟新的遊戲體驗）"
+  "advancements.enchantment_expansion.the_end_new_beginning.description": "末地並非終點。"
 }

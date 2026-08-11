@@ -21,11 +21,8 @@
   "enchantment.enchantment_expansion.dawn.desc": "随昼夜变化，夜晚越深，力量越强（在黎明到来前，总要有人照亮长夜）",
   "enchantment.enchantment_expansion.end_approaches": "终末将至",
   "enchantment.enchantment_expansion.end_approaches.desc": "武器伤害提升250%，攻击冷却缩短90%",
-  "item.examplemod.example_item": "示例物品",
-  "block.examplemod.example_block": "示例方块",
-  "creative_tab.examplemod.example_tab": "示例模组标签"
   "item.enchantment_expansion.end_star": "终界之星",
   "item.enchantment_expansion.end_star.desc": "末地之核仍在脉动。",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "终末已至，新的开始",
-  "advancements.enchantment_expansion.the_end_new_beginning.description": "末地并非终点。（在末地之核脉动时，即可获得终界之星，开启新的游戏体验）"
+  "advancements.enchantment_expansion.the_end_new_beginning.description": "末地并非终点。"
 }

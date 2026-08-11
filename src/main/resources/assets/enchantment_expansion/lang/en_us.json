@@ -21,7 +21,8 @@
   "enchantment.enchantment_expansion.dawn.desc": "Power grows with the night, peaking at midnight",
   "enchantment.enchantment_expansion.end_approaches": "The End Approaches",
   "enchantment.enchantment_expansion.end_approaches.desc": "Weapon damage increased by 250%, attack cooldown reduced by 90%",
-  "item.examplemod.example_item": "Example Item",
-  "block.examplemod.example_block": "Example Block",
-  "creative_tab.examplemod.example_tab": "Example Mod Tab"
+  "item.enchantment_expansion.end_star": "End Star",
+  "item.enchantment_expansion.end_star.desc": "The core of the End still pulsates.",
+  "advancements.enchantment_expansion.the_end_new_beginning.title": "The End, A New Beginning",
+  "advancements.enchantment_expansion.the_end_new_beginning.description": "The End is not the end."
 }
