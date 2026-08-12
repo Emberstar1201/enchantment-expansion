@@ -288,11 +288,17 @@ public class EndStarHandler {
     }
 
     // ========================================================================
-    // 效果 2 + 3：伤害减免 + 伤害加成（LivingHurtEvent）
+    // 效果 2 + 3：限伤 + 伤害减免 + 伤害加成（LivingHurtEvent）
     //
     // 一个事件同时处理两个方向：
-    //   - 玩家作为 victim（受伤）：手持终界之星时减免 80% 所有伤害（含音波）
+    //   - 玩家作为 victim（受伤）：先限伤至10点，再减免 80% 所有伤害（含音波）
     //   - 玩家作为 attacker（造成伤害）：手持终界之星时根据经验等级加成
+    //
+    // 【限伤规则】
+    //   - 手持终界之星时，任何单次伤害上限为 10 点（5 颗心）
+    //   - 限伤在减伤【之前】生效：先限伤至 10，再应用 80% 减伤
+    //   - 示例：末影水晶 65 → 限伤至 10 → 80% 减伤 → 最终 2 点
+    //           僵尸攻击 6 → 未超过 10 → 80% 减伤 → 最终 1.2 点
     //
     // 【关键修复】方向 B 增加 attacker != victim 检查
     //   原代码未排除"玩家自伤"情况（如摔落/药水/火焰等 source.getEntity() 返回玩家自己）
@@ -307,22 +313,35 @@ public class EndStarHandler {
         Player attacker = (source != null && source.getEntity() instanceof Player a) ? a : null;
 
         // --------------------------------------------------------------
-        // 方向 A：玩家受伤（伤害减免）
+        // 方向 A：玩家受伤（限伤 + 伤害减免）
+        // 处理顺序：先限伤 → 再减伤
         // --------------------------------------------------------------
         if (victim != null
                 && Config.enableEndStarDamageReduction
                 && isHoldingEndStar(victim)) {
 
+            float currentAmount = event.getAmount();
+
+            // ========== 步骤 1：限伤（在减伤之前） ==========
+            // 任何单次伤害上限为 10 点（5 颗心）
+            // 无论原伤害是 65（末影水晶）还是 100（凋灵风暴），先截断到 10
+            float DAMAGE_CAP = 10.0f;
+            if (currentAmount > DAMAGE_CAP) {
+                LOGGER.info("[终界之星] 限伤触发：玩家={}, 原伤害={}, 限伤至={}",
+                        victim.getName().getString(), currentAmount, DAMAGE_CAP);
+                currentAmount = DAMAGE_CAP;
+                event.setAmount(currentAmount);
+            }
+
+            // ========== 步骤 2：减伤（在限伤之后） ==========
             // 读取减伤百分比（0.0~1.0），默认 0.8（80%）
             double reduction = Config.endStarDamageReductionPercent;
             reduction = Math.min(reduction, 1);
-            if (reduction >= 0.0) {
-                // 减伤为 0，不处理
-                float oldAmount = event.getAmount();
-                float newAmount = oldAmount * (1.0f - (float) reduction);
+            if (reduction > 0.0) {
+                float newAmount = currentAmount * (1.0f - (float) reduction);
 
-                LOGGER.debug("[终界之星] 减伤触发：玩家={}, 原伤害={}, 减免比例={}, 最终伤害={}",
-                        victim.getName().getString(), oldAmount, reduction, newAmount);
+                LOGGER.debug("[终界之星] 减伤触发：玩家={}, 限伤后={}, 减免比例={}, 最终伤害={}",
+                        victim.getName().getString(), currentAmount, reduction, newAmount);
 
                 event.setAmount(newAmount);
             }
