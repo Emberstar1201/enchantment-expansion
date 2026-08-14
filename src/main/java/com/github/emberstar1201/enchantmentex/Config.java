@@ -5,10 +5,29 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 
+import java.util.List;
+
 @Mod.EventBusSubscriber(modid = EnchantmentExpansion.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config {
 
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+
+    // ================================================================
+    // 古·云来弓法 & 云来弓法 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_ARROW_SPEED = BUILDER
+            .comment("古·云来弓法：箭矢飞行速度倍率（原版满弦=1.0，默认 3.5）")
+            .defineInRange("ancientYunLai.arrowSpeedMultiplier", 3.5, 1.0, 20.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_DRAW_TIME = BUILDER
+            .comment("古·云来弓法：蓄力时间（秒，原版=1.0s，默认 0.5s）",
+                    "代码内部换算为蓄力倍率 = 1.0 / 蓄力时间")
+            .defineInRange("ancientYunLai.drawTimeSeconds", 0.5, 0.05, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_ARCHERY_DRAW_TIME = BUILDER
+            .comment("云来弓法：蓄力时间（秒，原版=1.0s，默认 0.45s）",
+                    "代码内部换算为蓄力倍率 = 1.0 / 蓄力时间")
+            .defineInRange("yunLaiArchery.drawTimeSeconds", 0.45, 0.05, 1.0);
 
     // ================================================================
     // 终末将至 附魔配置
@@ -32,6 +51,165 @@ public class Config {
     private static final ForgeConfigSpec.DoubleValue END_APPROACHES_LOOT_ROLLS = BUILDER
             .comment("终末将至：要塞图书馆附魔书生成概率（0.5 = 50%）")
             .defineInRange("endApproaches.lootRolls", 0.5, 0.0, 1.0);
+
+    // ================================================================
+    // 琉璃冰魄箭 配置
+    // ================================================================
+    private static final ForgeConfigSpec.IntValue GLACIAL_ARROW_CHARGE_THRESHOLD = BUILDER
+            .comment("琉璃冰魄箭：二段蓄力所需 tick 数（默认 30 = 1.5 秒）")
+            .defineInRange("glacialArrow.chargeThreshold", 30, 10, 200);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE1_SPEED = BUILDER
+            .comment("琉璃冰魄箭：一段蓄力箭矢速度倍率（原版满弦=1.0，默认 3.0）")
+            .defineInRange("glacialArrow.stage1.speedMultiplier", 3.0, 1.0, 20.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE1_DAMAGE = BUILDER
+            .comment("琉璃冰魄箭：一段蓄力范围伤害倍率（默认 1.5）")
+            .defineInRange("glacialArrow.stage1.damageMultiplier", 1.5, 1.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE1_AOE_RANGE = BUILDER
+            .comment("琉璃冰魄箭：一段蓄力范围伤害半径（默认 1.0）")
+            .defineInRange("glacialArrow.stage1.aoeRange", 1.0, 0.5, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE2_SPEED = BUILDER
+            .comment("琉璃冰魄箭：二段蓄力母箭速度倍率（默认 5.0）")
+            .defineInRange("glacialArrow.stage2.speedMultiplier", 5.0, 1.0, 20.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE2_DAMAGE = BUILDER
+            .comment("琉璃冰魄箭：二段蓄力母箭范围伤害倍率（默认 2.5）")
+            .defineInRange("glacialArrow.stage2.damageMultiplier", 2.5, 1.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE2_AOE_RANGE = BUILDER
+            .comment("琉璃冰魄箭：二段蓄力母箭范围伤害半径（默认 2.5）")
+            .defineInRange("glacialArrow.stage2.aoeRange", 2.5, 0.5, 10.0);
+
+    private static final ForgeConfigSpec.IntValue GLACIAL_ARROW_SUB_COUNT = BUILDER
+            .comment("琉璃冰魄箭：二段蓄力子箭数量（默认 2）")
+            .defineInRange("glacialArrow.stage2.subArrowCount", 2, 0, 10);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_FAN_ANGLE = BUILDER
+            .comment("琉璃冰魄箭：二段蓄力子箭扇形角度（度，默认 120）")
+            .defineInRange("glacialArrow.stage2.fanAngle", 120.0, 10.0, 360.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SUB_SPEED = BUILDER
+            .comment("琉璃冰魄箭：子箭速度倍率（母箭速度 × 此值，默认 0.8）")
+            .defineInRange("glacialArrow.stage2.subSpeedMultiplier", 0.8, 0.1, 2.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SUB_DAMAGE = BUILDER
+            .comment("琉璃冰魄箭：子箭伤害倍率（母箭伤害 × 此值，默认 0.5）")
+            .defineInRange("glacialArrow.stage2.subDamageMultiplier", 0.5, 0.1, 2.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SUB_AOE_RANGE = BUILDER
+            .comment("琉璃冰魄箭：子箭范围伤害半径（默认 1.5）")
+            .defineInRange("glacialArrow.stage2.subAoeRange", 1.5, 0.5, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_PULL_STRENGTH = BUILDER
+            .comment("琉璃冰魄箭：母箭命中后拉人强度（格，默认 0.4）")
+            .defineInRange("glacialArrow.stage2.pullStrength", 0.4, 0.0, 5.0);
+
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_PULL_RANGE = BUILDER
+            .comment("琉璃冰魄箭：母箭命中后拉人范围（格，默认 2.0）")
+            .defineInRange("glacialArrow.stage2.pullRange", 2.0, 0.5, 10.0);
+
+    private static final ForgeConfigSpec.IntValue GLACIAL_ARROW_PARTICLE_INTERVAL = BUILDER
+            .comment("琉璃冰魄箭：粒子生成间隔（tick，默认 2）")
+            .defineInRange("glacialArrow.particleInterval", 2, 1, 10);
+
+    // ================================================================
+    // 自动冶炼 配置
+    // ================================================================
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> AUTO_SMELT_ORE_BLOCKS = BUILDER
+            .comment("自动冶炼：可冶炼的矿石方块 ID 列表（只有列表中的方块被破坏时才触发冶炼替换）",
+                    "添加模组矿石只需在此列表中添加对应的方块 ID 即可")
+            .defineList("autoSmelt.oreBlocks",
+                    List.of(
+                            "minecraft:iron_ore", "minecraft:deepslate_iron_ore",
+                            "minecraft:raw_iron_block",
+                            "minecraft:copper_ore", "minecraft:deepslate_copper_ore",
+                            "minecraft:raw_copper_block",
+                            "minecraft:gold_ore", "minecraft:deepslate_gold_ore",
+                            "minecraft:raw_gold_block",
+                            "minecraft:nether_gold_ore",
+                            "minecraft:ancient_debris"
+                    ),
+                    it -> it instanceof String);
+
+    private static final ForgeConfigSpec.DoubleValue AUTO_SMELT_XP_MIN = BUILDER
+            .comment("自动冶炼：每块矿石经验补偿最小值")
+            .defineInRange("autoSmelt.xpMin", 0.5, 0.0, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue AUTO_SMELT_XP_MAX = BUILDER
+            .comment("自动冶炼：每块矿石经验补偿最大值")
+            .defineInRange("autoSmelt.xpMax", 1.0, 0.0, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue AUTO_SMELT_LEVEL2_BONUS_CHANCE = BUILDER
+            .comment("自动冶炼：II级额外掉落1个的概率（默认 33%）")
+            .defineInRange("autoSmelt.level2BonusChance", 0.33, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue AUTO_SMELT_LEVEL3_BONUS_CHANCE = BUILDER
+            .comment("自动冶炼：III级额外掉落1~2个的概率（默认 50%）")
+            .defineInRange("autoSmelt.level3BonusChance", 0.5, 0.0, 1.0);
+
+    // ================================================================
+    // 匠心传承 配置
+    // ================================================================
+    private static final ForgeConfigSpec.IntValue ARTISAN_LEGACY_MAX_MEMORY = BUILDER
+            .comment("匠心传承：最大记忆方块种类数（默认 5）")
+            .defineInRange("artisanLegacy.maxMemory", 5, 1, 20);
+
+    private static final ForgeConfigSpec.DoubleValue ARTISAN_LEGACY_MAX_SPEED_MULTIPLIER = BUILDER
+            .comment("匠心传承：最大挖掘速度倍率（默认 2.0 = 100%提升）")
+            .defineInRange("artisanLegacy.maxSpeedMultiplier", 2.0, 1.0, 10.0);
+
+    private static final ForgeConfigSpec.ConfigValue<List<? extends Integer>> ARTISAN_LEGACY_THRESHOLDS = BUILDER
+            .comment("匠心传承：速度成长曲线阈值（挖掘次数阶梯，默认 10/25/50/100 次）",
+                    "达到这些阈值时速度逐步提升，在阈值之间线性插值")
+            .defineList("artisanLegacy.thresholds",
+                    List.of(10, 25, 50, 100),
+                    it -> it instanceof Integer);
+
+    private static final ForgeConfigSpec.DoubleValue ARTISAN_LEGACY_EXTRA_DROP_CHANCE = BUILDER
+            .comment("匠心传承：额外掉落最大概率（默认 0.2 = 20%，随挖掘次数增长）")
+            .defineInRange("artisanLegacy.extraDropChance", 0.2, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.IntValue ARTISAN_LEGACY_MAX_EXTRA_DROP_THRESHOLD = BUILDER
+            .comment("匠心传承：额外掉落达到最大概率所需的挖掘次数（默认 50）")
+            .defineInRange("artisanLegacy.maxExtraDropThreshold", 50, 1, 1000);
+
+    // ================================================================
+    // 兵长的回声 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue LEVIS_ECHO_DAMAGE_BASE_PERCENT = BUILDER
+            .comment("兵长的回声：基础伤害百分比（最大生命值的百分比，I级为 5%）",
+                    "公式：basePercent + (等级-1) * perLevelPercent")
+            .defineInRange("levisEcho.damageBasePercent", 5.0, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue LEVIS_ECHO_DAMAGE_PER_LEVEL_PERCENT = BUILDER
+            .comment("兵长的回声：每级额外伤害百分比（II级起每级 +2%）")
+            .defineInRange("levisEcho.damagePerLevelPercent", 2.0, 0.0, 50.0);
+
+    private static final ForgeConfigSpec.DoubleValue LEVIS_ECHO_HEALTH_THRESHOLD = BUILDER
+            .comment("兵长的回声：触发条件所需目标生命值下限（默认 50.0 = 25❤️）")
+            .defineInRange("levisEcho.healthThreshold", 50.0, 0.0, Double.MAX_VALUE);
+
+    private static final ForgeConfigSpec.IntValue LEVIS_ECHO_MARK_TIMEOUT = BUILDER
+            .comment("兵长的回声：标记超时时间（tick，默认 100 = 5秒），\n超时后标记清零")
+            .defineInRange("levisEcho.markTimeout", 100, 1, 72000);
+
+    private static final ForgeConfigSpec.IntValue LEVIS_ECHO_MAX_STACKS = BUILDER
+            .comment("兵长的回声：引爆所需标记层数（默认 3）")
+            .defineInRange("levisEcho.maxStacks", 3, 2, 10);
+
+    // ================================================================
+    // 嗜血 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue BLOODTHIRST_HEAL_PERCENT = BUILDER
+            .comment("嗜血：每次触发回复的生命值百分比（默认 10.0 = 10% 最大生命值）")
+            .defineInRange("bloodthirst.healPercent", 10.0, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.IntValue BLOODTHIRST_COOLDOWN_TICKS = BUILDER
+            .comment("嗜血：冷却时间（tick，默认 100 = 5 秒），冷却期间不触发回复")
+            .defineInRange("bloodthirst.cooldownTicks", 100, 1, 72000);
 
     // ================================================================
     // 终界之星 配置
@@ -70,11 +248,59 @@ public class Config {
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // 加载时缓存到静态字段
+    // 古·云来弓法 & 云来弓法
+    public static double ancientYunLaiArrowSpeed;
+    public static double ancientYunLaiChargeMultiplier;   // 由 drawTime 换算
+    public static double yunLaiArcheryChargeMultiplier;   // 由 drawTime 换算
+
+    // 终末将至
     public static double endApproachesDamageMultiplier;
     public static double endApproachesAttackSpeedBonus;
     public static int endApproachesEndermanRange;
     public static boolean endApproachesAnnounce;
     public static double endApproachesLootRolls;
+
+    // 琉璃冰魄箭
+    public static int glacialArrowChargeThreshold;
+    public static double glacialArrowStage1Speed;
+    public static double glacialArrowStage1Damage;
+    public static double glacialArrowStage1AoeRange;
+    public static double glacialArrowStage2Speed;
+    public static double glacialArrowStage2Damage;
+    public static double glacialArrowStage2AoeRange;
+    public static int glacialArrowSubCount;
+    public static double glacialArrowFanAngle;
+    public static double glacialArrowSubSpeed;
+    public static double glacialArrowSubDamage;
+    public static double glacialArrowSubAoeRange;
+    public static double glacialArrowPullStrength;
+    public static double glacialArrowPullRange;
+    public static int glacialArrowParticleInterval;
+
+    // 自动冶炼
+    public static List<? extends String> autoSmeltOreBlocks;
+    public static double autoSmeltXpMin;
+    public static double autoSmeltXpMax;
+    public static double autoSmeltLevel2BonusChance;
+    public static double autoSmeltLevel3BonusChance;
+
+    // 匠心传承
+    public static int artisanLegacyMaxMemory;
+    public static double artisanLegacyMaxSpeedMultiplier;
+    public static int[] artisanLegacyThresholds;
+    public static double artisanLegacyExtraDropChance;
+    public static int artisanLegacyMaxExtraDropThreshold;
+
+    // 兵长的回声
+    public static double levisEchoDamageBasePercent;
+    public static double levisEchoDamagePerLevelPercent;
+    public static double levisEchoHealthThreshold;
+    public static int levisEchoMarkTimeout;
+    public static int levisEchoMaxStacks;
+
+    // 嗜血
+    public static double bloodthirstHealPercent;
+    public static int bloodthirstCooldownTicks;
 
     public static boolean enableEndStarFlight;
     public static boolean enableEndStarDamageReduction;
@@ -86,12 +312,64 @@ public class Config {
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
+        // 古·云来弓法 & 云来弓法：将蓄力时间换算为蓄力加速倍率
+        ancientYunLaiArrowSpeed = ANCIENT_YUNLAI_ARROW_SPEED.get();
+        ancientYunLaiChargeMultiplier = 1.0 / ANCIENT_YUNLAI_DRAW_TIME.get();
+        yunLaiArcheryChargeMultiplier = 1.0 / YUNLAI_ARCHERY_DRAW_TIME.get();
+
         // 终末将至
         endApproachesDamageMultiplier = END_APPROACHES_DAMAGE_MULTIPLIER.get();
         endApproachesAttackSpeedBonus = END_APPROACHES_ATTACK_SPEED_BONUS.get();
         endApproachesEndermanRange = END_APPROACHES_ENDERMAN_RANGE.get();
         endApproachesAnnounce = END_APPROACHES_ANNOUNCE.get();
         endApproachesLootRolls = END_APPROACHES_LOOT_ROLLS.get();
+        // 琉璃冰魄箭
+        glacialArrowChargeThreshold = GLACIAL_ARROW_CHARGE_THRESHOLD.get();
+        glacialArrowStage1Speed = GLACIAL_ARROW_STAGE1_SPEED.get();
+        glacialArrowStage1Damage = GLACIAL_ARROW_STAGE1_DAMAGE.get();
+        glacialArrowStage1AoeRange = GLACIAL_ARROW_STAGE1_AOE_RANGE.get();
+        glacialArrowStage2Speed = GLACIAL_ARROW_STAGE2_SPEED.get();
+        glacialArrowStage2Damage = GLACIAL_ARROW_STAGE2_DAMAGE.get();
+        glacialArrowStage2AoeRange = GLACIAL_ARROW_STAGE2_AOE_RANGE.get();
+        glacialArrowSubCount = GLACIAL_ARROW_SUB_COUNT.get();
+        glacialArrowFanAngle = GLACIAL_ARROW_FAN_ANGLE.get();
+        glacialArrowSubSpeed = GLACIAL_ARROW_SUB_SPEED.get();
+        glacialArrowSubDamage = GLACIAL_ARROW_SUB_DAMAGE.get();
+        glacialArrowSubAoeRange = GLACIAL_ARROW_SUB_AOE_RANGE.get();
+        glacialArrowPullStrength = GLACIAL_ARROW_PULL_STRENGTH.get();
+        glacialArrowPullRange = GLACIAL_ARROW_PULL_RANGE.get();
+        glacialArrowParticleInterval = GLACIAL_ARROW_PARTICLE_INTERVAL.get();
+
+        // 自动冶炼
+        autoSmeltOreBlocks = AUTO_SMELT_ORE_BLOCKS.get();
+        autoSmeltXpMin = AUTO_SMELT_XP_MIN.get();
+        autoSmeltXpMax = AUTO_SMELT_XP_MAX.get();
+        autoSmeltLevel2BonusChance = AUTO_SMELT_LEVEL2_BONUS_CHANCE.get();
+        autoSmeltLevel3BonusChance = AUTO_SMELT_LEVEL3_BONUS_CHANCE.get();
+
+        // 匠心传承
+        artisanLegacyMaxMemory = ARTISAN_LEGACY_MAX_MEMORY.get();
+        artisanLegacyMaxSpeedMultiplier = ARTISAN_LEGACY_MAX_SPEED_MULTIPLIER.get();
+        // 将 List<Integer> 转换为 int[]（速度阈值）
+        var thresholdsList = ARTISAN_LEGACY_THRESHOLDS.get();
+        artisanLegacyThresholds = new int[thresholdsList.size()];
+        for (int i = 0; i < thresholdsList.size(); i++) {
+            artisanLegacyThresholds[i] = thresholdsList.get(i);
+        }
+        artisanLegacyExtraDropChance = ARTISAN_LEGACY_EXTRA_DROP_CHANCE.get();
+        artisanLegacyMaxExtraDropThreshold = ARTISAN_LEGACY_MAX_EXTRA_DROP_THRESHOLD.get();
+
+        // 兵长的回声
+        levisEchoDamageBasePercent = LEVIS_ECHO_DAMAGE_BASE_PERCENT.get();
+        levisEchoDamagePerLevelPercent = LEVIS_ECHO_DAMAGE_PER_LEVEL_PERCENT.get();
+        levisEchoHealthThreshold = LEVIS_ECHO_HEALTH_THRESHOLD.get();
+        levisEchoMarkTimeout = LEVIS_ECHO_MARK_TIMEOUT.get();
+        levisEchoMaxStacks = LEVIS_ECHO_MAX_STACKS.get();
+
+        // 嗜血
+        bloodthirstHealPercent = BLOODTHIRST_HEAL_PERCENT.get();
+        bloodthirstCooldownTicks = BLOODTHIRST_COOLDOWN_TICKS.get();
+
         // 终界之星
         enableEndStarFlight = ENABLE_END_STAR_FLIGHT.get();
         enableEndStarDamageReduction = ENABLE_END_STAR_DAMAGE_REDUCTION.get();

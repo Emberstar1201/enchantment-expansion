@@ -19,10 +19,20 @@
   "enchantment.enchantment_expansion.plunder.desc": "稀有战利品必定掉落，等级影响数量",
   "enchantment.enchantment_expansion.dawn": "拂晓",
   "enchantment.enchantment_expansion.dawn.desc": "随昼夜变化，夜晚越深，力量越强（在黎明到来前，总要有人照亮长夜）",
+  "enchantment.enchantment_expansion.glacial_arrow": "琉璃冰魄箭",
+  "enchantment.enchantment_expansion.glacial_arrow.desc": "冰晶之力注入箭矢，蓄力越久威力越强，命中后爆发范围伤害并牵引敌人",
+  "enchantment.enchantment_expansion.auto_smelt": "自动冶炼",
+  "enchantment.enchantment_expansion.auto_smelt.desc": "挖掘矿石时直接掉落成品，无需烧制。等级越高额外掉落概率越大",
+  "enchantment.enchantment_expansion.artisan_legacy": "匠心传承",
+  "enchantment.enchantment_expansion.artisan_legacy.desc": "工具记住挖掘过的方块，同类方块越挖越快并有几率额外掉落",
+  "enchantment.enchantment_expansion.levis_echo": "兵长的回声",
+  "enchantment.enchantment_expansion.levis_echo.desc": "攻击叠加标记，3层后引爆造成基于最大生命值的魔法伤害（目标生命值≥50触发）",
+  "enchantment.enchantment_expansion.bloodthirst": "嗜血",
+  "enchantment.enchantment_expansion.bloodthirst.desc": "攻击命中怪物时回复自身10%最大生命值（冷却5秒）",
   "enchantment.enchantment_expansion.end_approaches": "终末将至",
   "enchantment.enchantment_expansion.end_approaches.desc": "武器伤害提升250%，攻击冷却缩短90%",
   "item.enchantment_expansion.end_star": "终界之星",
-  "item.enchantment_expansion.end_star.desc": "末地之核仍在脉动。",
+  "item.enchantment_expansion.end_star.desc": "结束了？",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "终末已至，新的开始",
-  "advancements.enchantment_expansion.the_end_new_beginning.description": "末地并非终点。"
+  "advancements.enchantment_expansion.the_end_new_beginning.description": "获得终界之星"
 }

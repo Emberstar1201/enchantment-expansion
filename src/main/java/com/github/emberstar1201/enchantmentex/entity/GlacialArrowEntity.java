@@ -1,0 +1,379 @@
+package com.github.emberstar1201.enchantmentex.entity;
+
+import com.github.emberstar1201.enchantmentex.Config;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
+
+// ========================================================================
+// 琉璃冰魄箭实体
+//
+// 【功能】
+//   1. 两段蓄力区分（通过 DATA_CHARGE_STAGE 同步到客户端）
+//   2. 飞行时粒子拖尾（一段=淡蓝粒子，二段=冰晶粒子）
+//   3. 命中后 AOE 范围伤害
+//   4. 二段蓄力：母箭命中后生成子箭（扇形散射）
+//   5. 二段蓄力：母箭和子箭命中后拉人效果
+//
+// 【数据同步】
+//   使用 SynchedEntityData 确保蓄力阶段在服务端<->客户端间同步
+//   子箭标识 isSubArrow 仅服务端使用，不须同步
+// ========================================================================
+public class GlacialArrowEntity extends AbstractArrow {
+
+    // 蓄力阶段同步数据（1=一段，2=二段）
+    private static final EntityDataAccessor<Integer> DATA_CHARGE_STAGE =
+            SynchedEntityData.defineId(GlacialArrowEntity.class, EntityDataSerializers.INT);
+
+    // 子箭标识（仅服务端使用，子箭不再生成子箭，不须同步到客户端）
+    private boolean isSubArrow = false;
+
+    // ========================================================================
+    // 构造方法
+    // ========================================================================
+
+    // Forge 实体反序列化必须的无参构造
+    public GlacialArrowEntity(EntityType<? extends AbstractArrow> type, Level level) {
+        super(type, level);
+    }
+
+    // 自定义构造：从发射者位置创建
+    public GlacialArrowEntity(Level level, LivingEntity owner, double posX, double posY, double posZ) {
+        super(ModEntities.GLACIAL_ARROW.get(), owner, level);
+        this.setPos(posX, posY, posZ);
+        // 默认一段蓄力
+        this.setChargeStage(1);
+    }
+
+    // ========================================================================
+    // 数据同步注册
+    // ========================================================================
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(DATA_CHARGE_STAGE, 1);
+    }
+
+    // ========================================================================
+    // 读写 NBT（实体存档/同步时保留蓄力阶段）
+    // ========================================================================
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putInt("ChargeStage", this.getChargeStage());
+        tag.putBoolean("IsSubArrow", this.isSubArrow);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains("ChargeStage")) {
+            this.setChargeStage(tag.getInt("ChargeStage"));
+        }
+        if (tag.contains("IsSubArrow")) {
+            this.isSubArrow = tag.getBoolean("IsSubArrow");
+        }
+    }
+
+    // ========================================================================
+    // Getter/Setter
+    // ========================================================================
+    public void setChargeStage(int stage) {
+        this.entityData.set(DATA_CHARGE_STAGE, stage);
+    }
+
+    public int getChargeStage() {
+        return this.entityData.get(DATA_CHARGE_STAGE);
+    }
+
+    public void setSubArrow(boolean subArrow) {
+        this.isSubArrow = subArrow;
+    }
+
+    public boolean isSubArrow() {
+        return this.isSubArrow;
+    }
+
+    // ========================================================================
+    // 每 tick 更新：粒子拖尾
+    // ========================================================================
+    @Override
+    public void tick() {
+        super.tick();
+
+        // 仅在客户端生成粒子
+        if (!this.level().isClientSide()) return;
+
+        int stage = getChargeStage();
+        int interval = Config.glacialArrowParticleInterval;
+
+        // 按间隔生成粒子
+        if (this.tickCount % interval == 0) {
+            Vec3 pos = this.position();
+            // 在箭矢后方生成粒子（拖尾效果）
+            Vec3 backward = this.getDeltaMovement().normalize().scale(-0.3);
+            double px = pos.x + backward.x;
+            double py = pos.y + backward.y;
+            double pz = pos.z + backward.z;
+
+            if (stage == 1) {
+                // 一段蓄力：淡蓝粒子拖尾
+                // 使用 END_ROD 粒子（白色发光粒子），再加一些 WATER 类粒子营造淡蓝效果
+                this.level().addParticle(ParticleTypes.END_ROD, px, py, pz, 0, 0, 0);
+                if (this.random.nextFloat() < 0.4f) {
+                    this.level().addParticle(ParticleTypes.DRIPPING_WATER, px, py, pz, 0, 0, 0);
+                }
+            } else {
+                // 二段蓄力：冰晶粒子拖尾
+                // SNOWFLAKE = 雪花粒子（冰晶效果）
+                this.level().addParticle(ParticleTypes.SNOWFLAKE, px, py, pz, 0, 0, 0);
+                if (this.random.nextFloat() < 0.3f) {
+                    this.level().addParticle(ParticleTypes.END_ROD, px, py, pz, 0, 0, 0);
+                }
+            }
+        }
+    }
+
+    // ========================================================================
+    // 命中处理
+    // ========================================================================
+
+    // 命中方块
+    @Override
+    protected void onHitBlock(BlockHitResult result) {
+        if (!this.level().isClientSide()) {
+            applyHitEffects(result.getLocation());
+        }
+        super.onHitBlock(result);
+    }
+
+    // 命中实体
+    @Override
+    protected void onHitEntity(EntityHitResult result) {
+        if (!this.level().isClientSide()) {
+            applyHitEffects(result.getLocation());
+        }
+        super.onHitEntity(result);
+    }
+
+    // ========================================================================
+    // 核心命中效果
+    // ========================================================================
+    private void applyHitEffects(Vec3 hitLocation) {
+        int stage = getChargeStage();
+
+        if (stage == 1) {
+            // 一段蓄力：AOE + 粒子效果
+            applyAoeDamage(hitLocation,
+                    Config.glacialArrowStage1AoeRange,
+                    Config.glacialArrowStage1Damage);
+            spawnHitParticles(hitLocation, 1);
+        } else if (stage == 2) {
+            // 二段蓄力母箭效果
+            double baseDamage = this.getBaseDamage();
+
+            // 母箭 AOE
+            applyAoeDamage(hitLocation,
+                    Config.glacialArrowStage2AoeRange,
+                    Config.glacialArrowStage2Damage);
+
+            // 母箭命中后生成子箭（仅母箭生成，子箭不再递归生成）
+            if (!isSubArrow) {
+                spawnSubArrows(hitLocation, baseDamage);
+            }
+
+            // 母箭和子箭都拉人
+            applyPullEffect(hitLocation);
+
+            // 粒子效果
+            spawnHitParticles(hitLocation, 2);
+        }
+    }
+
+    // ========================================================================
+    // AOE 范围伤害
+    // ========================================================================
+    private void applyAoeDamage(Vec3 center, double radius, double damageMultiplier) {
+        // 基础伤害 = 箭矢的基础伤害
+        double baseDamage = this.getBaseDamage();
+        double finalDamage = baseDamage * damageMultiplier;
+
+        // 获取范围内的所有 LivingEntity
+        AABB aabb = new AABB(center.x - radius, center.y - radius, center.z - radius,
+                center.x + radius, center.y + radius, center.z + radius);
+        List<Entity> entities = this.level().getEntities(this, aabb,
+                entity -> entity instanceof LivingEntity && entity.isAlive()
+                        && entity != this.getOwner()); // 不伤害发射者自己
+
+        DamageSource damageSource = this.damageSources().arrow(this, this.getOwner());
+
+        for (Entity entity : entities) {
+            if (entity instanceof LivingEntity target) {
+                // 距离越远伤害略微递减（线性衰减）
+                double distance = entity.distanceToSqr(center);
+                double maxDistSqr = radius * radius;
+                double factor = 1.0 - (distance / maxDistSqr) * 0.3; // 边缘保留70%伤害
+                target.hurt(damageSource, (float) (finalDamage * factor));
+            }
+        }
+    }
+
+    // ========================================================================
+    // 生成子箭（二段蓄力专用）
+    // ========================================================================
+    private void spawnSubArrows(Vec3 hitLocation, double motherDamage) {
+        int subCount = Config.glacialArrowSubCount;
+        if (subCount <= 0) return;
+
+        // 母箭的飞行方向作为基准方向
+        Vec3 baseDirection = this.getDeltaMovement().normalize();
+        if (baseDirection.lengthSqr() < 0.001) {
+            baseDirection = Vec3.directionFromRotation(this.getXRot(), this.getYRot());
+        }
+
+        // 扇形角度（度 → 弧度）
+        double fanAngleRad = Math.toRadians(Config.glacialArrowFanAngle);
+        // 每个子箭之间的角度间隔
+        double angleStep = subCount > 1 ? fanAngleRad / (subCount - 1) : 0;
+        // 起始角度（扇形中心为基准方向）
+        double startAngle = -fanAngleRad / 2.0;
+
+        // 获取水平基准方向（忽略 Y 轴，用于水平散射）
+        Vec3 horizontalDir = new Vec3(baseDirection.x, 0, baseDirection.z).normalize();
+        // 计算垂直轴和水平轴（用于旋转）
+        Vec3 up = new Vec3(0, 1, 0);
+        Vec3 right = horizontalDir.cross(up).normalize();
+        if (right.lengthSqr() < 0.001) {
+            right = new Vec3(0, 0, 1);
+        }
+
+        for (int i = 0; i < subCount; i++) {
+            // 计算在当前扇区内的基准角度偏移
+            double baseAngleOffset = startAngle + angleStep * i;
+            // 随机偏移 30°~60°（正负随机）
+            double randomOffset = (this.random.nextDouble() * 30.0 + 30.0);
+            randomOffset = Math.toRadians(randomOffset);
+            // 随机决定向左还是向右偏移
+            if (this.random.nextBoolean()) {
+                baseAngleOffset += randomOffset;
+            } else {
+                baseAngleOffset -= randomOffset;
+            }
+
+            // 旋转基准方向得到子箭方向（水平旋转）
+            Vec3 subDirection = horizontalDir
+                    .scale(Math.cos(baseAngleOffset))
+                    .add(right.scale(Math.sin(baseAngleOffset)))
+                    .normalize();
+
+            // 略微向上抬一点，使子箭不下坠太快
+            subDirection = subDirection.add(0, 0.1, 0).normalize();
+
+            // 速度 = 母箭速度 × 配置倍率
+            double subSpeed = this.getDeltaMovement().length() * Config.glacialArrowSubSpeed;
+
+            // 在命中位置稍微偏移生成，避免子箭立即碰撞
+            Vec3 spawnPos = hitLocation.add(subDirection.scale(0.5));
+
+            // 创建子箭实体
+            GlacialArrowEntity subArrow = new GlacialArrowEntity(
+                    this.level(), (LivingEntity) this.getOwner(),
+                    spawnPos.x, spawnPos.y, spawnPos.z);
+            subArrow.setSubArrow(true);
+            subArrow.setChargeStage(2); // 子箭也是二段效果（有 AOE 和拉人）
+            subArrow.setBaseDamage(motherDamage * Config.glacialArrowSubDamage);
+            subArrow.setDeltaMovement(subDirection.scale(subSpeed));
+            // 设置子箭的拾取状态（不可拾取）
+            subArrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+
+            // 设置射中后的穿透/消失行为
+            subArrow.setNoGravity(false);
+
+            this.level().addFreshEntity(subArrow);
+        }
+    }
+
+    // ========================================================================
+    // 拉人效果（二段蓄力专用）
+    // ========================================================================
+    private void applyPullEffect(Vec3 hitLocation) {
+        double pullRange = Config.glacialArrowPullRange;
+        double pullStrength = Config.glacialArrowPullStrength;
+        if (pullStrength <= 0 || pullRange <= 0) return;
+
+        // 获取范围内的 LivingEntity
+        AABB aabb = new AABB(hitLocation.x - pullRange, hitLocation.y - pullRange, hitLocation.z - pullRange,
+                hitLocation.x + pullRange, hitLocation.y + pullRange, hitLocation.z + pullRange);
+        List<Entity> entities = this.level().getEntities(this, aabb,
+                entity -> entity instanceof LivingEntity && entity.isAlive()
+                        && entity != this.getOwner()); // 不拉发射者
+
+        for (Entity entity : entities) {
+            // 计算从实体到命中点的向量
+            Vec3 entityPos = entity.position();
+            Vec3 pullVector = hitLocation.subtract(entityPos).normalize().scale(pullStrength);
+            // 设置实体的运动速度，拉向命中点
+            entity.setDeltaMovement(
+                    entity.getDeltaMovement().x + pullVector.x,
+                    entity.getDeltaMovement().y + pullVector.y + 0.1, // 稍微向上拉，防止卡地
+                    entity.getDeltaMovement().z + pullVector.z
+            );
+            // 标记为已受击，使服务器正确处理运动
+            entity.hurtMarked = true;
+        }
+    }
+
+    // ========================================================================
+    // 命中粒子效果
+    // ========================================================================
+    private void spawnHitParticles(Vec3 hitLocation, int stage) {
+        if (!(this.level() instanceof ServerLevel serverLevel)) return;
+
+        if (stage == 1) {
+            // 一段蓄力命中：淡蓝爆炸效果
+            serverLevel.sendParticles(ParticleTypes.END_ROD,
+                    hitLocation.x, hitLocation.y, hitLocation.z,
+                    15, 0.5, 0.5, 0.5, 0.05);
+            serverLevel.sendParticles(ParticleTypes.DRIPPING_WATER,
+                    hitLocation.x, hitLocation.y, hitLocation.z,
+                    10, 0.5, 0.5, 0.5, 0.05);
+        } else {
+            // 二段蓄力命中：冰晶爆炸效果
+            serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
+                    hitLocation.x, hitLocation.y, hitLocation.z,
+                    20, 0.8, 0.8, 0.8, 0.1);
+            serverLevel.sendParticles(ParticleTypes.END_ROD,
+                    hitLocation.x, hitLocation.y, hitLocation.z,
+                    15, 0.5, 0.5, 0.5, 0.05);
+            // 爆炸冲击波效果
+            serverLevel.sendParticles(ParticleTypes.EXPLOSION,
+                    hitLocation.x, hitLocation.y, hitLocation.z,
+                    1, 0, 0, 0, 0);
+        }
+    }
+
+    // ========================================================================
+    // 辅助：获取箭矢的拾取物品栈（用于渲染）
+    // ========================================================================
+    @Override
+    protected ItemStack getPickupItem() {
+        return new ItemStack(Items.ARROW);
+    }
+}

@@ -46,6 +46,21 @@ public class ModEnchantments {
     public static final RegistryObject<EndApproachesEnchantment> END_APPROACHES =
             ENCHANTMENTS.register("end_approaches", EndApproachesEnchantment::new);
 
+    public static final RegistryObject<GlacialArrowEnchantment> GLACIAL_ARROW =
+            ENCHANTMENTS.register("glacial_arrow", GlacialArrowEnchantment::new);
+
+    public static final RegistryObject<AutoSmeltEnchantment> AUTO_SMELT =
+            ENCHANTMENTS.register("auto_smelt", AutoSmeltEnchantment::new);
+
+    public static final RegistryObject<ArtisanLegacyEnchantment> ARTISAN_LEGACY =
+            ENCHANTMENTS.register("artisan_legacy", ArtisanLegacyEnchantment::new);
+
+    public static final RegistryObject<LevisEchoEnchantment> LEVIS_ECHO =
+            ENCHANTMENTS.register("levis_echo", LevisEchoEnchantment::new);
+
+    public static final RegistryObject<BloodthirstEnchantment> BLOODTHIRST =
+            ENCHANTMENTS.register("bloodthirst", BloodthirstEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);

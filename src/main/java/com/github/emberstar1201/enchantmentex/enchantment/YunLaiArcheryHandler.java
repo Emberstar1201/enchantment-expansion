@@ -13,18 +13,18 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // 云来弓法（基础版）附魔事件处理器
 //
 // 【职责单一】：仅处理"拉弓蓄力加速"效果
-// 【不处理】：箭矢飞行速度（用户需求：云来弓法基础版不改变箭矢速度）
+// 【不处理】：箭矢飞行速度（基础版不改变箭矢速度）
 //
 // 【与古·云来弓法共存的设计】：
-//   1. 独立的 Enchantment 查询：本 Handler 只查 ModEnchantments.YUNLAI_ARCHERY
-//      古·云来弓法的 Handler 只查 ANCIENT_YUNLAI，两个附魔的蓄力进度分开计算
+//   1. 独立的 Enchantment 查询与独立的蓄力倍率
+//      - 本 Handler 只查 ModEnchantments.YUNLAI_ARCHERY
+//      - 古·云来弓法的 Handler 只查 ANCIENT_YUNLAI
+//      - 两者使用独立的蓄力倍率配置（古 0.5s vs 基础 0.45s）
+//      - 蓄力时间从配置文件独立读取，不再共享同一套数值
 //   2. 独立的 PersistentData 累加 key：
-//        AncientYunLai : "AncientYunLai_FractionalAccum_xxx"
-//        YunLaiArchery  : "YunLaiArchery_FractionalAccum_xxx"
 //      两者互不干扰，小数累积不会互相覆盖
 //   3. 同一 tick 两个 Handler 都会执行 event.setDuration() 减进度：
-//      结果就是"总额外进度 = 古云来 extraProgress + 基础版 extraProgress"
-//      两者同时存在时蓄力速度叠加（可观察到蓄力时间进一步缩短）
+//      两者同时存在时蓄力速度叠加（进一步缩短蓄力时间）
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID)
 public class YunLaiArcheryHandler {
@@ -55,9 +55,8 @@ public class YunLaiArcheryHandler {
             return;
         }
 
-        // 获取蓄力加速倍率
-        // 复用 AncientYunLaiEnchantment.getChargeSpeedMultiplier() 查表
-        // 数值完全相同：Lv1=1.053 ... Lv10=5.000
+        // 获取蓄力加速倍率（从配置文件读取，默认 2.222 = 0.45 秒蓄力）
+        // 与古·云来弓法独立配置（古 0.5s vs 基础 0.45s）
         double chargeMultiplier = YunLaiArcheryEnchantment.getChargeSpeedMultiplier(enchantLevel);
 
         // 倍率 <= 1.0 时无需加速
