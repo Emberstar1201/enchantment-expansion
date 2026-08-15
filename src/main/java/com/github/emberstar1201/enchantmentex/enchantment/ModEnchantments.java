@@ -64,6 +64,27 @@ public class ModEnchantments {
     public static final RegistryObject<FlywheelEffectEnchantment> FLYWHEEL_EFFECT =
             ENCHANTMENTS.register("flywheel_effect", FlywheelEffectEnchantment::new);
 
+    // ================================================================
+    // 无中生有·重制（Ex Nihilo）
+    // 适用物品：镐 + 剪刀 | 最高等级：III | 获取：附魔台/宝箱/村民
+    // ================================================================
+    public static final RegistryObject<ExNihiloEnchantment> EX_NIHILO =
+            ENCHANTMENTS.register("ex_nihilo", ExNihiloEnchantment::new);
+
+    // ================================================================
+    // 引雷 II（Channeling II）
+    // 适用物品：三叉戟（TRIDENT） | 最高等级：1 | 获取：钓鱼/沙漠神殿/废弃矿洞
+    // ================================================================
+    public static final RegistryObject<ChannelingIIEnchantment> CHANNELING_II =
+            ENCHANTMENTS.register("channeling_ii", ChannelingIIEnchantment::new);
+
+    // ================================================================
+    // 引雷 III（Channeling III）
+    // 适用物品：三叉戟（TRIDENT） | 最高等级：1 | 获取：仅限钓鱼
+    // ================================================================
+    public static final RegistryObject<ChannelingIIIEnchantment> CHANNELING_III =
+            ENCHANTMENTS.register("channeling_iii", ChannelingIIIEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);

@@ -1,0 +1,127 @@
+﻿Initialized native services in: C:\Users\18087\.gradle\native
+Initialized jansi services in: C:\Users\18087\.gradle\native
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.5/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Starting process 'Gradle build daemon'. Working directory: C:\Users\18087\.gradle\daemon\8.14.5 Command: C:\Users\18087\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.10.7-hotspot\bin\java.exe --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.xml/javax.xml.namespace=ALL-UNNAMED -Xmx3G -Dfile.encoding=UTF-8 -Duser.country=CN -Duser.language=zh -Duser.variant -cp C:\Users\18087\.gradle\wrapper\dists\gradle-8.14.5-bin\3w1tvbe412g1z3jsd16ketrw6\gradle-8.14.5\lib\gradle-daemon-main-8.14.5.jar -javaagent:C:\Users\18087\.gradle\wrapper\dists\gradle-8.14.5-bin\3w1tvbe412g1z3jsd16ketrw6\gradle-8.14.5\lib\agents\gradle-instrumentation-agent-8.14.5.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.14.5
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 2.32 secs.
+The client will now receive all logging from the daemon (pid: 32556). The daemon log file: C:\Users\18087\.gradle\daemon\8.14.5\daemon-32556.out.log
+Daemon will be stopped at the end of the build 
+Using 20 worker leases.
+Received JVM installation metadata from 'C:\Users\18087\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.10.7-hotspot': {JAVA_HOME=C:\Users\18087\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.10.7-hotspot, JAVA_VERSION=21.0.10, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=21.0.10+7-LTS, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=21.0.10+7-LTS, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+Watching the file system is configured to be enabled if available
+Now considering [F:\MinecraftMods\enchantment-expansion] as hierarchies to watch
+File system watching is active
+Starting Build
+Resolved plugin [id: 'org.gradle.toolchains.foojay-resolver-convention', version: '0.7.0']
+Settings evaluated using settings file 'F:\MinecraftMods\enchantment-expansion\settings.gradle'.
+Projects loaded. Root project using build file 'F:\MinecraftMods\enchantment-expansion\build.gradle'.
+Included projects: [root project 'enchantment-expansion']
+
+> Configure project :
+Evaluating root project 'enchantment-expansion' using build file 'F:\MinecraftMods\enchantment-expansion\build.gradle'.
+Invalidating in-memory cache of C:\Users\18087\.gradle\caches\journal-1\file-access.bin
+Invalidating in-memory cache of C:\Users\18087\.gradle\caches\8.14.5\fileHashes\fileHashes.bin
+Invalidating in-memory cache of C:\Users\18087\.gradle\caches\8.14.5\fileHashes\resourceHashesCache.bin
+Resolved plugin [id: 'eclipse']
+Resolved plugin [id: 'idea']
+Resolved plugin [id: 'maven-publish']
+Resolved plugin [id: 'net.minecraftforge.gradle', version: '[6.0,6.2)']
+Invalidating in-memory cache of C:\Users\18087\.gradle\caches\8.14.5\fileHashes\fileHashes.bin
+Invalidating in-memory cache of C:\Users\18087\.gradle\caches\8.14.5\fileHashes\resourceHashesCache.bin
+Java: 21.0.10, JVM: 21.0.10+7-LTS (Eclipse Adoptium), Arch: amd64
+Downloading net.minecraftforge:forge:1.20.1-47.4.10:userdev
+Downloading net.minecraftforge:forge:1.20.1-47.4.10:universal@jar
+Downloading net.minecraftforge:forge:1.20.1-47.4.10:sources@jar
+Downloading de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip
+Downloading de.oceanlabs.mcp:mcp_config:1.20.1@zip
+Invalidating in-memory cache of F:\MinecraftMods\enchantment-expansion\.gradle\8.14.5\checksums\md5-checksums.bin
+Invalidating in-memory cache of F:\MinecraftMods\enchantment-expansion\.gradle\8.14.5\checksums\sha256-checksums.bin
+Invalidating in-memory cache of F:\MinecraftMods\enchantment-expansion\.gradle\8.14.5\checksums\sha1-checksums.bin
+Invalidating in-memory cache of F:\MinecraftMods\enchantment-expansion\.gradle\8.14.5\checksums\sha512-checksums.bin
+Downloading de.oceanlabs.mcp:mcp_config:1.20.1@zip
+Creating reobfuscation task for JarJar task: jarJar
+All projects evaluated.
+Task name matched 'classes'
+Selected primary task 'classes' from project :
+Starting process 'command 'C:\Users\18087\.jdks\ms-17.0.20\bin\java.exe''. Working directory: C:\Users\18087\.gradle\.tmp\tmp-jvm15916204334567264423probe Command: C:\Users\18087\.jdks\ms-17.0.20\bin\java.exe -Xmx32m -Xms32m -cp . JavaProbe
+Successfully started process 'command 'C:\Users\18087\.jdks\ms-17.0.20\bin\java.exe''
+Received JVM installation metadata from 'C:\Users\18087\.jdks\ms-17.0.20': {JAVA_HOME=C:\Users\18087\.jdks\ms-17.0.20, JAVA_VERSION=17.0.20, JAVA_VENDOR=Microsoft, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.20+8-LTS, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.20+8-LTS, VM_VENDOR=Microsoft, OS_ARCH=amd64}
+Tasks to be executed: [task ':compileJava', task ':processResources', task ':classes']
+Tasks that were excluded: []
+Resolve mutations for :compileJava (Thread[#187,Execution worker Thread 2,5,main]) started.
+:compileJava (Thread[#187,Execution worker Thread 2,5,main]) started.
+This JVM does not support getting OS memory, so no OS memory status updates will be broadcast
+
+> Task :compileJava
+Invalidating in-memory cache of F:\MinecraftMods\enchantment-expansion\.gradle\8.14.5\fileHashes\fileHashes.bin
+Invalidating in-memory cache of F:\MinecraftMods\enchantment-expansion\.gradle\8.14.5\fileHashes\resourceHashesCache.bin
+Downloading net.minecraft:mappings_official:1.20.1@zip
+Downloading net.minecraft:client:1.20.1:mappings@txt
+Downloading net.minecraft:server:1.20.1:mappings@txt
+Downloading de.oceanlabs.mcp:mcp_config:1.20.1@zip
+Downloading de.oceanlabs.mcp:mcp_config:1.20.1@zip
+Downloading net.minecraft:mappings_official:1.20.1@zip
+Caching disabled for task ':compileJava' because:
+  Build cache is disabled
+  Gradle does not know how file 'build\classes\java\main\com\github\emberstar1201\enchantmentex\item' was created (output property 'destinationDirectory'). Task output caching requires exclusive access to output paths to guarantee correctness (i.e. multiple tasks are not allowed to produce output in the same location).
+Task ':compileJava' is not up-to-date because:
+  Task has failed previously.
+The input changes require a full rebuild for incremental task ':compileJava'.
+Compilation mode: default, forking compiler
+Full recompilation is required because no incremental change information is available. This is usually caused by clean builds or changing compiler arguments.
+Compiling with toolchain 'C:\Users\18087\.jdks\ms-17.0.20'.
+Starting process 'Gradle Worker Daemon 1'. Working directory: C:\Users\18087\.gradle\workers Command: C:\Users\18087\.jdks\ms-17.0.20\bin\java.exe --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED @C:\Users\18087\.gradle\.tmp\gradle-worker-classpath1662470480214358864txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=CN -Duser.language=zh -Duser.variant worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Worker Daemon 1'
+Successfully started process 'Gradle Worker Daemon 1'
+Started Gradle worker daemon (0.801 secs) with fork options DaemonForkOptions{executable=C:\Users\18087\.jdks\ms-17.0.20\bin\java.exe, minHeapSize=null, maxHeapSize=null, jvmArgs=[--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED, --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED], keepAliveMode=DAEMON}.
+Compiling with JDK Java compiler API.
+.\gradlew.bat : F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:36: 璀﹀憡: [removal] ResourceLocation 涓殑 of(String,char) 宸茶繃鏃? 涓旀爣璁颁负寰呭垹闄?    private static final ResourceLocation FISHING = ResourceLocation.of("minecraft:gameplay/fishing", ':');
+所在位置 行:1 字符: 73
++ ... lyContinue; & { .\gradlew.bat classes --no-daemon --info 2>&1 } *>&1  ...
++                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (F:\MinecraftMod...fishing", ':');    :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+                                                                    ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:37: 璀﹀憡: [removal] ResourceLocation 涓殑 of(String,char) 宸茶繃鏃? 涓旀爣璁颁负寰呭垹闄?    private static final ResourceLocation DESERT_PYRAMID = ResourceLocation.of("minecraft:chests/desert_pyramid", ':');
+                                                                           ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:38: 璀﹀憡: [removal] ResourceLocation 涓殑 of(String,char) 宸茶繃鏃? 涓旀爣璁颁负寰呭垹闄?    private static final ResourceLocation ABANDONED_MINESHAFT = ResourceLocation.of("minecraft:chests/abandoned_mineshaft", ':');
+                                                                                ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\client\GlacialArrowRenderer.java:18: 璀﹀憡: [removal] ResourceLocation 涓殑 of(String,char) 宸茶繃鏃? 涓旀爣璁颁负寰呭垹闄?            ResourceLocation.of("minecraft:textures/entity/projectiles/arrow.png", ':');
+                            ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\network\NetworkHandler.java:20: 璀﹀憡: [removal] ResourceLocation 涓殑 of(String,char) 宸茶繃鏃? 涓旀爣璁颁负寰呭垹闄?            ResourceLocation.of(EnchantmentExpansion.MODID + ":main", ':'),
+                            ^
+娉? 鏌愪簺杈撳叆鏂囦欢浣跨敤鎴栬鐩栦簡宸茶繃鏃剁殑 API銆?
+娉? 鏈夊叧璇︾粏淇℃伅, 璇蜂娇鐢?-Xlint:deprecation 閲嶆柊缂栬瘧銆?
+5 涓鍛?
+Invalidating in-memory cache of F:\MinecraftMods\enchantment-expansion\.gradle\8.14.5\fileHashes\fileHashes.bin
+Invalidating in-memory cache of F:\MinecraftMods\enchantment-expansion\.gradle\8.14.5\fileHashes\resourceHashesCache.bin
+Invalidating in-memory cache of C:\Users\18087\.gradle\caches\8.14.5\javaCompile\jarAnalysis.bin
+Invalidating in-memory cache of C:\Users\18087\.gradle\caches\8.14.5\javaCompile\classAnalysis.bin
+Class dependency analysis for incremental compilation took 0.061 secs.
+Created classpath snapshot for incremental compilation in 0.158 secs.
+Invalidating in-memory cache of F:\MinecraftMods\enchantment-expansion\.gradle\buildOutputCleanup\outputFiles.bin
+Resolve mutations for :processResources (Thread[#187,Execution worker Thread 2,5,main]) started.
+:processResources (Thread[#187,Execution worker Thread 2,5,main]) started.
+
+> Task :processResources UP-TO-DATE
+Caching disabled for task ':processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':processResources' as it is up-to-date.
+Resolve mutations for :classes (Thread[#187,Execution worker Thread 2,5,main]) started.
+:classes (Thread[#187,Execution worker Thread 2,5,main]) started.
+
+> Task :classes
+Skipping task ':classes' as it has no actions.
+
+[Incubating] Problems report is available at: file:///F:/MinecraftMods/enchantment-expansion/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.5/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 18s
+2 actionable tasks: 1 executed, 1 up-to-date
+Watched directory hierarchies: [F:\MinecraftMods\enchantment-expansion]

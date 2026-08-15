@@ -49,4 +49,13 @@ public class FlywheelEffectEnchantment extends Enchantment {
     public boolean isAllowedOnBooks() {
         return true;
     }
+
+    // ========================================================================
+    // 【冲突设置】与风踏涟漪互斥（同为靴子移动类附魔，功能重叠）
+    // ========================================================================
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        if (other == ModEnchantments.WIND_RIPPLE.get()) return false;
+        return super.checkCompatibility(other);
+    }
 }

@@ -37,7 +37,7 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //   "取消 BreakEvent → 手动获取掉落 → 替换为成品 → 生成掉落"的模式。
 //   此模式已在 CreationFromNothingHandler 中得到验证。
 // ========================================================================
-@Mod.EventBusSubscriber(modid = MODID)
+@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class AutoSmeltHandler {
 
     // ========================================================================

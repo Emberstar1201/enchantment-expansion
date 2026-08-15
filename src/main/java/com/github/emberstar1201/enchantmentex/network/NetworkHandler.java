@@ -17,7 +17,7 @@ public class NetworkHandler {
 
     // 简单通道：用于 C2S 单向通信（飞轮冲刺请求）
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(EnchantmentExpansion.MODID, "main"),
+            ResourceLocation.of(EnchantmentExpansion.MODID + ":main", ':'),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,   // 客户端接受的服务端版本
             PROTOCOL_VERSION::equals    // 服务端接受的客户端版本

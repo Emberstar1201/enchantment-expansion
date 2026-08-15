@@ -200,6 +200,10 @@ public class Config {
             .comment("兵长的回声：引爆所需标记层数（默认 3）")
             .defineInRange("levisEcho.maxStacks", 3, 2, 10);
 
+    private static final ForgeConfigSpec.BooleanValue LEVIS_ECHO_PARTICLE_ENABLED = BUILDER
+            .comment("兵长的回声：是否启用粒子视觉反馈（标记叠加时目标身上显示药水粒子，引爆时生成环形爆炸粒子）")
+            .define("levisEcho.particleEnabled", true);
+
     // ================================================================
     // 嗜血 配置
     // ================================================================
@@ -299,6 +303,140 @@ public class Config {
             .defineInRange("flywheel.dashSpeed", 1.5, 0.1, 10.0);
 
     // ================================================================
+    // 风踏涟漪 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue WIND_RIPPLE_LAVA_SPEED = BUILDER
+            .comment("风踏涟漪：岩浆行走移速倍率（默认 1.15，岩浆黏稠，比水面行走的 1.25 略慢）")
+            .defineInRange("windRipple.lavaSpeedMultiplier", 1.15, 0.5, 5.0);
+
+    // ================================================================
+    // 无中生有·重制 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue EX_NIHILO_RARE_CHANCE_PER_LEVEL = BUILDER
+            .comment("无中生有·重制：每级稀有触发概率（默认 0.01 = 每级 1%，III 级为 3%）")
+            .defineInRange("exNihilo.rareChancePerLevel", 0.01, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.IntValue EX_NIHILO_RARE_DIAMOND_WEIGHT = BUILDER
+            .comment("无中生有·重制：稀有掉落中钻石的权重（默认 70）")
+            .defineInRange("exNihilo.rareDiamondWeight", 70, 0, 1000);
+
+    private static final ForgeConfigSpec.IntValue EX_NIHILO_RARE_SCRAP_WEIGHT = BUILDER
+            .comment("无中生有·重制：稀有掉落中下界合金碎片的权重（默认 25）")
+            .defineInRange("exNihilo.rareScrapWeight", 25, 0, 1000);
+
+    private static final ForgeConfigSpec.IntValue EX_NIHILO_RARE_INGOT_WEIGHT = BUILDER
+            .comment("无中生有·重制：稀有掉落中下界合金锭的权重（默认 5）")
+            .defineInRange("exNihilo.rareIngotWeight", 5, 0, 1000);
+
+    private static final ForgeConfigSpec.DoubleValue EX_NIHILO_SHEAR_GOLDEN_APPLE_CHANCE = BUILDER
+            .comment("无中生有·重制：剪刀采集树叶时金苹果掉落概率（默认 0.005 = 0.5%）",
+                    "实际概率 = 此值 × 等级倍率（I:1×, II:1.5×, III:2×）")
+            .defineInRange("exNihilo.shearGoldenAppleChance", 0.005, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue EX_NIHILO_SHEAR_ENCHANTED_GOLDEN_APPLE_CHANCE = BUILDER
+            .comment("无中生有·重制：剪刀采集树叶时附魔金苹果掉落概率（默认 0.0005 = 0.05%）",
+                    "实际概率 = 此值 × 等级倍率（I:1×, II:1.5×, III:2×）")
+            .defineInRange("exNihilo.shearEnchantedGoldenAppleChance", 0.0005, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> EX_NIHILO_STONE_BLOCKS = BUILDER
+            .comment("无中生有·重制：触发额外掉落的石质方块 ID 列表",
+                    "包括主世界（石头/花岗岩/闪长岩/安山岩/深板岩/凝灰岩及其变种）、",
+                    "下界（地狱岩/玄武岩/黑石及其变种）、末地（末地石及其变种）",
+                    "矿物方块本身不在此列表，只作用于石质基底方块",
+                    "添加模组方块只需在此列表中添加对应的方块 ID 即可")
+            .defineList("exNihilo.stoneBlocks",
+                    List.of(
+                            // ========== 主世界 ==========
+                            "minecraft:stone",
+                            "minecraft:smooth_stone",
+                            "minecraft:stone_bricks", "minecraft:mossy_stone_bricks",
+                            "minecraft:cracked_stone_bricks", "minecraft:chiseled_stone_bricks",
+                            "minecraft:cobblestone", "minecraft:mossy_cobblestone",
+                            // 花岗岩
+                            "minecraft:granite", "minecraft:polished_granite",
+                            // 闪长岩
+                            "minecraft:diorite", "minecraft:polished_diorite",
+                            // 安山岩
+                            "minecraft:andesite", "minecraft:polished_andesite",
+                            // 深板岩
+                            "minecraft:deepslate", "minecraft:polished_deepslate",
+                            "minecraft:deepslate_bricks", "minecraft:deepslate_tiles",
+                            "minecraft:cracked_deepslate_bricks", "minecraft:cracked_deepslate_tiles",
+                            "minecraft:chiseled_deepslate",
+                            // 凝灰岩
+                            "minecraft:tuff", "minecraft:polished_tuff",
+                            "minecraft:tuff_bricks", "minecraft:cracked_tuff_bricks",
+                            "minecraft:chiseled_tuff",
+                            // ========== 下界 ==========
+                            "minecraft:netherrack",
+                            // 玄武岩
+                            "minecraft:basalt", "minecraft:polished_basalt", "minecraft:smooth_basalt",
+                            // 黑石
+                            "minecraft:blackstone", "minecraft:polished_blackstone",
+                            "minecraft:blackstone_bricks", "minecraft:polished_blackstone_bricks",
+                            "minecraft:cracked_blackstone_bricks", "minecraft:cracked_polished_blackstone_bricks",
+                            "minecraft:chiseled_blackstone",
+                            "minecraft:gilded_blackstone",
+                            // ========== 末地 ==========
+                            "minecraft:end_stone", "minecraft:end_stone_bricks"
+                    ),
+                    it -> it instanceof String);
+
+    // ================================================================
+    // 云来剑法·重制 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_COOLDOWN_REDUCTION = BUILDER
+            .comment("云来剑法·重制：攻击冷却降低比例（默认 0.75 = 75%）")
+            .defineInRange("yunlaiSword.cooldownReduction", 0.75, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_CRESCENT_CHANCE = BUILDER
+            .comment("云来剑法·重制：剑气触发概率（默认 0.9 = 90%）")
+            .defineInRange("yunlaiSword.crescentChance", 0.9, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_CRESCENT_DAMAGE_MULTIPLIER = BUILDER
+            .comment("云来剑法·重制：剑气伤害倍率（默认 0.5 = 本次攻击的 50%）")
+            .defineInRange("yunlaiSword.crescentDamageMultiplier", 0.5, 0.0, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_CRESCENT_SPEED = BUILDER
+            .comment("云来剑法·重制：剑气飞行速度（blocks/tick，默认 1.5）")
+            .defineInRange("yunlaiSword.crescentSpeed", 1.5, 0.1, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_CRESCENT_MAX_DISTANCE = BUILDER
+            .comment("云来剑法·重制：剑气最大飞行距离（格，默认 10.0）")
+            .defineInRange("yunlaiSword.crescentMaxDistance", 10.0, 1.0, 100.0);
+
+    // ================================================================
+    // 古·云来剑法·重制 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_COOLDOWN_REDUCTION = BUILDER
+            .comment("古·云来剑法·重制：攻击冷却降低比例（默认 0.98 = 98%）")
+            .defineInRange("ancientYunlaiSword.cooldownReduction", 0.98, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_CHANCE = BUILDER
+            .comment("古·云来剑法·重制：剑气触发概率（默认 1.0 = 100%）")
+            .defineInRange("ancientYunlaiSword.crescentChance", 1.0, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_DAMAGE_MULTIPLIER = BUILDER
+            .comment("古·云来剑法·重制：每道剑气伤害倍率（默认 0.75 = 本次攻击的 75%）")
+            .defineInRange("ancientYunlaiSword.crescentDamageMultiplier", 0.75, 0.0, 10.0);
+
+    private static final ForgeConfigSpec.IntValue ANCIENT_YUNLAI_SWORD_CRESCENT_COUNT = BUILDER
+            .comment("古·云来剑法·重制：剑气数量（默认 3）")
+            .defineInRange("ancientYunlaiSword.crescentCount", 3, 1, 10);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_SPREAD = BUILDER
+            .comment("古·云来剑法·重制：扇形扩散角度（度，默认 30）")
+            .defineInRange("ancientYunlaiSword.crescentSpread", 30.0, 0.0, 180.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_SPEED = BUILDER
+            .comment("古·云来剑法·重制：剑气飞行速度（blocks/tick，默认 1.5）")
+            .defineInRange("ancientYunlaiSword.crescentSpeed", 1.5, 0.1, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_MAX_DISTANCE = BUILDER
+            .comment("古·云来剑法·重制：剑气最大飞行距离（格，默认 10.0）")
+            .defineInRange("ancientYunlaiSword.crescentMaxDistance", 10.0, 1.0, 100.0);
+
+    // ================================================================
     // 终界之星 配置
     // ================================================================
     private static final ForgeConfigSpec.BooleanValue ENABLE_END_STAR_FLIGHT = BUILDER
@@ -384,6 +522,7 @@ public class Config {
     public static double levisEchoHealthThreshold;
     public static int levisEchoMarkTimeout;
     public static int levisEchoMaxStacks;
+    public static boolean levisEchoParticleEnabled;
 
     // 嗜血
     public static double bloodthirstHealPercent;
@@ -412,6 +551,38 @@ public class Config {
     public static int flywheelCooldownSeconds3;
     public static int flywheelDurabilityCost;
     public static double flywheelDashSpeed;
+
+    // 风踏涟漪
+    public static double windRippleLavaSpeed;
+
+    // 无中生有·重制
+    public static double exNihiloRareChancePerLevel;
+    public static int exNihiloRareDiamondWeight;
+    public static int exNihiloRareScrapWeight;
+    public static int exNihiloRareIngotWeight;
+    public static double exNihiloShearGoldenAppleChance;
+    public static double exNihiloShearEnchantedGoldenAppleChance;
+    public static List<? extends String> exNihiloStoneBlocks;
+
+    // ================================================================
+    // 云来剑法·重制 缓存
+    // ================================================================
+    public static double yunlaiSwordCooldownReduction;
+    public static double yunlaiSwordCrescentChance;
+    public static double yunlaiSwordCrescentDamageMultiplier;
+    public static double yunlaiSwordCrescentSpeed;
+    public static double yunlaiSwordCrescentMaxDistance;
+
+    // ================================================================
+    // 古·云来剑法·重制 缓存
+    // ================================================================
+    public static double ancientYunlaiSwordCooldownReduction;
+    public static double ancientYunlaiSwordCrescentChance;
+    public static double ancientYunlaiSwordCrescentDamageMultiplier;
+    public static int ancientYunlaiSwordCrescentCount;
+    public static double ancientYunlaiSwordCrescentSpread;
+    public static double ancientYunlaiSwordCrescentSpeed;
+    public static double ancientYunlaiSwordCrescentMaxDistance;
 
     public static boolean enableEndStarFlight;
     public static boolean enableEndStarDamageReduction;
@@ -476,6 +647,7 @@ public class Config {
         levisEchoHealthThreshold = LEVIS_ECHO_HEALTH_THRESHOLD.get();
         levisEchoMarkTimeout = LEVIS_ECHO_MARK_TIMEOUT.get();
         levisEchoMaxStacks = LEVIS_ECHO_MAX_STACKS.get();
+        levisEchoParticleEnabled = LEVIS_ECHO_PARTICLE_ENABLED.get();
 
         // 嗜血
         bloodthirstHealPercent = BLOODTHIRST_HEAL_PERCENT.get();
@@ -504,6 +676,34 @@ public class Config {
         flywheelCooldownSeconds3 = FLYWHEEL_COOLDOWN_3.get();
         flywheelDurabilityCost = FLYWHEEL_DURABILITY_COST.get();
         flywheelDashSpeed = FLYWHEEL_DASH_SPEED.get();
+
+        // 风踏涟漪
+        windRippleLavaSpeed = WIND_RIPPLE_LAVA_SPEED.get();
+
+        // 无中生有·重制
+        exNihiloRareChancePerLevel = EX_NIHILO_RARE_CHANCE_PER_LEVEL.get();
+        exNihiloRareDiamondWeight = EX_NIHILO_RARE_DIAMOND_WEIGHT.get();
+        exNihiloRareScrapWeight = EX_NIHILO_RARE_SCRAP_WEIGHT.get();
+        exNihiloRareIngotWeight = EX_NIHILO_RARE_INGOT_WEIGHT.get();
+        exNihiloShearGoldenAppleChance = EX_NIHILO_SHEAR_GOLDEN_APPLE_CHANCE.get();
+        exNihiloShearEnchantedGoldenAppleChance = EX_NIHILO_SHEAR_ENCHANTED_GOLDEN_APPLE_CHANCE.get();
+        exNihiloStoneBlocks = EX_NIHILO_STONE_BLOCKS.get();
+
+        // 云来剑法·重制
+        yunlaiSwordCooldownReduction = YUNLAI_SWORD_COOLDOWN_REDUCTION.get();
+        yunlaiSwordCrescentChance = YUNLAI_SWORD_CRESCENT_CHANCE.get();
+        yunlaiSwordCrescentDamageMultiplier = YUNLAI_SWORD_CRESCENT_DAMAGE_MULTIPLIER.get();
+        yunlaiSwordCrescentSpeed = YUNLAI_SWORD_CRESCENT_SPEED.get();
+        yunlaiSwordCrescentMaxDistance = YUNLAI_SWORD_CRESCENT_MAX_DISTANCE.get();
+
+        // 古·云来剑法·重制
+        ancientYunlaiSwordCooldownReduction = ANCIENT_YUNLAI_SWORD_COOLDOWN_REDUCTION.get();
+        ancientYunlaiSwordCrescentChance = ANCIENT_YUNLAI_SWORD_CRESCENT_CHANCE.get();
+        ancientYunlaiSwordCrescentDamageMultiplier = ANCIENT_YUNLAI_SWORD_CRESCENT_DAMAGE_MULTIPLIER.get();
+        ancientYunlaiSwordCrescentCount = ANCIENT_YUNLAI_SWORD_CRESCENT_COUNT.get();
+        ancientYunlaiSwordCrescentSpread = ANCIENT_YUNLAI_SWORD_CRESCENT_SPREAD.get();
+        ancientYunlaiSwordCrescentSpeed = ANCIENT_YUNLAI_SWORD_CRESCENT_SPEED.get();
+        ancientYunlaiSwordCrescentMaxDistance = ANCIENT_YUNLAI_SWORD_CRESCENT_MAX_DISTANCE.get();
 
         // 终界之星
         enableEndStarFlight = ENABLE_END_STAR_FLIGHT.get();

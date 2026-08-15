@@ -1,14 +1,18 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
+import com.github.emberstar1201.enchantmentex.Config;
+import com.github.emberstar1201.enchantmentex.entity.CrescentEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraftforge.common.ForgeMod;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
@@ -16,90 +20,80 @@ import java.util.UUID;
 import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 
 // ========================================================================
-// "云来剑法"附魔事件处理器
+// "云来剑法·重制"附魔事件处理器
 //
-// 【效果一】攻击距离提升（PlayerTickEvent）
-//   原理：在玩家手持附魔剑时，向 ForgeMod.ENTITY_REACH 属性添加固定 UUID 的
-//         AttributeModifier(ADDITION)，等级越高加成越大。
-//   管理：用 PersistentData 记录"上一 tick 的等级"，等级变化时才增删 modifier，
-//         避免每 tick 重复添加导致属性溢出。使用 addTransientModifier（不持久化NBT）。
+// 【效果一】攻击速度提升（PlayerTickEvent）
+//   使用 AttributeModifier 直接修改 Attributes.ATTACK_SPEED，
+//   在手持附魔剑时永久添加 +3.5 攻击速度（ADDITION 模式）。
+//   切换武器或放下武器时自动移除修饰符。
+//   原版剑基础攻击速度约 4.0，+3.5 后约 7.5，攻击间隔大幅缩短。
 //
-// 【效果二】攻击冷却缩减（LivingHurtEvent.Pre）
-//   原理：玩家攻击时若攻击强度不满（getAttackStrengthScale < 1.0，即处于冷却中），
-//         按附魔等级的"缩减比例"补正伤害——把本应丢失的伤害按比例补回，
-//         等效于"冷却中攻击也不掉太多伤害"，玩家手感上等价于攻击冷却缩减。
-//   公式：补回比例 = 冷却缩减比例（getCooldownReduction）
+//   为什么不用 attackStrengthTicker？
+//     attackStrengthTicker 每 tick 最多 +1（由原版硬编码控制），
+//     我们强行 +3/+49 的方式不生效——因为原版在 tick 末尾会
+//     将 ticker 重新 clamp 到合法范围（0 ~ delay）。
+//
+// 【效果二】月牙形剑气（LivingHurtEvent）
+//   90%概率在玩家眼前生成1道淡蓝色月牙形剑气
+//
+// 【注意】必须使用 Bus.FORGE，因为 PlayerTickEvent 和
+//   LivingHurtEvent 都是 Forge 事件
 // ========================================================================
-@Mod.EventBusSubscriber(modid = MODID)
+@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class YunLaiSwordmanshipHandler {
 
-    // 攻击距离 modifier 的固定 UUID（用固定 UUID 保证每 tick 只有一个，不会叠加）
-    // 云来剑法专用 UUID，与古·云来剑法互不冲突
-    private static final UUID REACH_MODIFIER_UUID =
-            UUID.fromString("b3c4d5e6-7890-4a1b-9c2d-3e4f5a6b7c8d");
-
-    // PersistentData key：记录上一 tick 的云来剑法等级（用于检测等级变化）
-    private static final String LAST_LEVEL_KEY = "YunLaiSword_LastReachLevel";
+    // 攻击速度修饰符 UUID（固定，用于检测修饰符是否存在）
+    private static final UUID ATK_SPEED_MOD_UUID =
+            UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    // 攻击速度修饰符：+3.5（ADDITION 模式）
+    private static final AttributeModifier ATK_SPEED_BOOST =
+            new AttributeModifier(
+                    ATK_SPEED_MOD_UUID,
+                    "YunLai Swordmanship attack speed bonus",
+                    3.5,
+                    AttributeModifier.Operation.ADDITION
+            );
 
     // ========================================================================
-    // 【效果一】攻击距离提升
-    // 在 PlayerTickEvent.Phase.END 执行：确保原版 tick 完成后再调整属性
+    // 【效果一】攻击速度提升（PlayerTickEvent）
+    //
+    // 原理：
+    //   每 tick 检查玩家主手是否持有带"云来剑法·重制"附魔的剑。
+    //   - 是且修饰符不存在 → 添加修饰符
+    //   - 否且修饰符存在 → 移除修饰符
+    //
+    // 这样做天然处理了武器切换：切到其他武器时附魔等级为 0，
+    //   修饰符在下一个 tick 被移除。
     // ========================================================================
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        // 仅在 END 阶段处理，避免 PRE 阶段与原版属性计算冲突
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
+        if (event.phase != TickEvent.Phase.END) return;
 
         Player player = event.player;
-        ItemStack mainHand = player.getMainHandItem();
+        if (player.isCreative() || player.isSpectator()) return;
 
-        // 获取主手剑的"云来剑法"附魔等级
+        // 获取攻击速度属性实例
+        AttributeInstance attr = player.getAttribute(Attributes.ATTACK_SPEED);
+        if (attr == null) return;
+
+        ItemStack mainHand = player.getMainHandItem();
         int enchantLevel = EnchantmentHelper.getItemEnchantmentLevel(
                 ModEnchantments.YUNLAI_SWORDMANSHIP.get(), mainHand);
 
-        // 读取上一 tick 记录的等级（检测是否切换武器/等级）
-        int lastLevel = player.getPersistentData().getInt(LAST_LEVEL_KEY);
+        boolean hasModifier = attr.hasModifier(ATK_SPEED_BOOST);
 
-        // 等级未变化 → 无需调整 modifier，直接返回（避免每 tick 重复操作）
-        if (enchantLevel == lastLevel) {
-            return;
+        if (enchantLevel > 0 && !hasModifier) {
+            // 手持附魔剑且修饰符不存在 → 添加
+            attr.addTransientModifier(ATK_SPEED_BOOST);
+        } else if (enchantLevel <= 0 && hasModifier) {
+            // 未持有附魔剑但修饰符存在 → 移除
+            attr.removeModifier(ATK_SPEED_MOD_UUID);
         }
-
-        // ---------- 等级发生变化：先移除旧 modifier，再添加新 modifier ----------
-        AttributeInstance reachAttr = player.getAttribute(ForgeMod.ENTITY_REACH.get());
-        if (reachAttr == null) {
-            // 属性实例不存在（理论上玩家都有），防御性返回
-            player.getPersistentData().putInt(LAST_LEVEL_KEY, enchantLevel);
-            return;
-        }
-
-        // 移除旧的 modifier（无论之前是几级，都用同一 UUID，移除一次即可）
-        reachAttr.removeModifier(REACH_MODIFIER_UUID);
-
-        // 若新等级 > 0，添加对应加成的 modifier
-        if (enchantLevel > 0) {
-            double bonus = YunLaiSwordmanshipEnchantment.getAttackReachBonus(enchantLevel);
-            // Operation.ADDITION：在基础值上直接加 bonus（原版攻击距离 3.0 + bonus）
-            AttributeModifier modifier = new AttributeModifier(
-                    REACH_MODIFIER_UUID,
-                    "YunLai Swordmanship Reach Bonus",
-                    bonus,
-                    AttributeModifier.Operation.ADDITION
-            );
-            // 使用 transient（瞬时）修饰符：不写入玩家NBT，由附魔每 tick 动态管理
-            // 这样卸下剑时 modifier 自动随等级归零被移除，干净无残留
-            reachAttr.addTransientModifier(modifier);
-        }
-
-        // 更新记录的等级
-        player.getPersistentData().putInt(LAST_LEVEL_KEY, enchantLevel);
+        // 其他情况（已持有且已添加、未持有且未添加）不做操作
     }
 
     // ========================================================================
-    // 【效果二】攻击冷却缩减（冷却中攻击的伤害补正）
-    // 在 LivingHurtEvent.Pre 中：检测攻击者是否手持云来剑法附魔剑
+    // 【效果二】月牙形剑气（LivingHurtEvent）
     // ========================================================================
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
@@ -115,34 +109,66 @@ public class YunLaiSwordmanshipHandler {
             return;
         }
 
-        // 读取攻击瞬间的攻击强度比例（0.0 ~ 1.0）
-        // < 1.0 表示处于攻击冷却中（挥剑过快，未完全蓄力）
-        // 参数 0.5f 表示半tick后的预测值，与原版 Player.attack() 内部一致
-        float strengthScale = player.getAttackStrengthScale(0.5f);
-
-        // 已满力攻击，无需补正
-        if (strengthScale >= 1.0f) {
+        // 服务端才生成剑气
+        Level level = player.level();
+        if (level.isClientSide()) {
             return;
         }
 
-        // 获取冷却缩减比例（0.0 ~ 0.5）
-        double reduction = YunLaiSwordmanshipEnchantment.getCooldownReduction(enchantLevel);
-        if (reduction <= 0.0) {
+        // 概率判定
+        double chance = Config.yunlaiSwordCrescentChance;
+        if (level.random.nextDouble() >= chance) {
             return;
         }
 
-        // ---------- 伤害补正计算 ----------
-        // 原版：amount = baseDamage × strengthScale（不满力则伤害打折）
-        //   丢失的伤害 = baseDamage × (1 - strengthScale) = amount × (1-strengthScale)/strengthScale
-        // 补回 = 丢失量 × reduction
-        // 补正后 = amount + 补回 = amount × (1 + (1-strengthScale)×reduction/strengthScale)
-        //
-        // 防御性：strengthScale 极小时避免除零，钳制到最小 0.01
-        float safeScale = Math.max(strengthScale, 0.01f);
-        float originalAmount = event.getAmount();
-        float recovered = originalAmount * (1.0f - safeScale) / safeScale * (float) reduction;
-        float newAmount = originalAmount + recovered;
+        // 剑气伤害基准 = 本次攻击伤害 × 配置倍率
+        float crescentDamage = event.getAmount() * (float) Config.yunlaiSwordCrescentDamageMultiplier;
 
-        event.setAmount(newAmount);
+        // 在玩家视线方向生成1道淡蓝色剑气（type=1）
+        spawnCrescent(level, player, crescentDamage, 1, 0, 1);
+    }
+
+    // ========================================================================
+    // 生成月牙形剑气
+    // ========================================================================
+    private static void spawnCrescent(Level level, Player player,
+                                      float damage, int count,
+                                      double spreadDegrees, int type) {
+        Vec3 direction = player.getLookAngle();
+        Vec3 spawnPos = player.getEyePosition().add(direction.scale(0.8));
+
+        double speed = Config.yunlaiSwordCrescentSpeed;
+        double maxDist = Config.yunlaiSwordCrescentMaxDistance;
+
+        if (count <= 1) {
+            // 单道剑气：直接沿视线方向飞行
+            CrescentEntity crescent = new CrescentEntity(
+                    level, player, spawnPos, direction,
+                    (float) speed, damage, maxDist, type);
+            level.addFreshEntity(crescent);
+        } else {
+            // 多道剑气：扇形分布
+            Vec3 up = new Vec3(0, 1, 0);
+            if (Math.abs(direction.y) > 0.99) {
+                up = new Vec3(1, 0, 0);
+            }
+            Vec3 right = direction.cross(up).normalize();
+
+            double spreadRad = Math.toRadians(spreadDegrees);
+            double step = count > 1 ? spreadRad / (count - 1) : 0;
+            double startAngle = -spreadRad / 2.0;
+
+            for (int i = 0; i < count; i++) {
+                double angle = startAngle + step * i;
+                Vec3 dir = direction.scale(Math.cos(angle))
+                        .add(right.scale(Math.sin(angle)))
+                        .normalize();
+
+                CrescentEntity crescent = new CrescentEntity(
+                        level, player, spawnPos, dir,
+                        (float) speed, damage, maxDist, type);
+                level.addFreshEntity(crescent);
+            }
+        }
     }
 }

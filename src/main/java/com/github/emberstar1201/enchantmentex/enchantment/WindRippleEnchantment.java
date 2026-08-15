@@ -83,11 +83,12 @@ public class WindRippleEnchantment extends Enchantment {
 
     // ========================================================================
     // 【冲突设置】与其他靴子移动类附魔互斥
-    // 用户明确要求冲突的四种：
+    // 用户明确要求冲突的五种：
     //   1. 深海探索者 (Depth Strider) - 同样影响水中/水面移动
     //   2. 冰霜行者 (Frost Walker)   - 同样在水面生效（结冰 vs 踩水）
     //   3. 灵魂疾行 (Soul Speed)      - 灵魂沙上加速，同为靴子移速类
     //   4. 迅捷潜行 (Swift Sneak)     - 潜行时加速，与本附魔"潜行失效"机制冲突
+    //   5. 飞轮效应 (Flywheel Effect) - 同为靴子移速/机动类附魔，功能重叠
     // ========================================================================
     @Override
     protected boolean checkCompatibility(Enchantment other) {
@@ -95,6 +96,7 @@ public class WindRippleEnchantment extends Enchantment {
         if (other == Enchantments.FROST_WALKER) return false;
         if (other == Enchantments.SOUL_SPEED) return false;
         if (other == Enchantments.SWIFT_SNEAK) return false;
+        if (other == ModEnchantments.FLYWHEEL_EFFECT.get()) return false;
         // 其他附魔：沿用原版默认逻辑（同类附魔互斥，其余兼容）
         return super.checkCompatibility(other);
     }

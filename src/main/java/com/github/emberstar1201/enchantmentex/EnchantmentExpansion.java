@@ -1,6 +1,26 @@
 package com.github.emberstar1201.enchantmentex;
 
+import com.github.emberstar1201.enchantmentex.enchantment.AncientYunLaiHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.AncientYunLaiSwordmanshipHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.ArtisanLegacyHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.AutoSmeltHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.BloodthirstHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.ChannelingEventHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.ChannelingLootHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.CreationFromNothingHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.DawnHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.ElegantCatwalkHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.EndApproachesHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.ExNihiloHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.FlywheelEffectHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.GlacialArrowHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.LevisEchoHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
+import com.github.emberstar1201.enchantmentex.enchantment.PlunderHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.SnatchHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.WindRippleHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.YunLaiArcheryHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHandler;
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
@@ -38,9 +58,39 @@ public class EnchantmentExpansion {
         // 配置文件路径：config/enchantment_expansion-common.toml
         // ================================================================
 
-        MinecraftForge.EVENT_BUS.register(this);
-
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+        // ================================================================
+        // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
+        //
+        // 原因：部分 Handler 使用了 @Mod.EventBusSubscriber 但未指定
+        // bus = Bus.FORGE（默认走 Bus.MOD），导致 Forge 事件（如
+        // PlayerTickEvent、LivingHurtEvent、BlockEvent.BreakEvent 等）
+        // 无法被正确接收。
+        //
+        // 显式注册作为双重保障，确保所有 Handler 必定生效，不受注解
+        // 影响。如需添加新的 Handler，请在这里一并注册。
+        // ================================================================
+        MinecraftForge.EVENT_BUS.register(AncientYunLaiHandler.class);
+        MinecraftForge.EVENT_BUS.register(AncientYunLaiSwordmanshipHandler.class);
+        MinecraftForge.EVENT_BUS.register(ArtisanLegacyHandler.class);
+        MinecraftForge.EVENT_BUS.register(AutoSmeltHandler.class);
+        MinecraftForge.EVENT_BUS.register(BloodthirstHandler.class);
+        MinecraftForge.EVENT_BUS.register(ChannelingEventHandler.class);
+        MinecraftForge.EVENT_BUS.register(ChannelingLootHandler.class);
+        MinecraftForge.EVENT_BUS.register(CreationFromNothingHandler.class);
+        MinecraftForge.EVENT_BUS.register(DawnHandler.class);
+        MinecraftForge.EVENT_BUS.register(ElegantCatwalkHandler.class);
+        MinecraftForge.EVENT_BUS.register(EndApproachesHandler.class);
+        MinecraftForge.EVENT_BUS.register(ExNihiloHandler.class);
+        MinecraftForge.EVENT_BUS.register(FlywheelEffectHandler.class);
+        MinecraftForge.EVENT_BUS.register(GlacialArrowHandler.class);
+        MinecraftForge.EVENT_BUS.register(LevisEchoHandler.class);
+        MinecraftForge.EVENT_BUS.register(PlunderHandler.class);
+        MinecraftForge.EVENT_BUS.register(SnatchHandler.class);
+        MinecraftForge.EVENT_BUS.register(WindRippleHandler.class);
+        MinecraftForge.EVENT_BUS.register(YunLaiArcheryHandler.class);
+        MinecraftForge.EVENT_BUS.register(YunLaiSwordmanshipHandler.class);
 
         // ================================================================
         // 注册网络通道（飞轮效应等 C2S 数据包）
@@ -61,5 +111,7 @@ public class EnchantmentExpansion {
     private void onRegisterEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.GLACIAL_ARROW.get(),
                 com.github.emberstar1201.enchantmentex.entity.client.GlacialArrowRenderer::new);
+        event.registerEntityRenderer(ModEntities.CRESCENT.get(),
+                com.github.emberstar1201.enchantmentex.entity.client.CrescentRenderer::new);
     }
 }

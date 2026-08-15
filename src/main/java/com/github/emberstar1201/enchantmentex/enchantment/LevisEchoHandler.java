@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
 import com.github.emberstar1201.enchantmentex.Config;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -9,6 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -27,13 +29,20 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //   LivingHurtEvent：攻击时叠加标记，满3层引爆魔法伤害。
 //   LevelTickEvent：定期清理超时标记。
 //
+// 【粒子反馈】
+//   在 Config.levisEchoParticleEnabled 为 true 时生效：
+//     1层标记 → 目标身上生成白色溅射粒子 (SPLASH)
+//     2层标记 → 目标身上生成紫色附魔粒子 (PORTAL)
+//     3层引爆 → 目标位置生成向外扩散的龙息环形粒子 (DRAGON_BREATH)
+//               + 中心爆炸粒子 (EXPLOSION_EMITTER)
+//
 // 【NBT 结构】
 //   LevisEchoData: {
 //     stacks: 1..3,
 //     lastHitTime: <game_time>
 //   }
 // ========================================================================
-@Mod.EventBusSubscriber(modid = MODID)
+@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class LevisEchoHandler {
 
     // NBT 相关键名
@@ -42,7 +51,7 @@ public class LevisEchoHandler {
     private static final String KEY_LAST_HIT = "lastHitTime";
 
     // ========================================================================
-    // LivingHurtEvent：叠加标记 / 引爆回声伤害
+    // LivingHurtEvent：叠加标记 / 引爆回声伤害 + 粒子视觉反馈
     // ========================================================================
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
@@ -85,7 +94,7 @@ public class LevisEchoHandler {
         }
 
         // ========================================================================
-        // 叠加标记
+        // 叠加标记（加完后 currentStacks+1）
         // ========================================================================
         currentStacks++;
         data.putInt(KEY_STACKS, currentStacks);
@@ -93,7 +102,77 @@ public class LevisEchoHandler {
         target.getPersistentData().put(TAG_ROOT, data);
 
         // ========================================================================
-        // 到达3层 → 引爆
+        // 粒子视觉反馈（在叠加标记后根据新的层数播放心得粒子）
+        // ========================================================================
+        if (Config.levisEchoParticleEnabled && target.level() instanceof ServerLevel serverLevel) {
+            Vec3 targetPos = target.position();
+            Vec3 targetEyePos = new Vec3(targetPos.x, targetPos.y + target.getBbHeight() * 0.8, targetPos.z);
+
+            if (currentStacks < Config.levisEchoMaxStacks) {
+                // ★ 还未到引爆层数：根据当前层数播放心得标记粒子 ★
+                if (currentStacks == 1) {
+                    // 1层 → 白色溅射粒子（围绕目标身体）
+                    serverLevel.sendParticles(
+                            ParticleTypes.SPLASH,
+                            targetPos.x, targetPos.y + target.getBbHeight() * 0.5, targetPos.z,
+                            8,                                    // 8 个粒子
+                            target.getBbWidth() * 0.5,             // X 散布范围
+                            target.getBbHeight() * 0.3,            // Y 散布范围
+                            target.getBbWidth() * 0.5,             // Z 散布范围
+                            0.1                                    // 速度（轻微飘散）
+                    );
+                } else if (currentStacks == 2) {
+                    // 2层 → 紫色附魔粒子（围绕目标头部/身上，缓慢旋转上升）
+                    serverLevel.sendParticles(
+                            ParticleTypes.PORTAL,
+                            targetPos.x, targetPos.y + target.getBbHeight() * 0.6, targetPos.z,
+                            12,                                   // 12 个粒子
+                            target.getBbWidth() * 0.6,             // X 散布范围
+                            target.getBbHeight() * 0.4,            // Y 散布范围
+                            target.getBbWidth() * 0.6,             // Z 散布范围
+                            0.05                                   // 速度（缓慢漂浮）
+                    );
+                }
+            } else {
+                // ★ 达到引爆层数：生成爆炸粒子效果 ★
+                // ── 中心大爆炸粒子（EXPLOSION_EMITTER，一次性的扩散波） ──
+                serverLevel.sendParticles(
+                        ParticleTypes.EXPLOSION_EMITTER,
+                        targetPos.x, targetPos.y + target.getBbHeight() * 0.5, targetPos.z,
+                        1,      // 1个 emitter 粒子会自动展开成扩散波
+                        0, 0, 0,
+                        0
+                );
+
+                // ── 向外扩散的龙息环形粒子（DRAGON_BREATH，3圈扩散） ──
+                double baseRadius = 0.5;
+                double maxRadius = 3.0;
+                int rings = 3;        // 3 圈扩散
+                int particlesPerRing = 16;
+
+                for (int ring = 0; ring < rings; ring++) {
+                    // 每圈的半径和发出时间偏移（模拟向外扩散）
+                    double radius = baseRadius + (maxRadius - baseRadius) * ring / (rings - 1);
+
+                    for (int i = 0; i < particlesPerRing; i++) {
+                        double angle = 2 * Math.PI * i / particlesPerRing;
+                        double x = targetPos.x + radius * Math.cos(angle);
+                        double z = targetPos.z + radius * Math.sin(angle);
+
+                        serverLevel.sendParticles(
+                                ParticleTypes.DRAGON_BREATH,
+                                x, targetPos.y + target.getBbHeight() * 0.5 + 0.2, z,
+                                1,      // 每个位置 1 个粒子
+                                0, 0, 0,
+                                0       // 速度 0，保持位置精确
+                        );
+                    }
+                }
+            }
+        }
+
+        // ========================================================================
+        // 到达引爆层数 → 引爆
         // ========================================================================
         int maxStacks = Config.levisEchoMaxStacks;
         if (currentStacks >= maxStacks) {

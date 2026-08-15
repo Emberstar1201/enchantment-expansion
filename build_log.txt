@@ -5,47 +5,35 @@ Daemon will be stopped at the end of the build
 Java: 21.0.10, JVM: 21.0.10+7-LTS (Eclipse Adoptium), Arch: amd64
 
 > Task :compileJava
-.\\gradlew.bat : F:\MinecraftMods\enchantment-expansion\src\main\java\com\githu
-b\emberstar1201\enchantmentex\item\handler\DroppedEndStarHandler.java:257: 閿欒:
- 涓嶅吋瀹圭殑绫诲瀷: Entity鏃犳硶杞崲涓篒temEntity
-所在位置 行:1 字符: 5
-+ & { .\\gradlew.bat build 2>&1 | Out-File -FilePath "f:\\MinecraftMods ...
-+     ~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (F:\MinecraftMod...硶杞崲涓篒temEntity 
-   :String) [], RemoteException
+.\gradlew.bat : F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:36: 警告: [removal] ResourceLocation 中的 of(String,char) 已过时, 且标记为待删除
+At line:1 char:5
++ & { .\gradlew.bat classes --no-daemon 2>&1 } | Out-File -FilePath bui ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (F:\MinecraftMod...r) 已过时, 且标记为待删除:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
  
-        for (ItemEntity item : serverLevel.getEntities().getAll()) {
-                                                               ^
-娉? 鏌愪簺杈撳叆鏂囦欢浣跨敤鎴栬鐩栦簡宸茶繃鏃剁殑 API銆?
-娉? 鏈夊叧璇︾粏淇℃伅, 璇蜂娇鐢?-Xlint:deprecation 閲嶆柊缂栬瘧銆?
-1 涓敊璇?
+    private static final ResourceLocation FISHING = ResourceLocation.of("minecraft:gameplay/fishing", ':');
+                                                                    ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:37: 警告: [removal] ResourceLocation 中的 of(String,char) 已过时, 且标记为待删除
+    private static final ResourceLocation DESERT_PYRAMID = ResourceLocation.of("minecraft:chests/desert_pyramid", ':');
+                                                                           ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:38: 警告: [removal] ResourceLocation 中的 of(String,char) 已过时, 且标记为待删除
+    private static final ResourceLocation ABANDONED_MINESHAFT = ResourceLocation.of("minecraft:chests/abandoned_mineshaft", ':');
+                                                                                ^
+注: 某些输入文件使用或覆盖了已过时的 API。
+注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+3 个警告
 
-> Task :compileJava FAILED
+> Task :processResources
+> Task :classes
 
 [Incubating] Problems report is available at: file:///F:/MinecraftMods/enchantment-expansion/build/reports/problems/problems-report.html
 
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':compileJava'.
-> Compilation failed; see the compiler output below.
-  F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201
-\enchantmentex\item\handler\DroppedEndStarHandler.java:257: 閿欒: 涓嶅吋瀹圭殑绫诲瀷: Ent
-ity鏃犳硶杞崲涓篒temEntity
-          for (ItemEntity item : serverLevel.getEntities().getAll()) {
-                                                                 ^
-  1 涓敊璇?
-
-* Try:
-> Check your code and dependencies to fix the compilation error(s)
-> Run with --scan to get full insights.
-
 Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
-
 
 You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
 
 For more on this, please refer to https://docs.gradle.org/8.14.5/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-BUILD FAILED in 14s
-1 actionable task: 1 executed
+
+BUILD SUCCESSFUL in 16s
+2 actionable tasks: 2 executed

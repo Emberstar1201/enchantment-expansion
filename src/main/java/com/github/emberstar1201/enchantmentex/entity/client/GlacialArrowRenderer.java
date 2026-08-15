@@ -15,7 +15,7 @@ public class GlacialArrowRenderer extends ArrowRenderer<GlacialArrowEntity> {
 
     // 使用原版箭头纹理（无需额外资源即可正常渲染）
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("textures/entity/projectiles/arrow.png");
+            ResourceLocation.of("minecraft:textures/entity/projectiles/arrow.png", ':');
 
     public GlacialArrowRenderer(EntityRendererProvider.Context context) {
         super(context);

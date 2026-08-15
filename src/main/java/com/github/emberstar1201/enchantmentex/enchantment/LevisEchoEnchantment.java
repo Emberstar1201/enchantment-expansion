@@ -12,6 +12,11 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 //   伤害公式：5% + (等级-1) × 2% 最大生命值
 //   触发条件：目标生命值 ≥ 50 点（25❤️）
 //
+// 【视觉反馈】（可在配置中关闭）
+//   1层标记 → 白色溅射粒子
+//   2层标记 → 紫色附魔粒子
+//   3层引爆 → 环形龙息爆炸粒子 + 中心冲击波
+//
 // 【获取】附魔台可获得（I~V级）
 // ========================================================================
 public class LevisEchoEnchantment extends Enchantment {
