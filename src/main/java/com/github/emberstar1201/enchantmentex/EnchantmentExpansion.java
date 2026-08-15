@@ -3,6 +3,7 @@ package com.github.emberstar1201.enchantmentex;
 import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -40,6 +41,11 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(this);
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+        // ================================================================
+        // 注册网络通道（飞轮效应等 C2S 数据包）
+        // ================================================================
+        NetworkHandler.register();
 
         // ================================================================
         // 客户端注册：实体渲染器

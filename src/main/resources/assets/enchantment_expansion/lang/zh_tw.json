@@ -18,13 +18,13 @@
   "enchantment.enchantment_expansion.plunder": "強奪",
   "enchantment.enchantment_expansion.plunder.desc": "稀有戰利品必定掉落，等級影響數量",
   "enchantment.enchantment_expansion.dawn": "拂曉",
-  "enchantment.enchantment_expansion.dawn.desc": "隨晝夜變化，夜晚越深，力量越強（在黎明到來前，總要有人照亮長夜）",
+  "enchantment.enchantment_expansion.dawn.desc": "每次击杀後永久提升：+DMG，+Crit Rate，+Crit DMG，-ATK Speed，+2.5 Range。boss击杀提供額外提升",
   "enchantment.enchantment_expansion.glacial_arrow": "琉璃冰魄箭",
   "enchantment.enchantment_expansion.glacial_arrow.desc": "冰晶之力注入箭矢，蓄力越久威力越強，命中後爆發範圍傷害並牽引敵人",
   "enchantment.enchantment_expansion.end_approaches": "終末將至",
   "enchantment.enchantment_expansion.end_approaches.desc": "武器傷害提升250%，攻擊冷卻縮短90%",
   "item.enchantment_expansion.end_star": "終界之星",
-  "item.enchantment_expansion.end_star.desc": "末地之核仍在脈動。",
+  "item.enchantment_expansion.end_star.desc": "结束了?",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "終末已至，新的開始",
   "advancements.enchantment_expansion.the_end_new_beginning.description": "获得終界之星。"
 }

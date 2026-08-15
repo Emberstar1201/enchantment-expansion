@@ -61,6 +61,9 @@ public class ModEnchantments {
     public static final RegistryObject<BloodthirstEnchantment> BLOODTHIRST =
             ENCHANTMENTS.register("bloodthirst", BloodthirstEnchantment::new);
 
+    public static final RegistryObject<FlywheelEffectEnchantment> FLYWHEEL_EFFECT =
+            ENCHANTMENTS.register("flywheel_effect", FlywheelEffectEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);

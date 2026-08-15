@@ -212,6 +212,93 @@ public class Config {
             .defineInRange("bloodthirst.cooldownTicks", 100, 1, 72000);
 
     // ================================================================
+    // 拂晓重制 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue DAWN_DAMAGE_PER_KILL = BUILDER
+            .comment("拂晓重制：每击杀伤害加成百分比（默认 0.5 = +0.5%/杀）")
+            .defineInRange("dawn.damagePerKill", 0.5, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_DAMAGE_MAX = BUILDER
+            .comment("拂晓重制：伤害加成上限百分比（默认 200 = +200% 伤害，400杀达上限）")
+            .defineInRange("dawn.damageMax", 200.0, 0.0, 10000.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_CRIT_RATE_PER_KILL = BUILDER
+            .comment("拂晓重制：每击杀暴击率加成百分比（默认 0.2 = +0.2%/杀）")
+            .defineInRange("dawn.critRatePerKill", 0.2, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_CRIT_RATE_MAX = BUILDER
+            .comment("拂晓重制：暴击率上限百分比（默认 55% = 275杀达上限）")
+            .defineInRange("dawn.critRateMax", 55.0, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_CRIT_DAMAGE_PER_KILL = BUILDER
+            .comment("拂晓重制：每击杀暴击伤害加成百分比（默认 0.5 = +0.5%/杀）")
+            .defineInRange("dawn.critDamagePerKill", 0.5, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_CRIT_DAMAGE_MAX = BUILDER
+            .comment("拂晓重制：暴击伤害上限百分比（默认 100% = 200杀达上限）")
+            .defineInRange("dawn.critDamageMax", 100.0, 0.0, 10000.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_ATTACK_SPEED_PER_KILL = BUILDER
+            .comment("拂晓重制：每击杀攻速惩罚百分比（默认 0.25 = 减少0.25%/杀）")
+            .defineInRange("dawn.attackSpeedPerKill", 0.25, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_ATTACK_SPEED_MAX = BUILDER
+            .comment("拂晓重制：攻速惩罚上限百分比（默认 50% = 攻速减少50%，200杀达上限）")
+            .defineInRange("dawn.attackSpeedMax", 50.0, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_ATTACK_RANGE = BUILDER
+            .comment("拂晓重制：攻击距离加成（格，默认 2.5）")
+            .defineInRange("dawn.attackRange", 2.5, 0.0, 20.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_BOSS_MULTIPLIER_MIN = BUILDER
+            .comment("拂晓重制：Boss击杀成长倍率最小值（默认 1.5）")
+            .defineInRange("dawn.bossMultiplierMin", 1.5, 1.0, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_BOSS_MULTIPLIER_MAX = BUILDER
+            .comment("拂晓重制：Boss击杀成长倍率最大值（默认 2.0）")
+            .defineInRange("dawn.bossMultiplierMax", 2.0, 1.0, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_BOSS_HEALTH_THRESHOLD = BUILDER
+            .comment("拂晓重制：Boss判定血量阈值（默认 200，≥此值的实体视为 Boss）")
+            .defineInRange("dawn.bossHealthThreshold", 200.0, 1.0, Double.MAX_VALUE);
+
+    // ================================================================
+    // 飞轮效应 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue FLYWHEEL_DISTANCE_1 = BUILDER
+            .comment("飞轮效应：I级冲刺距离（格，默认 6.5）")
+            .defineInRange("flywheel.distanceLevel1", 6.5, 1.0, 50.0);
+
+    private static final ForgeConfigSpec.DoubleValue FLYWHEEL_DISTANCE_2 = BUILDER
+            .comment("飞轮效应：II级冲刺距离（格，默认 8.0）")
+            .defineInRange("flywheel.distanceLevel2", 8.0, 1.0, 50.0);
+
+    private static final ForgeConfigSpec.DoubleValue FLYWHEEL_DISTANCE_3 = BUILDER
+            .comment("飞轮效应：III级冲刺距离（格，默认 9.5）")
+            .defineInRange("flywheel.distanceLevel3", 9.5, 1.0, 50.0);
+
+    private static final ForgeConfigSpec.IntValue FLYWHEEL_COOLDOWN_1 = BUILDER
+            .comment("飞轮效应：I级冷却时间（秒，默认 60）")
+            .defineInRange("flywheel.cooldownSeconds1", 60, 1, 3600);
+
+    private static final ForgeConfigSpec.IntValue FLYWHEEL_COOLDOWN_2 = BUILDER
+            .comment("飞轮效应：II级冷却时间（秒，默认 30）")
+            .defineInRange("flywheel.cooldownSeconds2", 30, 1, 3600);
+
+    private static final ForgeConfigSpec.IntValue FLYWHEEL_COOLDOWN_3 = BUILDER
+            .comment("飞轮效应：III级冷却时间（秒，默认 15）")
+            .defineInRange("flywheel.cooldownSeconds3", 15, 1, 3600);
+
+    private static final ForgeConfigSpec.IntValue FLYWHEEL_DURABILITY_COST = BUILDER
+            .comment("飞轮效应：每次冲刺耐久消耗（默认 3）")
+            .defineInRange("flywheel.durabilityCost", 3, 0, 100);
+
+    private static final ForgeConfigSpec.DoubleValue FLYWHEEL_DASH_SPEED = BUILDER
+            .comment("飞轮效应：冲刺速度（blocks/tick，默认 1.5）",
+                    "值越大冲刺越快完成，过大会导致穿墙")
+            .defineInRange("flywheel.dashSpeed", 1.5, 0.1, 10.0);
+
+    // ================================================================
     // 终界之星 配置
     // ================================================================
     private static final ForgeConfigSpec.BooleanValue ENABLE_END_STAR_FLIGHT = BUILDER
@@ -302,6 +389,30 @@ public class Config {
     public static double bloodthirstHealPercent;
     public static int bloodthirstCooldownTicks;
 
+    // 拂晓重制
+    public static double dawnDamagePerKill;
+    public static double dawnDamageMax;
+    public static double dawnCritRatePerKill;
+    public static double dawnCritRateMax;
+    public static double dawnCritDamagePerKill;
+    public static double dawnCritDamageMax;
+    public static double dawnAttackSpeedPerKill;
+    public static double dawnAttackSpeedMax;
+    public static double dawnAttackRange;
+    public static double dawnBossMultiplierMin;
+    public static double dawnBossMultiplierMax;
+    public static double dawnBossHealthThreshold;
+
+    // 飞轮效应
+    public static double flywheelDistance1;
+    public static double flywheelDistance2;
+    public static double flywheelDistance3;
+    public static int flywheelCooldownSeconds1;
+    public static int flywheelCooldownSeconds2;
+    public static int flywheelCooldownSeconds3;
+    public static int flywheelDurabilityCost;
+    public static double flywheelDashSpeed;
+
     public static boolean enableEndStarFlight;
     public static boolean enableEndStarDamageReduction;
     public static double endStarDamageReductionPercent;
@@ -369,6 +480,30 @@ public class Config {
         // 嗜血
         bloodthirstHealPercent = BLOODTHIRST_HEAL_PERCENT.get();
         bloodthirstCooldownTicks = BLOODTHIRST_COOLDOWN_TICKS.get();
+
+        // 拂晓重制
+        dawnDamagePerKill = DAWN_DAMAGE_PER_KILL.get();
+        dawnDamageMax = DAWN_DAMAGE_MAX.get();
+        dawnCritRatePerKill = DAWN_CRIT_RATE_PER_KILL.get();
+        dawnCritRateMax = DAWN_CRIT_RATE_MAX.get();
+        dawnCritDamagePerKill = DAWN_CRIT_DAMAGE_PER_KILL.get();
+        dawnCritDamageMax = DAWN_CRIT_DAMAGE_MAX.get();
+        dawnAttackSpeedPerKill = DAWN_ATTACK_SPEED_PER_KILL.get();
+        dawnAttackSpeedMax = DAWN_ATTACK_SPEED_MAX.get();
+        dawnAttackRange = DAWN_ATTACK_RANGE.get();
+        dawnBossMultiplierMin = DAWN_BOSS_MULTIPLIER_MIN.get();
+        dawnBossMultiplierMax = DAWN_BOSS_MULTIPLIER_MAX.get();
+        dawnBossHealthThreshold = DAWN_BOSS_HEALTH_THRESHOLD.get();
+
+        // 飞轮效应
+        flywheelDistance1 = FLYWHEEL_DISTANCE_1.get();
+        flywheelDistance2 = FLYWHEEL_DISTANCE_2.get();
+        flywheelDistance3 = FLYWHEEL_DISTANCE_3.get();
+        flywheelCooldownSeconds1 = FLYWHEEL_COOLDOWN_1.get();
+        flywheelCooldownSeconds2 = FLYWHEEL_COOLDOWN_2.get();
+        flywheelCooldownSeconds3 = FLYWHEEL_COOLDOWN_3.get();
+        flywheelDurabilityCost = FLYWHEEL_DURABILITY_COST.get();
+        flywheelDashSpeed = FLYWHEEL_DASH_SPEED.get();
 
         // 终界之星
         enableEndStarFlight = ENABLE_END_STAR_FLIGHT.get();

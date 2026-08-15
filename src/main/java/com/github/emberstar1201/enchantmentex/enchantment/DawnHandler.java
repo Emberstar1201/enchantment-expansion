@@ -1,195 +1,353 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import com.github.emberstar1201.enchantmentex.Config;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.Level;
+import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 
+import java.util.List;
 import java.util.UUID;
 
 import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 
 // ========================================================================
-// 【拂晓】附魔事件处理器
+// 【拂晓重制】附魔事件处理器
 //
-// 双事件驱动：
-//   1. LivingHurtEvent：根据缓存的时段，对伤害值乘以对应倍率
-//   2. PlayerTickEvent.END：根据缓存的时段，动态增删 ATTACK_SPEED AttributeModifier
-//      实现冷却缩减（午夜时 modifier 极大，等价无冷却）
-//
-// 维度限制（v2 修复）：
-//   拂晓"随昼夜变化"的设计意图仅适用于主世界（Overworld）。
-//   下界（Nether）和末地（The End）没有昼夜循环，主世界时间继续流动会导致：
-//     - 玩家在下界仍享受"夜晚加成"（不合理）
-//     - 主世界时间从夜晚流到白天时，玩家在下界中突然失去加成（诡异）
-//   → 修复方案：只在玩家处于主世界时应用加成，非主世界移除 modifier 且不修改伤害
-//
-// 修饰符管理策略（避免每 tick 叠加）：
-//   - 使用固定 UUID，addTransientModifier 会自动覆盖同 UUID 的旧 modifier
-//   - 但为减少频繁增删开销，用 PersistentData 记录"上一 tick 的时段"
-//   - 仅当时段变化（或武器状态变化、维度变化）时才增删 modifier
-//   - 白天（DAY）、脱下武器、非主世界 → 移除 modifier
+// 事件清单：
+//   1. LivingDeathEvent    → 击杀记录 + Boss 倍率
+//   2. LivingHurtEvent     → 伤害加成 + 暴击系统
+//   3. ItemTooltipEvent    → 物品名显示等级，lore 显示各项数值
+//   4. LivingEquipmentChangeEvent → 攻击距离 + 攻速惩罚 AttributeModifier
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID)
 public class DawnHandler {
 
-    // 固定 UUID：拂晓攻速修饰符
-    // 每次增删都用同一 UUID，确保不叠加
-    private static final UUID DAWN_ATTACK_SPEED_UUID =
-            UUID.fromString("d4a5f6b7-8c9d-4e1f-9a2b-3c4d5e6f7a8b");
-
-    // PersistentData 中存储"上一 tick 所在维度是否为主世界"的键名
-    // 用于检测维度切换：主世界→下界时应立即移除 modifier
-    public static final String LAST_IN_OVERWORLD_KEY = "dawn_last_in_overworld";
+    // ========================================================================
+    // 固定 UUID 用于 AttributeModifier（避免重复叠加）
+    // ========================================================================
+    private static final UUID DAWN_REACH_UUID =
+            UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    private static final UUID DAWN_SPEED_UUID =
+            UUID.fromString("b2c3d4e5-f6a7-8901-bcde-f12345678901");
 
     // ========================================================================
-    // 【伤害倍率】LivingHurtEvent - 攻击造成伤害时触发
-    // 读取攻击者 PersistentData 中缓存的时段，应用对应伤害倍率
+    // 事件1：LivingDeathEvent → 击杀记录
+    // ========================================================================
+    @SubscribeEvent
+    public static void onLivingDeath(LivingDeathEvent event) {
+        // 获取被击杀实体的攻击者
+        DamageSource source = event.getSource();
+        if (source == null) return;
+
+        Entity attacker = source.getEntity();
+        if (!(attacker instanceof Player player)) return;
+
+        // 服务端才处理
+        if (player.level().isClientSide()) return;
+
+        // 检查主手武器是否有拂晓重制附魔
+        ItemStack weapon = player.getMainHandItem();
+        int enchantLevel = EnchantmentHelper.getItemEnchantmentLevel(
+                ModEnchantments.DAWN.get(), weapon);
+        if (enchantLevel <= 0) return;
+
+        // 被击杀的目标
+        LivingEntity victim = event.getEntity();
+
+        // 排除玩家（PVP 不计入成长）
+        if (victim instanceof Player) return;
+
+        // ========================================================================
+        // 计算基础击杀成长值（默认 1.0）
+        // ========================================================================
+        double baseGrowth = 1.0;
+
+        // ========================================================================
+        // Boss 检测：末影龙、凋灵、监守者、或 ≥200 血
+        // Boss 击杀额外 ×1.5~2.0 倍
+        // ========================================================================
+        if (isBoss(victim)) {
+            double bossMultiplier = Config.dawnBossMultiplierMin
+                    + player.level().random.nextDouble()
+                    * (Config.dawnBossMultiplierMax - Config.dawnBossMultiplierMin);
+            baseGrowth *= bossMultiplier;
+        }
+
+        // ========================================================================
+        // 写入 PersistentData（服务器持久化）+ 同步到武器 NBT（客户端显示）
+        // ========================================================================
+        DawnData.addEffectiveKills(player, baseGrowth);
+
+        // 将最新击杀数写入武器的 NBT（ItemStack NBT 会自动同步到客户端）
+        double kills = DawnData.getEffectiveKills(player);
+        DawnData.setItemKills(weapon, kills);
+
+        // ========================================================================
+        // 击杀后立即刷新攻速惩罚 AttributeModifier（因为有效击杀数变了）
+        // ========================================================================
+        updateAttackSpeedModifier(player, kills);
+    }
+
+    // ========================================================================
+    // Boss 判定逻辑
+    // ========================================================================
+    private static boolean isBoss(LivingEntity entity) {
+        // 末影龙 / 凋灵 / 监守者
+        if (entity instanceof EnderDragon
+                || entity instanceof WitherBoss
+                || entity instanceof Warden) {
+            return true;
+        }
+        // 最大生命值 ≥ 200
+        return entity.getMaxHealth() >= Config.dawnBossHealthThreshold;
+    }
+
+    // ========================================================================
+    // 事件2：LivingHurtEvent → 伤害加成 + 暴击系统
     // ========================================================================
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
-        // 检查攻击者是否是玩家
-        if (event.getSource() == null || !(event.getSource().getEntity() instanceof Player attacker)) {
-            return;
-        }
+        if (!(event.getSource().getEntity() instanceof Player player)) return;
+        if (player.level().isClientSide()) return;
 
-        // 【维度限制】拂晓只在主世界生效
-        // 下界/末地没有昼夜循环，不应用任何加成
-        if (attacker.level().dimension() != Level.OVERWORLD) {
-            return;
-        }
+        // 获取被攻击目标（用于粒子效果位置）
+        LivingEntity target = event.getEntity();
 
-        // 检查玩家主手武器是否附有"拂晓"
-        ItemStack weapon = attacker.getMainHandItem();
-        int level = EnchantmentHelper.getTagEnchantmentLevel(
+        // 检查武器附魔
+        ItemStack weapon = player.getMainHandItem();
+        int enchantLevel = EnchantmentHelper.getItemEnchantmentLevel(
                 ModEnchantments.DAWN.get(), weapon);
-        if (level <= 0) {
-            return;
+        if (enchantLevel <= 0) return;
+
+        // 读取成长数据
+        double kills = DawnData.getEffectiveKills(player);
+
+        // ========================================================================
+        // 伤害加成
+        // ========================================================================
+        double damageBonus = DawnData.getDamageBonusPercent(kills);
+        if (damageBonus > 0) {
+            float multiplier = 1.0f + (float) (damageBonus / 100.0);
+            event.setAmount(event.getAmount() * multiplier);
         }
 
-        // 读取缓存的时段（由 DawnTimeTracker 每 20 tick 写入）
-        // 若缓存不存在（如首 tick），用静态字段降级
-        int periodCode = attacker.getPersistentData().getInt(DawnEnchantment.PERIOD_KEY);
-        DawnTimePeriod period = DawnTimePeriod.fromCode(periodCode);
+        // ========================================================================
+        // 暴击系统（含伪概率机制）
+        //
+        // 机制说明：
+        //   1. 跳劈（原版暴击）无视拂晓暴击系统，不累积也不消耗伪概率
+        //   2. 普通攻击：基础暴击率 + 累积伪概率 → 判定暴击
+        //      - 触发暴击 → 重置累积伪概率为 0
+        //      - 未触发暴击 → 累积伪概率 +5%（上限到 100% 确保最终必暴击）
+        //   3. 伪概率不显示在 lore 中
+        // ========================================================================
 
-        // 应用伤害倍率
-        float damageMultiplier = period.getDamageMultiplier();
-        if (damageMultiplier > 1.0f) {
-            // 原伤害 × 倍率
-            event.setAmount(event.getAmount() * damageMultiplier);
+        // 检测是否为跳劈（原版跳劈暴击）：玩家在空中且 fallDistance > 0
+        boolean isJumpCrit = !player.onGround() && player.fallDistance > 0.0F;
+
+        double critDamage = DawnData.getCritDamagePercent(kills);
+
+        if (!isJumpCrit) {
+            // 普通攻击 → 应用拂晓暴击系统（含伪概率）
+            double baseCritRate = DawnData.getCritRatePercent(kills);
+            double accumulatedCrit = DawnData.getAccumulatedCrit(player);
+            double effectiveCritRate = baseCritRate + accumulatedCrit;
+
+            if (effectiveCritRate > 0
+                    && player.level().random.nextDouble() < (effectiveCritRate / 100.0)) {
+                // 暴击触发 → 应用暴击伤害 + 重置累积概率
+                float critMultiplier = 1.0f + (float) (critDamage / 100.0);
+                event.setAmount(event.getAmount() * critMultiplier);
+                DawnData.setAccumulatedCrit(player, 0);
+
+                // 在目标位置播放自定义暴击粒子（CRIT + ENCHANTED_HIT）
+                if (target.level() instanceof ServerLevel serverLevel) {
+                    // 暴击星粒子：大量扩散
+                    serverLevel.sendParticles(ParticleTypes.CRIT,
+                            target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                            25, 0.5, 0.5, 0.5, 0.05);
+                    // 附魔符文粒子：环绕上升
+                    serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
+                            target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                            15, 0.3, 0.3, 0.3, 0.5);
+                }
+            } else {
+                // 未触发暴击 → 累积 +5% 伪概率（上限 100%）
+                double newAccumulated = accumulatedCrit + 5.0;
+                DawnData.setAccumulatedCrit(player, Math.min(100.0, newAccumulated));
+            }
+        }
+        // 跳劈：原版跳劈暴击已经自带 1.5x 加成，拂晓不做任何干涉
+    }
+
+    // ========================================================================
+    // 事件3：ItemTooltipEvent → 物品名显示等级，lore 显示各项数值
+    // ========================================================================
+    @SubscribeEvent
+    public static void onItemTooltip(ItemTooltipEvent event) {
+        ItemStack stack = event.getItemStack();
+        int enchantLevel = EnchantmentHelper.getItemEnchantmentLevel(
+                ModEnchantments.DAWN.get(), stack);
+        if (enchantLevel <= 0) return;
+
+        // ========================================================================
+        // 从武器 NBT 读取成长数据（武器 NBT 自动同步到客户端）
+        // 不读取 player.getPersistentData()，因为 PersistentData 不同步到客户端
+        // ========================================================================
+        double kills = DawnData.getItemKills(stack);
+        int level = DawnData.getLevel(kills);
+
+        // ========================================================================
+        // 修改物品名 → 追加 [Lv.X]
+        // ========================================================================
+        List<Component> tooltip = event.getToolTip();
+        if (!tooltip.isEmpty()) {
+            Component originalName = tooltip.get(0);
+            Component newName = originalName.copy()
+                    .append(Component.literal(" ")
+                            .withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal("[Lv." + level + "]")
+                            .withStyle(ChatFormatting.GRAY));
+            tooltip.set(0, newName);
+        }
+
+        // ========================================================================
+        // 追加 lore 行（各项数值）
+        // ========================================================================
+        double dmgBonus = DawnData.getDamageBonusPercent(kills);
+        double critRate = DawnData.getCritRatePercent(kills);
+        double critDmg = DawnData.getCritDamagePercent(kills);
+        double spdPenalty = DawnData.getAttackSpeedPenaltyPercent(kills);
+
+        tooltip.add(Component.literal("杀敌数: " + (int) kills)
+                .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal("伤害加成: +" + String.format("%.1f", dmgBonus) + "%")
+                .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal("暴击率: +" + String.format("%.1f", critRate) + "%")
+                .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal("暴击伤害: +" + String.format("%.1f", critDmg) + "%")
+                .withStyle(ChatFormatting.GRAY));
+        if (spdPenalty > 0) {
+            tooltip.add(Component.literal("攻速: -" + String.format("%.1f", spdPenalty) + "%")
+                    .withStyle(ChatFormatting.GRAY));
+        }
+        tooltip.add(Component.literal("攻击距离: +" + String.format("%.1f", Config.dawnAttackRange) + "格")
+                .withStyle(ChatFormatting.GRAY));
+    }
+
+    // ========================================================================
+    // 事件4：LivingEquipmentChangeEvent → 动态管理 AttributeModifier
+    // ========================================================================
+    @SubscribeEvent
+    public static void onEquipmentChange(
+            net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent event) {
+        // 仅监听主手
+        if (event.getSlot() != EquipmentSlot.MAINHAND) return;
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (player.level().isClientSide()) return;
+
+        ItemStack from = event.getFrom();
+        ItemStack to = event.getTo();
+
+        boolean hadEnchant = EnchantmentHelper.getItemEnchantmentLevel(
+                ModEnchantments.DAWN.get(), from) > 0;
+        boolean hasEnchant = EnchantmentHelper.getItemEnchantmentLevel(
+                ModEnchantments.DAWN.get(), to) > 0;
+
+        if (hasEnchant && !hadEnchant) {
+            // 刚装备上拂晓武器 → 从 PersistentData 复制数据到武器 NBT + 应用所有 modifier
+            double kills = DawnData.getEffectiveKills(player);
+            DawnData.setItemKills(to, kills);
+            applyAllModifiers(player, kills);
+        } else if (!hasEnchant && hadEnchant) {
+            // 卸下拂晓武器 → 移除所有 modifier
+            removeAllModifiers(player);
+        } else if (hasEnchant && hadEnchant) {
+            // 换另一把拂晓武器 → 从 PersistentData 复制到新武器 + 刷新 modifier
+            double kills = DawnData.getEffectiveKills(player);
+            DawnData.setItemKills(to, kills);
+            removeAllModifiers(player);
+            applyAllModifiers(player, kills);
         }
     }
 
     // ========================================================================
-    // 【冷却缩减】PlayerTickEvent.END - 每帧检查玩家状态
-    // 根据时段动态调整 ATTACK_SPEED AttributeModifier
+    // AttributeModifier 管理方法
     // ========================================================================
-    @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        // 仅在 END 阶段执行（玩家 tick 完成后修改属性）
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
 
-        Player player = event.player;
+    /** 应用所有拂晓 modifier（攻击距离 + 攻速惩罚） */
+    private static void applyAllModifiers(Player player, double kills) {
+        applyReachModifier(player);
+        updateAttackSpeedModifier(player, kills);
+    }
 
-        // 仅服务端执行（AttributeModifier 修改是服务端逻辑）
-        if (player.level().isClientSide()) {
-            return;
-        }
+    /** 应用攻击距离 modifier（固定 +2.5 格） */
+    private static void applyReachModifier(Player player) {
+        AttributeInstance reachAttr = player.getAttribute(ForgeMod.ENTITY_REACH.get());
+        if (reachAttr == null) return;
 
-        // 【维度限制】拂晓只在主世界生效
-        // 非主世界时，移除 modifier（如有），不进行任何加成
-        boolean isInOverworld = player.level().dimension() == Level.OVERWORLD;
+        // 先移除旧的再添加新的
+        reachAttr.removeModifier(DAWN_REACH_UUID);
+        AttributeModifier modifier = new AttributeModifier(
+                DAWN_REACH_UUID,
+                "Dawn reach bonus",
+                Config.dawnAttackRange,
+                AttributeModifier.Operation.ADDITION
+        );
+        reachAttr.addTransientModifier(modifier);
+    }
 
-        // 检查玩家主手武器是否附有"拂晓"
-        ItemStack weapon = player.getMainHandItem();
-        int level = EnchantmentHelper.getTagEnchantmentLevel(
-                ModEnchantments.DAWN.get(), weapon);
-        boolean hasEnchant = level > 0;
+    /** 更新攻速惩罚 modifier（随击杀数动态变化） */
+    private static void updateAttackSpeedModifier(Player player, double kills) {
+        AttributeInstance speedAttr = player.getAttribute(Attributes.ATTACK_SPEED);
+        if (speedAttr == null) return;
 
-        // 读取当前时段
-        int periodCode = player.getPersistentData().getInt(DawnEnchantment.PERIOD_KEY);
-        DawnTimePeriod currentPeriod = DawnTimePeriod.fromCode(periodCode);
+        // 移除旧的 modifier
+        speedAttr.removeModifier(DAWN_SPEED_UUID);
 
-        // 读取上一 tick 的时段（用于判断是否需要更新 modifier）
-        int lastPeriodCode = player.getPersistentData().getInt(DawnEnchantment.LAST_PERIOD_KEY);
-
-        // 读取上一 tick 是否在主世界（用于检测维度切换）
-        boolean wasInOverworld = player.getPersistentData()
-                .getBoolean(LAST_IN_OVERWORLD_KEY);
-
-        // 获取 ATTACK_SPEED 属性实例
-        AttributeInstance attackSpeedAttr = player.getAttribute(Attributes.ATTACK_SPEED);
-        if (attackSpeedAttr == null) {
-            return;
-        }
-
-        // 判断当前是否需要 modifier
-        //   三重条件全部满足才需要：
-        //   ① 有附魔（hasEnchant）
-        //   ② 时段不是白天（有冷却缩减）
-        //   ③ 玩家在主世界（isInOverworld）
-        //   任一不满足 → 不需要 modifier（已有则移除）
-        boolean needsModifier = hasEnchant
-                && currentPeriod != DawnTimePeriod.DAY
-                && isInOverworld;
-
-        // 判断当前 modifier 是否已存在
-        boolean hasModifierNow = attackSpeedAttr.getModifier(DAWN_ATTACK_SPEED_UUID) != null;
-
-        // 计算当前时段的攻速加成值
-        float attackSpeedBonus = currentPeriod.getAttackSpeedBonus();
-
-        // ================================================================
-        // 状态切换决策（仅在状态变化时操作 modifier，避免每 tick 重复增删）
-        // ================================================================
-        // 情况 1：不需要 modifier 但当前有 → 移除
-        //   触发场景：脱下武器 / 时段进入白天 / 维度切换到下界或末地
-        if (!needsModifier && hasModifierNow) {
-            attackSpeedAttr.removeModifier(DAWN_ATTACK_SPEED_UUID);
-        }
-        // 情况 2：需要 modifier 但当前没有 → 添加
-        //   触发场景：刚装备附魔武器 / 时段从白天进入夜晚 / 从下界返回主世界
-        else if (needsModifier && !hasModifierNow) {
+        // 计算当前攻速惩罚
+        double penaltyPercent = DawnData.getAttackSpeedPenaltyPercent(kills);
+        if (penaltyPercent > 0) {
+            // 使用 MULTIPLY_BASE 操作：攻速 × (1 - penaltyPercent/100)
             AttributeModifier modifier = new AttributeModifier(
-                    DAWN_ATTACK_SPEED_UUID,
-                    "Dawn attack speed bonus",
-                    attackSpeedBonus,
+                    DAWN_SPEED_UUID,
+                    "Dawn speed penalty",
+                    -penaltyPercent / 100.0,
                     AttributeModifier.Operation.MULTIPLY_BASE
             );
-            attackSpeedAttr.addTransientModifier(modifier);
+            speedAttr.addTransientModifier(modifier);
         }
-        // 情况 3：需要 modifier 且已有，但状态变化（时段或维度）→ 移除后重新添加
-        //   触发场景：夜晚 → 午夜（攻速加成值变化）/ 主世界内时段切换
-        else if (needsModifier && hasModifierNow
-                && (currentPeriod.getCode() != lastPeriodCode
-                    || isInOverworld != wasInOverworld)) {
-            attackSpeedAttr.removeModifier(DAWN_ATTACK_SPEED_UUID);
-            AttributeModifier modifier = new AttributeModifier(
-                    DAWN_ATTACK_SPEED_UUID,
-                    "Dawn attack speed bonus",
-                    attackSpeedBonus,
-                    AttributeModifier.Operation.MULTIPLY_BASE
-            );
-            attackSpeedAttr.addTransientModifier(modifier);
-        }
-        // 情况 4：状态未变化 → 什么都不做（每 tick 0 开销）
+    }
 
-        // 更新"上一 tick 时段"记录
-        if (currentPeriod.getCode() != lastPeriodCode) {
-            player.getPersistentData().putInt(DawnEnchantment.LAST_PERIOD_KEY, currentPeriod.getCode());
+    /** 移除所有拂晓 modifier */
+    private static void removeAllModifiers(Player player) {
+        AttributeInstance reachAttr = player.getAttribute(ForgeMod.ENTITY_REACH.get());
+        if (reachAttr != null) {
+            reachAttr.removeModifier(DAWN_REACH_UUID);
         }
-        // 更新"上一 tick 维度状态"记录
-        if (isInOverworld != wasInOverworld) {
-            player.getPersistentData().putBoolean(LAST_IN_OVERWORLD_KEY, isInOverworld);
+        AttributeInstance speedAttr = player.getAttribute(Attributes.ATTACK_SPEED);
+        if (speedAttr != null) {
+            speedAttr.removeModifier(DAWN_SPEED_UUID);
         }
     }
 }
