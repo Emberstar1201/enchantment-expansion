@@ -41,6 +41,8 @@
   "enchantment.enchantment_expansion.channeling_iii.desc": "Summons lightning when hitting an entity with a trident — works in all weather and dimensions, including Nether and End",
   "enchantment.enchantment_expansion.end_approaches": "The End Approaches",
   "enchantment.enchantment_expansion.end_approaches.desc": "Weapon damage increased by 250%, attack cooldown reduced by 90%",
+  "enchantment.enchantment_expansion.entropy": "Entropy",
+  "enchantment.enchantment_expansion.entropy.desc": "Stacks entropy mark on hit. 2 stacks: slow target. 3 stacks: detonate dealing 30% of lost HP as true damage and spreads",
   "item.enchantment_expansion.end_star": "End Star",
   "item.enchantment_expansion.end_star.desc": "The end ？",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "The End, A New Beginning",

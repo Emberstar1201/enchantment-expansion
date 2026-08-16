@@ -41,6 +41,8 @@
   "enchantment.enchantment_expansion.channeling_iii.desc": "投掷三叉戟击中实体时召唤闪电，任意天气及维度（包括下界和末地）均可触发",
   "enchantment.enchantment_expansion.end_approaches": "终末将至",
   "enchantment.enchantment_expansion.end_approaches.desc": "武器伤害提升250%，攻击冷却缩短90%",
+  "enchantment.enchantment_expansion.entropy": "熵增",
+  "enchantment.enchantment_expansion.entropy.desc": "攻击叠加熵标记，2层减速，满层引爆造成已损失生命值30%的真实伤害并扩散",
   "item.enchantment_expansion.end_star": "终界之星",
   "item.enchantment_expansion.end_star.desc": "结束了？",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "终末已至，新的开始",

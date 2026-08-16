@@ -61,6 +61,13 @@ public class ModEnchantments {
     public static final RegistryObject<BloodthirstEnchantment> BLOODTHIRST =
             ENCHANTMENTS.register("bloodthirst", BloodthirstEnchantment::new);
 
+    // ================================================================
+    // 熵增（Entropy）
+    // 适用物品：武器（WEAPON） | 最高等级：III | 获取：附魔台/宝箱/村民
+    // ================================================================
+    public static final RegistryObject<EntropyEnchantment> ENTROPY =
+            ENCHANTMENTS.register("entropy", EntropyEnchantment::new);
+
     public static final RegistryObject<FlywheelEffectEnchantment> FLYWHEEL_EFFECT =
             ENCHANTMENTS.register("flywheel_effect", FlywheelEffectEnchantment::new);
 
