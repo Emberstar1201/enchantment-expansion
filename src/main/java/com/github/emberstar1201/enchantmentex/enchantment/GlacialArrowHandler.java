@@ -156,6 +156,9 @@ public class GlacialArrowHandler {
             glacialArrow.setBaseDamage(arrow.getBaseDamage() * damageMultiplier);
         }
 
+        // 设置母箭穿透次数
+        glacialArrow.setMaxPierceCount(Config.glacialArrowPierceCount);
+
         // 复制原箭矢的其他属性
         glacialArrow.setXRot(arrow.getXRot());
         glacialArrow.setYRot(arrow.getYRot());
@@ -165,6 +168,11 @@ public class GlacialArrowHandler {
 
         // 加入世界
         arrow.level().addFreshEntity(glacialArrow);
+
+        // 二段蓄力：箭矢射出时立即生成子箭（分裂），而非命中时
+        if (isStage2) {
+            glacialArrow.spawnSubArrowsNow();
+        }
 
         // 清理蓄力数据
         player.getPersistentData().remove(CHARGE_START_KEY);

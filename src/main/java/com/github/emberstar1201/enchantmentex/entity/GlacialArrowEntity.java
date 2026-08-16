@@ -3,6 +3,7 @@ package com.github.emberstar1201.enchantmentex.entity;
 import com.github.emberstar1201.enchantmentex.Config;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -20,7 +21,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 // ========================================================================
 // 琉璃冰魄箭实体
@@ -44,6 +48,15 @@ public class GlacialArrowEntity extends AbstractArrow {
 
     // 子箭标识（仅服务端使用，子箭不再生成子箭，不须同步到客户端）
     private boolean isSubArrow = false;
+
+    // ========================================================================
+    // 母箭穿透相关字段（仅服务端）
+    // ========================================================================
+    private int maxPierceCount = 3;              // 最大穿透次数（配置值，0=不穿透）
+    private int currentPierceCount = 0;          // 已穿透次数
+    private final Set<UUID> piercedEntityIds = new HashSet<>();  // 已穿透实体UUID
+    // 子箭改为在射出时立即生成（EntityJoinLevelEvent），不再在命中时生成
+    // 因此不需要 subArrowsSpawned 字段
 
     // ========================================================================
     // 构造方法
@@ -111,6 +124,10 @@ public class GlacialArrowEntity extends AbstractArrow {
         return this.isSubArrow;
     }
 
+    public void setMaxPierceCount(int count) {
+        this.maxPierceCount = count;
+    }
+
     // ========================================================================
     // 每 tick 更新：粒子拖尾
     // ========================================================================
@@ -167,10 +184,36 @@ public class GlacialArrowEntity extends AbstractArrow {
     // 命中实体
     @Override
     protected void onHitEntity(EntityHitResult result) {
-        if (!this.level().isClientSide()) {
-            applyHitEffects(result.getLocation());
+        if (this.level().isClientSide()) return;
+
+        Entity hitEntity = result.getEntity();
+        if (!(hitEntity instanceof LivingEntity)) {
+            this.discard();
+            return;
         }
-        super.onHitEntity(result);
+
+        // 防止重复穿透同一实体（多段穿透时避免反复伤害）
+        if (piercedEntityIds.contains(hitEntity.getUUID())) return;
+        piercedEntityIds.add(hitEntity.getUUID());
+
+        // 播放命中音效
+        this.playSound(SoundEvents.ARROW_HIT, 1.0F,
+                1.2F / (this.random.nextFloat() * 0.2F + 0.9F));
+
+        if (isSubArrow) {
+            // 子箭：直接调用父类处理（造成基础伤害 + 销毁）
+            super.onHitEntity(result);
+            return;
+        }
+
+        // ====== 母箭穿透逻辑 ======
+        applyHitEffects(result.getLocation());
+
+        currentPierceCount++;
+        if (currentPierceCount >= maxPierceCount) {
+            this.discard();
+        }
+        // 否则继续飞行，命中下一个敌人
     }
 
     // ========================================================================
@@ -187,20 +230,18 @@ public class GlacialArrowEntity extends AbstractArrow {
             spawnHitParticles(hitLocation, 1);
         } else if (stage == 2) {
             // 二段蓄力母箭效果
-            double baseDamage = this.getBaseDamage();
+            // 注意：子箭已在箭矢加入世界时生成（GlacialArrowHandler.onArrowJoinWorld），
+            // 此处不再生成子箭
 
             // 母箭 AOE
             applyAoeDamage(hitLocation,
                     Config.glacialArrowStage2AoeRange,
                     Config.glacialArrowStage2Damage);
 
-            // 母箭命中后生成子箭（仅母箭生成，子箭不再递归生成）
-            if (!isSubArrow) {
-                spawnSubArrows(hitLocation, baseDamage);
+            // 母箭首次命中时拉人
+            if (!isSubArrow && currentPierceCount == 0) {
+                applyPullEffect(hitLocation);
             }
-
-            // 母箭和子箭都拉人
-            applyPullEffect(hitLocation);
 
             // 粒子效果
             spawnHitParticles(hitLocation, 2);
@@ -237,8 +278,9 @@ public class GlacialArrowEntity extends AbstractArrow {
 
     // ========================================================================
     // 生成子箭（二段蓄力专用）
+    // 改为公开方法，由 Handler 在箭矢加入世界时立即调用（射出时分裂）
     // ========================================================================
-    private void spawnSubArrows(Vec3 hitLocation, double motherDamage) {
+    public void spawnSubArrowsNow() {
         int subCount = Config.glacialArrowSubCount;
         if (subCount <= 0) return;
 
@@ -248,7 +290,7 @@ public class GlacialArrowEntity extends AbstractArrow {
             baseDirection = Vec3.directionFromRotation(this.getXRot(), this.getYRot());
         }
 
-        // 扇形角度（度 → 弧度）
+        // 扇形角度（度 → 弧度），30° 均匀分布（霰弹式）
         double fanAngleRad = Math.toRadians(Config.glacialArrowFanAngle);
         // 每个子箭之间的角度间隔
         double angleStep = subCount > 1 ? fanAngleRad / (subCount - 1) : 0;
@@ -264,23 +306,17 @@ public class GlacialArrowEntity extends AbstractArrow {
             right = new Vec3(0, 0, 1);
         }
 
+        // 子箭生成位置 = 母箭当前位置（射出时即玩家位置），略微偏移避免碰撞
+        Vec3 spawnCenter = this.position();
+
         for (int i = 0; i < subCount; i++) {
-            // 计算在当前扇区内的基准角度偏移
-            double baseAngleOffset = startAngle + angleStep * i;
-            // 随机偏移 30°~60°（正负随机）
-            double randomOffset = (this.random.nextDouble() * 30.0 + 30.0);
-            randomOffset = Math.toRadians(randomOffset);
-            // 随机决定向左还是向右偏移
-            if (this.random.nextBoolean()) {
-                baseAngleOffset += randomOffset;
-            } else {
-                baseAngleOffset -= randomOffset;
-            }
+            // 在扇形内均匀分布（无随机偏移）
+            double angleOffset = startAngle + angleStep * i;
 
             // 旋转基准方向得到子箭方向（水平旋转）
             Vec3 subDirection = horizontalDir
-                    .scale(Math.cos(baseAngleOffset))
-                    .add(right.scale(Math.sin(baseAngleOffset)))
+                    .scale(Math.cos(angleOffset))
+                    .add(right.scale(Math.sin(angleOffset)))
                     .normalize();
 
             // 略微向上抬一点，使子箭不下坠太快
@@ -289,21 +325,19 @@ public class GlacialArrowEntity extends AbstractArrow {
             // 速度 = 母箭速度 × 配置倍率
             double subSpeed = this.getDeltaMovement().length() * Config.glacialArrowSubSpeed;
 
-            // 在命中位置稍微偏移生成，避免子箭立即碰撞
-            Vec3 spawnPos = hitLocation.add(subDirection.scale(0.5));
+            // 在母箭位置前方偏移生成，避免子箭立即互相碰撞
+            Vec3 spawnPos = spawnCenter.add(subDirection.scale(1.0));
 
             // 创建子箭实体
             GlacialArrowEntity subArrow = new GlacialArrowEntity(
                     this.level(), (LivingEntity) this.getOwner(),
                     spawnPos.x, spawnPos.y, spawnPos.z);
             subArrow.setSubArrow(true);
-            subArrow.setChargeStage(2); // 子箭也是二段效果（有 AOE 和拉人）
-            subArrow.setBaseDamage(motherDamage * Config.glacialArrowSubDamage);
+            subArrow.setChargeStage(2); // 子箭也是二段效果（有 AOE）
+            subArrow.setBaseDamage(this.getBaseDamage() * Config.glacialArrowSubDamage);
             subArrow.setDeltaMovement(subDirection.scale(subSpeed));
-            // 设置子箭的拾取状态（不可拾取）
             subArrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-
-            // 设置射中后的穿透/消失行为
+            subArrow.setMaxPierceCount(0); // 子箭不穿透，命中即销毁
             subArrow.setNoGravity(false);
 
             this.level().addFreshEntity(subArrow);

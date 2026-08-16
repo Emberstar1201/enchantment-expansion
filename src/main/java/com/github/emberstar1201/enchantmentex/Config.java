@@ -83,21 +83,25 @@ public class Config {
             .comment("琉璃冰魄箭：二段蓄力母箭范围伤害半径（默认 2.5）")
             .defineInRange("glacialArrow.stage2.aoeRange", 2.5, 0.5, 10.0);
 
+    private static final ForgeConfigSpec.IntValue GLACIAL_ARROW_PIERCE_COUNT = BUILDER
+            .comment("琉璃冰魄箭：母箭穿透次数（默认 3，穿透多个敌人后消失）")
+            .defineInRange("glacialArrow.pierceCount", 3, 1, 50);
+
     private static final ForgeConfigSpec.IntValue GLACIAL_ARROW_SUB_COUNT = BUILDER
-            .comment("琉璃冰魄箭：二段蓄力子箭数量（默认 2）")
-            .defineInRange("glacialArrow.stage2.subArrowCount", 2, 0, 10);
+            .comment("琉璃冰魄箭：二段蓄力子箭数量（默认 12）")
+            .defineInRange("glacialArrow.stage2.subArrowCount", 12, 0, 50);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_FAN_ANGLE = BUILDER
-            .comment("琉璃冰魄箭：二段蓄力子箭扇形角度（度，默认 120）")
-            .defineInRange("glacialArrow.stage2.fanAngle", 120.0, 10.0, 360.0);
+            .comment("琉璃冰魄箭：二段蓄力子箭扇形角度（度，默认 30）")
+            .defineInRange("glacialArrow.stage2.fanAngle", 30.0, 5.0, 180.0);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SUB_SPEED = BUILDER
             .comment("琉璃冰魄箭：子箭速度倍率（母箭速度 × 此值，默认 0.8）")
             .defineInRange("glacialArrow.stage2.subSpeedMultiplier", 0.8, 0.1, 2.0);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SUB_DAMAGE = BUILDER
-            .comment("琉璃冰魄箭：子箭伤害倍率（母箭伤害 × 此值，默认 0.5）")
-            .defineInRange("glacialArrow.stage2.subDamageMultiplier", 0.5, 0.1, 2.0);
+            .comment("琉璃冰魄箭：子箭伤害倍率（母箭伤害 × 此值，默认 0.8）")
+            .defineInRange("glacialArrow.stage2.subDamageMultiplier", 0.8, 0.1, 2.0);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SUB_AOE_RANGE = BUILDER
             .comment("琉璃冰魄箭：子箭范围伤害半径（默认 1.5）")
@@ -303,6 +307,35 @@ public class Config {
             .defineInRange("flywheel.dashSpeed", 1.5, 0.1, 10.0);
 
     // ================================================================
+    // 千破·青溟剑 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL1 = BUILDER
+            .comment("千破·青溟剑：I级额外伤害（默认 10）",
+                    "该伤害无视护盾、保护、盔甲防御，直接作用于生命值")
+            .defineInRange("qianpoQingMing.damageLevel1", 10.0, 0.0, Double.MAX_VALUE);
+
+    private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL2 = BUILDER
+            .comment("千破·青溟剑：II级额外伤害（默认 20）")
+            .defineInRange("qianpoQingMing.damageLevel2", 20.0, 0.0, Double.MAX_VALUE);
+
+    private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL3 = BUILDER
+            .comment("千破·青溟剑：III级额外伤害（默认 30）")
+            .defineInRange("qianpoQingMing.damageLevel3", 30.0, 0.0, Double.MAX_VALUE);
+
+    private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL4 = BUILDER
+            .comment("千破·青溟剑：IV级额外伤害（默认 40）")
+            .defineInRange("qianpoQingMing.damageLevel4", 40.0, 0.0, Double.MAX_VALUE);
+
+    private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL5 = BUILDER
+            .comment("千破·青溟剑：V级额外伤害（默认 50）")
+            .defineInRange("qianpoQingMing.damageLevel5", 50.0, 0.0, Double.MAX_VALUE);
+
+    private static final ForgeConfigSpec.BooleanValue QIANPO_QINGMING_VISUAL_ENABLED = BUILDER
+            .comment("千破·青溟剑：是否启用粒子+音效视觉反馈（默认 true）",
+                    "关闭时伤害仍然生效，仅不播放心得粒子和音效")
+            .define("qianpoQingMing.visualEnabled", true);
+
+    // ================================================================
     // 风踏涟漪 配置
     // ================================================================
     private static final ForgeConfigSpec.DoubleValue WIND_RIPPLE_LAVA_SPEED = BUILDER
@@ -382,59 +415,7 @@ public class Config {
                     ),
                     it -> it instanceof String);
 
-    // ================================================================
-    // 云来剑法·重制 配置
-    // ================================================================
-    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_COOLDOWN_REDUCTION = BUILDER
-            .comment("云来剑法·重制：攻击冷却降低比例（默认 0.75 = 75%）")
-            .defineInRange("yunlaiSword.cooldownReduction", 0.75, 0.0, 1.0);
-
-    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_CRESCENT_CHANCE = BUILDER
-            .comment("云来剑法·重制：剑气触发概率（默认 0.9 = 90%）")
-            .defineInRange("yunlaiSword.crescentChance", 0.9, 0.0, 1.0);
-
-    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_CRESCENT_DAMAGE_MULTIPLIER = BUILDER
-            .comment("云来剑法·重制：剑气伤害倍率（默认 0.5 = 本次攻击的 50%）")
-            .defineInRange("yunlaiSword.crescentDamageMultiplier", 0.5, 0.0, 10.0);
-
-    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_CRESCENT_SPEED = BUILDER
-            .comment("云来剑法·重制：剑气飞行速度（blocks/tick，默认 1.5）")
-            .defineInRange("yunlaiSword.crescentSpeed", 1.5, 0.1, 10.0);
-
-    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORD_CRESCENT_MAX_DISTANCE = BUILDER
-            .comment("云来剑法·重制：剑气最大飞行距离（格，默认 10.0）")
-            .defineInRange("yunlaiSword.crescentMaxDistance", 10.0, 1.0, 100.0);
-
-    // ================================================================
-    // 古·云来剑法·重制 配置
-    // ================================================================
-    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_COOLDOWN_REDUCTION = BUILDER
-            .comment("古·云来剑法·重制：攻击冷却降低比例（默认 0.98 = 98%）")
-            .defineInRange("ancientYunlaiSword.cooldownReduction", 0.98, 0.0, 1.0);
-
-    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_CHANCE = BUILDER
-            .comment("古·云来剑法·重制：剑气触发概率（默认 1.0 = 100%）")
-            .defineInRange("ancientYunlaiSword.crescentChance", 1.0, 0.0, 1.0);
-
-    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_DAMAGE_MULTIPLIER = BUILDER
-            .comment("古·云来剑法·重制：每道剑气伤害倍率（默认 0.75 = 本次攻击的 75%）")
-            .defineInRange("ancientYunlaiSword.crescentDamageMultiplier", 0.75, 0.0, 10.0);
-
-    private static final ForgeConfigSpec.IntValue ANCIENT_YUNLAI_SWORD_CRESCENT_COUNT = BUILDER
-            .comment("古·云来剑法·重制：剑气数量（默认 3）")
-            .defineInRange("ancientYunlaiSword.crescentCount", 3, 1, 10);
-
-    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_SPREAD = BUILDER
-            .comment("古·云来剑法·重制：扇形扩散角度（度，默认 30）")
-            .defineInRange("ancientYunlaiSword.crescentSpread", 30.0, 0.0, 180.0);
-
-    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_SPEED = BUILDER
-            .comment("古·云来剑法·重制：剑气飞行速度（blocks/tick，默认 1.5）")
-            .defineInRange("ancientYunlaiSword.crescentSpeed", 1.5, 0.1, 10.0);
-
-    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORD_CRESCENT_MAX_DISTANCE = BUILDER
-            .comment("古·云来剑法·重制：剑气最大飞行距离（格，默认 10.0）")
-            .defineInRange("ancientYunlaiSword.crescentMaxDistance", 10.0, 1.0, 100.0);
+    
 
     // ================================================================
     // 终界之星 配置
@@ -493,6 +474,7 @@ public class Config {
     public static double glacialArrowStage2Speed;
     public static double glacialArrowStage2Damage;
     public static double glacialArrowStage2AoeRange;
+    public static int glacialArrowPierceCount;
     public static int glacialArrowSubCount;
     public static double glacialArrowFanAngle;
     public static double glacialArrowSubSpeed;
@@ -552,6 +534,14 @@ public class Config {
     public static int flywheelDurabilityCost;
     public static double flywheelDashSpeed;
 
+    // 千破·青溟剑
+    public static double qianpoQingMingDamageLevel1;
+    public static double qianpoQingMingDamageLevel2;
+    public static double qianpoQingMingDamageLevel3;
+    public static double qianpoQingMingDamageLevel4;
+    public static double qianpoQingMingDamageLevel5;
+    public static boolean qianpoQingMingVisualEnabled;
+
     // 风踏涟漪
     public static double windRippleLavaSpeed;
 
@@ -564,25 +554,7 @@ public class Config {
     public static double exNihiloShearEnchantedGoldenAppleChance;
     public static List<? extends String> exNihiloStoneBlocks;
 
-    // ================================================================
-    // 云来剑法·重制 缓存
-    // ================================================================
-    public static double yunlaiSwordCooldownReduction;
-    public static double yunlaiSwordCrescentChance;
-    public static double yunlaiSwordCrescentDamageMultiplier;
-    public static double yunlaiSwordCrescentSpeed;
-    public static double yunlaiSwordCrescentMaxDistance;
-
-    // ================================================================
-    // 古·云来剑法·重制 缓存
-    // ================================================================
-    public static double ancientYunlaiSwordCooldownReduction;
-    public static double ancientYunlaiSwordCrescentChance;
-    public static double ancientYunlaiSwordCrescentDamageMultiplier;
-    public static int ancientYunlaiSwordCrescentCount;
-    public static double ancientYunlaiSwordCrescentSpread;
-    public static double ancientYunlaiSwordCrescentSpeed;
-    public static double ancientYunlaiSwordCrescentMaxDistance;
+    
 
     public static boolean enableEndStarFlight;
     public static boolean enableEndStarDamageReduction;
@@ -613,6 +585,7 @@ public class Config {
         glacialArrowStage2Speed = GLACIAL_ARROW_STAGE2_SPEED.get();
         glacialArrowStage2Damage = GLACIAL_ARROW_STAGE2_DAMAGE.get();
         glacialArrowStage2AoeRange = GLACIAL_ARROW_STAGE2_AOE_RANGE.get();
+        glacialArrowPierceCount = GLACIAL_ARROW_PIERCE_COUNT.get();
         glacialArrowSubCount = GLACIAL_ARROW_SUB_COUNT.get();
         glacialArrowFanAngle = GLACIAL_ARROW_FAN_ANGLE.get();
         glacialArrowSubSpeed = GLACIAL_ARROW_SUB_SPEED.get();
@@ -677,6 +650,14 @@ public class Config {
         flywheelDurabilityCost = FLYWHEEL_DURABILITY_COST.get();
         flywheelDashSpeed = FLYWHEEL_DASH_SPEED.get();
 
+        // 千破·青溟剑
+        qianpoQingMingDamageLevel1 = QIANPO_QINGMING_DAMAGE_LEVEL1.get();
+        qianpoQingMingDamageLevel2 = QIANPO_QINGMING_DAMAGE_LEVEL2.get();
+        qianpoQingMingDamageLevel3 = QIANPO_QINGMING_DAMAGE_LEVEL3.get();
+        qianpoQingMingDamageLevel4 = QIANPO_QINGMING_DAMAGE_LEVEL4.get();
+        qianpoQingMingDamageLevel5 = QIANPO_QINGMING_DAMAGE_LEVEL5.get();
+        qianpoQingMingVisualEnabled = QIANPO_QINGMING_VISUAL_ENABLED.get();
+
         // 风踏涟漪
         windRippleLavaSpeed = WIND_RIPPLE_LAVA_SPEED.get();
 
@@ -689,21 +670,7 @@ public class Config {
         exNihiloShearEnchantedGoldenAppleChance = EX_NIHILO_SHEAR_ENCHANTED_GOLDEN_APPLE_CHANCE.get();
         exNihiloStoneBlocks = EX_NIHILO_STONE_BLOCKS.get();
 
-        // 云来剑法·重制
-        yunlaiSwordCooldownReduction = YUNLAI_SWORD_COOLDOWN_REDUCTION.get();
-        yunlaiSwordCrescentChance = YUNLAI_SWORD_CRESCENT_CHANCE.get();
-        yunlaiSwordCrescentDamageMultiplier = YUNLAI_SWORD_CRESCENT_DAMAGE_MULTIPLIER.get();
-        yunlaiSwordCrescentSpeed = YUNLAI_SWORD_CRESCENT_SPEED.get();
-        yunlaiSwordCrescentMaxDistance = YUNLAI_SWORD_CRESCENT_MAX_DISTANCE.get();
-
-        // 古·云来剑法·重制
-        ancientYunlaiSwordCooldownReduction = ANCIENT_YUNLAI_SWORD_COOLDOWN_REDUCTION.get();
-        ancientYunlaiSwordCrescentChance = ANCIENT_YUNLAI_SWORD_CRESCENT_CHANCE.get();
-        ancientYunlaiSwordCrescentDamageMultiplier = ANCIENT_YUNLAI_SWORD_CRESCENT_DAMAGE_MULTIPLIER.get();
-        ancientYunlaiSwordCrescentCount = ANCIENT_YUNLAI_SWORD_CRESCENT_COUNT.get();
-        ancientYunlaiSwordCrescentSpread = ANCIENT_YUNLAI_SWORD_CRESCENT_SPREAD.get();
-        ancientYunlaiSwordCrescentSpeed = ANCIENT_YUNLAI_SWORD_CRESCENT_SPEED.get();
-        ancientYunlaiSwordCrescentMaxDistance = ANCIENT_YUNLAI_SWORD_CRESCENT_MAX_DISTANCE.get();
+        
 
         // 终界之星
         enableEndStarFlight = ENABLE_END_STAR_FLIGHT.get();

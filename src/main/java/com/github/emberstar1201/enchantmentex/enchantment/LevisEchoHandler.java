@@ -72,9 +72,9 @@ public class LevisEchoHandler {
         if (enchantLevel <= 0) return;
 
         // ========================================================================
-        // 检查目标生命值是否达到阈值（默认 50 HP = 25❤️）
+        // 检查目标最大生命值是否达到阈值（默认 50 = 25❤️）
         // ========================================================================
-        if (target.getHealth() < Config.levisEchoHealthThreshold) {
+        if (target.getMaxHealth() < Config.levisEchoHealthThreshold) {
             return; // 血量不足，不触发回声
         }
 

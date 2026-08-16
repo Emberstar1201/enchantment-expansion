@@ -25,12 +25,6 @@ public class ModEnchantments {
     public static final RegistryObject<CreationFromNothingEnchantment> CREATION_FROM_NOTHING =
             ENCHANTMENTS.register("creation_from_nothing", CreationFromNothingEnchantment::new);
 
-    public static final RegistryObject<YunLaiSwordmanshipEnchantment> YUNLAI_SWORDMANSHIP =
-            ENCHANTMENTS.register("yunlai_swordmanship", YunLaiSwordmanshipEnchantment::new);
-
-    public static final RegistryObject<AncientYunLaiSwordmanshipEnchantment> ANCIENT_YUNLAI_SWORDMANSHIP =
-            ENCHANTMENTS.register("ancient_yunlai_swordmanship", AncientYunLaiSwordmanshipEnchantment::new);
-
     public static final RegistryObject<ElegantCatwalkEnchantment> ELEGANT_CATWALK =
             ENCHANTMENTS.register("elegant_catwalk", ElegantCatwalkEnchantment::new);
 
@@ -91,6 +85,13 @@ public class ModEnchantments {
     // ================================================================
     public static final RegistryObject<ChannelingIIIEnchantment> CHANNELING_III =
             ENCHANTMENTS.register("channeling_iii", ChannelingIIIEnchantment::new);
+
+    // ================================================================
+    // 千破·青溟剑（Qianpo Qingming Sword）
+    // 适用物品：剑（WEAPON） | 最高等级：V | 获取：附魔台（概率较低）
+    // ================================================================
+    public static final RegistryObject<QianpoQingMingSwordEnchantment> QIANPO_QINGMING_SWORD =
+            ENCHANTMENTS.register("qianpo_qingming_sword", QianpoQingMingSwordEnchantment::new);
 
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
