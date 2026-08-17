@@ -52,6 +52,23 @@ public class ModItems {
     );
 
     // ========================================================================
+    // 【人权剑】（Sword of the Free Will）
+    //   击败凋灵后掉落获得，无法合成
+    //
+    // Item.Properties 配置：
+    //   .stacksTo(1)            ：不可堆叠
+    //   .rarity(Rarity.EPIC)    ：史诗稀有度，物品名显示为紫色
+    //   .fireResistant()        ：不会被火焰/岩浆销毁
+    //
+    // 内置附魔（锋利X、亡灵杀手X、击退II、拂晓I）由 SwordOfTheFreeWill 的
+    // inventoryTick() 方法自动补充到 NBT。
+    // 实际功能由 SwordOfTheFreeWillHandler 的事件监听实现。
+    // 注册ID：sword_of_the_free_will
+    // ========================================================================
+    public static final RegistryObject<SwordOfTheFreeWill> SWORD_OF_THE_FREE_WILL =
+            ITEMS.register("sword_of_the_free_will", SwordOfTheFreeWill::new);
+
+    // ========================================================================
     // 注册方法：在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     // ========================================================================
     public static void register(IEventBus eventBus) {

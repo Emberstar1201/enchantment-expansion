@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.entity;
 
 import com.github.emberstar1201.enchantmentex.Config;
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+
 // ========================================================================
 // 琉璃冰魄箭实体
 //
@@ -33,7 +36,7 @@ import java.util.UUID;
 //   1. 两段蓄力区分（通过 DATA_CHARGE_STAGE 同步到客户端）
 //   2. 飞行时粒子拖尾（一段=淡蓝粒子，二段=冰晶粒子）
 //   3. 命中后 AOE 范围伤害
-//   4. 二段蓄力：母箭命中后生成子箭（扇形散射）
+//   4. 二段蓄力：射出时立即生成子箭（扇形散射，spawnSubArrowsNow）
 //   5. 二段蓄力：母箭和子箭命中后拉人效果
 //
 // 【数据同步】
@@ -41,6 +44,8 @@ import java.util.UUID;
 //   子箭标识 isSubArrow 仅服务端使用，不须同步
 // ========================================================================
 public class GlacialArrowEntity extends AbstractArrow {
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     // 蓄力阶段同步数据（1=一段，2=二段）
     private static final EntityDataAccessor<Integer> DATA_CHARGE_STAGE =
@@ -282,13 +287,35 @@ public class GlacialArrowEntity extends AbstractArrow {
     // ========================================================================
     public void spawnSubArrowsNow() {
         int subCount = Config.glacialArrowSubCount;
-        if (subCount <= 0) return;
+
+        LOGGER.info("[GlacialArrow::SpawnSub] ====== 进入 spawnSubArrowsNow() ======");
+        LOGGER.info("[GlacialArrow::SpawnSub] subCount配置={}, isSubArrow={}, chargeStage={}",
+                subCount, this.isSubArrow, this.getChargeStage());
+
+        if (subCount <= 0) {
+            LOGGER.warn("[GlacialArrow::SpawnSub] subCount <= 0, 不生成子箭! (检查配置文件)");
+            return;
+        }
+
+        if (this.isSubArrow) {
+            LOGGER.warn("[GlacialArrow::SpawnSub] 这是子箭, 不生成二级子箭!");
+            return;
+        }
+
+        if (this.level().isClientSide()) {
+            LOGGER.warn("[GlacialArrow::SpawnSub] 在客户端执行, 不应生成子箭!");
+            return;
+        }
 
         // 母箭的飞行方向作为基准方向
         Vec3 baseDirection = this.getDeltaMovement().normalize();
         if (baseDirection.lengthSqr() < 0.001) {
             baseDirection = Vec3.directionFromRotation(this.getXRot(), this.getYRot());
+            LOGGER.debug("[GlacialArrow::SpawnSub] 速度方向为0, 使用视角方向: {}", baseDirection);
         }
+
+        LOGGER.info("[GlacialArrow::SpawnSub] 母箭方向={}, 母箭速度大小={}",
+                baseDirection, this.getDeltaMovement().length());
 
         // 扇形角度（度 → 弧度），30° 均匀分布（霰弹式）
         double fanAngleRad = Math.toRadians(Config.glacialArrowFanAngle);
@@ -296,6 +323,9 @@ public class GlacialArrowEntity extends AbstractArrow {
         double angleStep = subCount > 1 ? fanAngleRad / (subCount - 1) : 0;
         // 起始角度（扇形中心为基准方向）
         double startAngle = -fanAngleRad / 2.0;
+
+        LOGGER.info("[GlacialArrow::SpawnSub] 扇形: fanAngle={}°, angleStep={}°, startAngle={}°",
+                Config.glacialArrowFanAngle, Math.toDegrees(angleStep), Math.toDegrees(startAngle));
 
         // 获取水平基准方向（忽略 Y 轴，用于水平散射）
         Vec3 horizontalDir = new Vec3(baseDirection.x, 0, baseDirection.z).normalize();
@@ -308,7 +338,14 @@ public class GlacialArrowEntity extends AbstractArrow {
 
         // 子箭生成位置 = 母箭当前位置（射出时即玩家位置），略微偏移避免碰撞
         Vec3 spawnCenter = this.position();
+        double motherBaseDamage = this.getBaseDamage();
+        double subDamageMultiplier = Config.glacialArrowSubDamage;
+        double subSpeedMultiplier = Config.glacialArrowSubSpeed;
 
+        LOGGER.info("[GlacialArrow::SpawnSub] 母箭位置={}, 母箭基础伤害={}, 子箭伤害倍率={}, 子箭速度倍率={}",
+                spawnCenter, motherBaseDamage, subDamageMultiplier, subSpeedMultiplier);
+
+        int successCount = 0;
         for (int i = 0; i < subCount; i++) {
             // 在扇形内均匀分布（无随机偏移）
             double angleOffset = startAngle + angleStep * i;
@@ -323,7 +360,7 @@ public class GlacialArrowEntity extends AbstractArrow {
             subDirection = subDirection.add(0, 0.1, 0).normalize();
 
             // 速度 = 母箭速度 × 配置倍率
-            double subSpeed = this.getDeltaMovement().length() * Config.glacialArrowSubSpeed;
+            double subSpeed = this.getDeltaMovement().length() * subSpeedMultiplier;
 
             // 在母箭位置前方偏移生成，避免子箭立即互相碰撞
             Vec3 spawnPos = spawnCenter.add(subDirection.scale(1.0));
@@ -334,14 +371,25 @@ public class GlacialArrowEntity extends AbstractArrow {
                     spawnPos.x, spawnPos.y, spawnPos.z);
             subArrow.setSubArrow(true);
             subArrow.setChargeStage(2); // 子箭也是二段效果（有 AOE）
-            subArrow.setBaseDamage(this.getBaseDamage() * Config.glacialArrowSubDamage);
+            subArrow.setBaseDamage(motherBaseDamage * subDamageMultiplier);
             subArrow.setDeltaMovement(subDirection.scale(subSpeed));
             subArrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
             subArrow.setMaxPierceCount(0); // 子箭不穿透，命中即销毁
             subArrow.setNoGravity(false);
 
-            this.level().addFreshEntity(subArrow);
+            boolean added = this.level().addFreshEntity(subArrow);
+            if (added) {
+                successCount++;
+            }
+
+            if (i == 0 || i == subCount - 1) {
+                LOGGER.info("[GlacialArrow::SpawnSub] 子箭[{}]: 方向={}, 速度={}, 伤害={}, addFreshEntity={}",
+                        i, subDirection, subSpeed, motherBaseDamage * subDamageMultiplier, added);
+            }
         }
+
+        LOGGER.info("[GlacialArrow::SpawnSub] ====== 子箭生成完毕: 成功{}/{} ======",
+                successCount, subCount);
     }
 
     // ========================================================================

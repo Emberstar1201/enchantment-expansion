@@ -20,8 +20,10 @@ import com.github.emberstar1201.enchantmentex.enchantment.QianpoQingMingSwordHan
 import com.github.emberstar1201.enchantmentex.enchantment.SnatchHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.WindRippleHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiArcheryHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHandler;
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.item.handler.SwordOfTheFreeWillHandler;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
@@ -89,6 +91,8 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(SnatchHandler.class);
         MinecraftForge.EVENT_BUS.register(WindRippleHandler.class);
         MinecraftForge.EVENT_BUS.register(YunLaiArcheryHandler.class);
+        MinecraftForge.EVENT_BUS.register(YunLaiSwordmanshipHandler.class);
+        MinecraftForge.EVENT_BUS.register(SwordOfTheFreeWillHandler.class);
 
         // ================================================================
         // 注册网络通道（飞轮效应等 C2S 数据包）

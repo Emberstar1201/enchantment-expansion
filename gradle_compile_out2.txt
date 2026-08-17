@@ -1,0 +1,52 @@
+﻿To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.5/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 21.0.10, JVM: 21.0.10+7-LTS (Eclipse Adoptium), Arch: amd64
+
+> Task :compileJava
+.\gradlew.bat : F:\MinecraftMods\enchantment-expansion\src\main\java\com\github
+\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:36: 璀﹀憡: [r
+emoval] ResourceLocation 涓殑 of(String,char) 宸茶繃鏃? 涓旀爣璁颁负寰呭垹闄?    private stati
+c final ResourceLocation FISHING = ResourceLocation.of("minecraft:gameplay/fish
+ing", ':');
+所在位置 行:1 字符: 48
++ ... aftMods\enchantment-expansion; .\gradlew.bat compileJava 2>&1 | Out-F ...
++                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (F:\MinecraftMod...fishing", ':'); 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+                                                                    ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\e
+nchantmentex\enchantment\ChannelingLootHandler.java:37: 璀﹀憡: [removal] Resource
+Location 涓殑 of(String,char) 宸茶繃鏃? 涓旀爣璁颁负寰呭垹闄?    private static final Resource
+Location DESERT_PYRAMID = ResourceLocation.of("minecraft:chests/desert_pyramid"
+, ':');
+                                                                           ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\e
+nchantmentex\enchantment\ChannelingLootHandler.java:38: 璀﹀憡: [removal] Resource
+Location 涓殑 of(String,char) 宸茶繃鏃? 涓旀爣璁颁负寰呭垹闄?    private static final Resource
+Location ABANDONED_MINESHAFT = ResourceLocation.of("minecraft:chests/abandoned_
+mineshaft", ':');
+                                                                               
+ ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\e
+nchantmentex\network\NetworkHandler.java:20: 璀﹀憡: [removal] ResourceLocation 涓
+殑 of(String,char) 宸茶繃鏃? 涓旀爣璁颁负寰呭垹闄?            ResourceLocation.of(EnchantmentE
+xpansion.MODID + ":main", ':'),
+                            ^
+娉? 鏌愪簺杈撳叆鏂囦欢浣跨敤鎴栬鐩栦簡宸茶繃鏃剁殑 API銆?
+娉? 鏈夊叧璇︾粏淇℃伅, 璇蜂娇鐢?-Xlint:deprecation 閲嶆柊缂栬瘧銆?
+4 涓鍛?
+
+[Incubating] Problems report is available at: file:///F:/MinecraftMods/enchantment-expansion/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.5/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 22s
+1 actionable task: 1 executed

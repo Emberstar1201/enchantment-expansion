@@ -8,9 +8,9 @@
   "enchantment.enchantment_expansion.creation_from_nothing": "Creation from Nothing",
   "enchantment.enchantment_expansion.creation_from_nothing.desc": "Breaking blocks has a chance to drop rare treasures",
   "enchantment.enchantment_expansion.yunlai_swordmanship": "YunLai Swordmanship",
-  "enchantment.enchantment_expansion.yunlai_swordmanship.desc": "Strike with crescent energy blades that pierce through enemies, attack cooldown reduced by 75%",
+  "enchantment.enchantment_expansion.yunlai_swordmanship.desc": "While held: Attack Speed +2.5, Attack Reach +2.5 blocks",
   "enchantment.enchantment_expansion.ancient_yunlai_swordmanship": "Ancient YunLai Swordmanship",
-  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship.desc": "Strike with 3 crescent energy blades in a fan pattern that pierce through enemies, attack cooldown reduced by 98%",
+  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship.desc": "While held: Attack Speed +5.0, Attack Reach +5.0 blocks",
   "enchantment.enchantment_expansion.elegant_catwalk": "Elegant Catwalk",
   "enchantment.enchantment_expansion.elegant_catwalk.desc": "Swift as a cat, light as a cat",
   "enchantment.enchantment_expansion.snatch": "Snatch",
@@ -46,5 +46,10 @@
   "item.enchantment_expansion.end_star": "End Star",
   "item.enchantment_expansion.end_star.desc": "The end ？",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "The End, A New Beginning",
-  "advancements.enchantment_expansion.the_end_new_beginning.description": "The End is not the end. (Obtain the End Star to start a new game experience)"
+  "advancements.enchantment_expansion.the_end_new_beginning.description": "The End is not the end. (Obtain the End Star to start a new game experience)",
+  "item.enchantment_expansion.sword_of_the_free_will": "Sword of the Free Will",
+  "item.enchantment_expansion.sword_of_the_free_will.desc": "Though we return to dust, our will endures on this blade.",
+  "message.enchantment_expansion.sotfw.activated": "§6§l【Will of Man】Activated! +150% damage for 10 min, 90% chance to strike lightning!",
+  "message.enchantment_expansion.sotfw.cooldown": "§c【Will of Man】Cooldown: %d min %d s remaining",
+  "message.enchantment_expansion.sotfw.cooldown_done": "§a§l【Will of Man】Cooldown complete! Ready to use!"
 }

@@ -87,6 +87,16 @@ public class ModEnchantments {
             ENCHANTMENTS.register("channeling_iii", ChannelingIIIEnchantment::new);
 
     // ================================================================
+    // 云来剑法 & 古·云来剑法
+    // 适用物品：剑（WEAPON） | 最高等级：I | 获取：附魔台 / 仅宝箱+村民
+    // ================================================================
+    public static final RegistryObject<YunLaiSwordmanshipEnchantment> YUNLAI_SWORDMANSHIP =
+            ENCHANTMENTS.register("yunlai_swordmanship", YunLaiSwordmanshipEnchantment::new);
+
+    public static final RegistryObject<AncientYunLaiSwordmanshipEnchantment> ANCIENT_YUNLAI_SWORDMANSHIP =
+            ENCHANTMENTS.register("ancient_yunlai_swordmanship", AncientYunLaiSwordmanshipEnchantment::new);
+
+    // ================================================================
     // 千破·青溟剑（Qianpo Qingming Sword）
     // 适用物品：剑（WEAPON） | 最高等级：V | 获取：附魔台（概率较低）
     // ================================================================

@@ -30,6 +30,25 @@ public class Config {
             .defineInRange("yunLaiArchery.drawTimeSeconds", 0.45, 0.05, 1.0);
 
     // ================================================================
+    // 云来剑法 & 古·云来剑法 配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORDMANSHIP_ATTACK_SPEED = BUILDER
+            .comment("云来剑法：攻击速度加成（ADDITION 操作，默认 2.5，基础攻速 4.0 → 6.5）")
+            .defineInRange("yunlaiSwordmanship.attackSpeed", 2.5, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORDMANSHIP_ATTACK_REACH = BUILDER
+            .comment("云来剑法：攻击距离加成（格，ADDITION 操作，默认 2.5，基础 3 格 → 5.5 格）")
+            .defineInRange("yunlaiSwordmanship.attackReach", 2.5, 0.0, 50.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_SPEED = BUILDER
+            .comment("古·云来剑法：攻击速度加成（ADDITION 操作，默认 5.0，基础攻速 4.0 → 9.0）")
+            .defineInRange("ancientYunlaiSwordmanship.attackSpeed", 5.0, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_REACH = BUILDER
+            .comment("古·云来剑法：攻击距离加成（格，ADDITION 操作，默认 5.0，基础 3 格 → 8 格）")
+            .defineInRange("ancientYunlaiSwordmanship.attackReach", 5.0, 0.0, 50.0);
+
+    // ================================================================
     // 终末将至 附魔配置
     // ================================================================
     private static final ForgeConfigSpec.DoubleValue END_APPROACHES_DAMAGE_MULTIPLIER = BUILDER
@@ -451,9 +470,54 @@ public class Config {
             .comment("终界之星生成后多少 tick 自动消失（默认 12000 = 10分钟）")
             .defineInRange("endStar.end_star_despawn_time", 12000, 20, 1728000);
 
+    // ================================================================
+    // 人权剑（Sword of the Free Will）配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue SWORD_LIGHTNING_DAMAGE = BUILDER
+            .comment("人权剑：闪电固定真实伤害（默认 20）")
+            .defineInRange("swordOfFreeWill.lightningDamage", 20.0, 0.0, 1000.0);
+
+    private static final ForgeConfigSpec.DoubleValue SWORD_LIGHTNING_CHANCE = BUILDER
+            .comment("人权剑：闪电触发概率（默认 0.9 = 90%）")
+            .defineInRange("swordOfFreeWill.lightningChance", 0.9, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue SWORD_HEALTH_COST_PERCENT = BUILDER
+            .comment("人权剑：主动技能生命值消耗百分比（默认 0.25 = 25%）")
+            .defineInRange("swordOfFreeWill.healthCostPercent", 0.25, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue SWORD_HEALTH_THRESHOLD = BUILDER
+            .comment("人权剑：生命值低于此比例不再消耗生命（默认 0.5 = 50%）")
+            .defineInRange("swordOfFreeWill.healthThreshold", 0.5, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue SWORD_DAMAGE_BOOST_PERCENT = BUILDER
+            .comment("人权剑：伤害提升百分比（默认 1.5 = +150%，最终伤害 = 原伤害 × (1 + 此值)）")
+            .defineInRange("swordOfFreeWill.damageBoostPercent", 1.5, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.IntValue SWORD_BUFF_DURATION = BUILDER
+            .comment("人权剑：增益效果持续时间（秒，默认 600 = 10 分钟）")
+            .defineInRange("swordOfFreeWill.buffDuration", 600, 1, 86400);
+
+    private static final ForgeConfigSpec.IntValue SWORD_COOLDOWN = BUILDER
+            .comment("人权剑：主动技能冷却时间（秒，默认 900 = 15 分钟）")
+            .defineInRange("swordOfFreeWill.cooldown", 900, 1, 86400);
+
+    private static final ForgeConfigSpec.DoubleValue SWORD_PASSIVE_ARMOR = BUILDER
+            .comment("人权剑：被动护甲值（默认 10，以属性修饰符形式添加到 Attributes.ARMOR）")
+            .defineInRange("swordOfFreeWill.passiveArmor", 10.0, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue SWORD_PASSIVE_DAMAGE_REDUCTION = BUILDER
+            .comment("人权剑：被动伤害减免百分比（默认 0.25 = 25%）")
+            .defineInRange("swordOfFreeWill.passiveDamageReduction", 0.25, 0.0, 1.0);
+
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // 加载时缓存到静态字段
+    // 云来剑法 & 古·云来剑法
+    public static double yunlaiSwordmanshipAttackSpeed;
+    public static double yunlaiSwordmanshipAttackReach;
+    public static double ancientYunlaiSwordmanshipAttackSpeed;
+    public static double ancientYunlaiSwordmanshipAttackReach;
+
     // 古·云来弓法 & 云来弓法
     public static double ancientYunLaiArrowSpeed;
     public static double ancientYunLaiChargeMultiplier;   // 由 drawTime 换算
@@ -564,12 +628,29 @@ public class Config {
     public static int endStarDropDelay;
     public static int endStarDespawnTime;
 
+    // 人权剑
+    public static double swordLightningDamage;
+    public static double swordLightningChance;
+    public static double swordHealthCostPercent;
+    public static double swordHealthThreshold;
+    public static double swordDamageBoostPercent;
+    public static int swordBuffDuration;
+    public static int swordCooldown;
+    public static double swordPassiveArmor;
+    public static double swordPassiveDamageReduction;
+
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
         // 古·云来弓法 & 云来弓法：将蓄力时间换算为蓄力加速倍率
         ancientYunLaiArrowSpeed = ANCIENT_YUNLAI_ARROW_SPEED.get();
         ancientYunLaiChargeMultiplier = 1.0 / ANCIENT_YUNLAI_DRAW_TIME.get();
         yunLaiArcheryChargeMultiplier = 1.0 / YUNLAI_ARCHERY_DRAW_TIME.get();
+
+        // 云来剑法 & 古·云来剑法
+        yunlaiSwordmanshipAttackSpeed = YUNLAI_SWORDMANSHIP_ATTACK_SPEED.get();
+        yunlaiSwordmanshipAttackReach = YUNLAI_SWORDMANSHIP_ATTACK_REACH.get();
+        ancientYunlaiSwordmanshipAttackSpeed = ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_SPEED.get();
+        ancientYunlaiSwordmanshipAttackReach = ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_REACH.get();
 
         // 终末将至
         endApproachesDamageMultiplier = END_APPROACHES_DAMAGE_MULTIPLIER.get();
@@ -680,5 +761,16 @@ public class Config {
         endStarMaxBonusPercent = END_STAR_MAX_BONUS_PERCENT.get();
         endStarDropDelay = END_STAR_DROP_DELAY.get();
         endStarDespawnTime = END_STAR_DESPAWN_TIME.get();
+
+        // 人权剑
+        swordLightningDamage = SWORD_LIGHTNING_DAMAGE.get();
+        swordLightningChance = SWORD_LIGHTNING_CHANCE.get();
+        swordHealthCostPercent = SWORD_HEALTH_COST_PERCENT.get();
+        swordHealthThreshold = SWORD_HEALTH_THRESHOLD.get();
+        swordDamageBoostPercent = SWORD_DAMAGE_BOOST_PERCENT.get();
+        swordBuffDuration = SWORD_BUFF_DURATION.get();
+        swordCooldown = SWORD_COOLDOWN.get();
+        swordPassiveArmor = SWORD_PASSIVE_ARMOR.get();
+        swordPassiveDamageReduction = SWORD_PASSIVE_DAMAGE_REDUCTION.get();
     }
 }
