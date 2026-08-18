@@ -1,0 +1,40 @@
+{
+  "display": {
+    "icon": {
+      "item": "enchantment_expansion:sword_of_the_free_will"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.we_fall_we_remain.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.we_fall_we_remain.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "minecraft:adventure/root",
+  "criteria": {
+    "has_sword": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "enchantment_expansion:sword_of_the_free_will"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_sword"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  }
+}

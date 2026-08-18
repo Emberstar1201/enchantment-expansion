@@ -17,7 +17,7 @@
   "enchantment.enchantment_expansion.snatch.desc": "Chance to steal enemy equipment, higher level = higher chance",
   "enchantment.enchantment_expansion.plunder": "Plunder",
   "enchantment.enchantment_expansion.plunder.desc": "Rare loot always drops, level affects quantity",
-  "enchantment.enchantment_expansion.dawn": "Dawn ",
+  "enchantment.enchantment_expansion.dawn": "Dawn",
   "enchantment.enchantment_expansion.dawn.desc": "Permanent growth per kill: +DMG, +Crit Rate, +Crit DMG, -ATK Speed, +2.5 Range. Boss kills grant extra growth",
   "enchantment.enchantment_expansion.glacial_arrow": "Glacial Arrow",
   "enchantment.enchantment_expansion.glacial_arrow.desc": "Infuses arrows with ice crystal power. Longer charge = greater power. AoE damage and enemy pull on hit",
@@ -42,7 +42,7 @@
   "enchantment.enchantment_expansion.end_approaches": "The End Approaches",
   "enchantment.enchantment_expansion.end_approaches.desc": "Weapon damage increased by 250%, attack cooldown reduced by 90%",
   "enchantment.enchantment_expansion.entropy": "Entropy",
-  "enchantment.enchantment_expansion.entropy.desc": "Stacks entropy mark on hit. 2 stacks: slow target. 3 stacks: detonate dealing 30% of lost HP as true damage and spreads",
+  "enchantment.enchantment_expansion.entropy.desc": "Entropy mark stacks on hit. 2 stacks: slow. Full stacks: detonate 30% lost HP as true damage, spreads",
   "item.enchantment_expansion.end_star": "End Star",
   "item.enchantment_expansion.end_star.desc": "The end ？",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "The End, A New Beginning",
@@ -51,5 +51,7 @@
   "item.enchantment_expansion.sword_of_the_free_will.desc": "Though we return to dust, our will endures on this blade.",
   "message.enchantment_expansion.sotfw.activated": "§6§l【Will of Man】Activated! +150% damage for 10 min, 90% chance to strike lightning!",
   "message.enchantment_expansion.sotfw.cooldown": "§c【Will of Man】Cooldown: %d min %d s remaining",
-  "message.enchantment_expansion.sotfw.cooldown_done": "§a§l【Will of Man】Cooldown complete! Ready to use!"
+  "message.enchantment_expansion.sotfw.cooldown_done": "§a§l【Will of Man】Cooldown complete! Ready to use!",
+  "advancements.enchantment_expansion.we_fall_we_remain.title": "We Fall, We Remain",
+  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5Though we return to dust, our will endures on this blade."
 }

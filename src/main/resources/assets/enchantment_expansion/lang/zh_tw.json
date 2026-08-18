@@ -49,5 +49,7 @@
   "item.enchantment_expansion.sword_of_the_free_will.desc": "Though we return to dust, our will endures on this blade.",
   "message.enchantment_expansion.sotfw.activated": "§6§l【人的意志】已激活！10分钟内傷害+150%，每次攻擊90%機率降下閃電！",
   "message.enchantment_expansion.sotfw.cooldown": "§c「人的意志」冷卻中，剩餘 %d 分 %d 秒",
-  "message.enchantment_expansion.sotfw.cooldown_done": "§a§l【人的意志】冷卻已完成！可再次使用！"
+  "message.enchantment_expansion.sotfw.cooldown_done": "§a§l【人的意志】冷卻已完成！可再次使用！",
+  "advancements.enchantment_expansion.we_fall_we_remain.title": "我們逝去，我們永恆",
+  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5我們逝去，我們永恆。"
 }
