@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -43,7 +42,9 @@ import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 
@@ -52,11 +53,12 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //
 // 【职责】
 //   1. 凋灵击败后掉落人权剑（LivingDropsEvent）
+//      - 剑掉落时附带「防摧毁」（invulnerable）
+//      - 掉落物上方持续 5 秒生成金色光柱粒子
 //   2. 主动技能「人的意志」右键触发（PlayerInteractEvent.RightClickItem）
 //   3. 主动技能加成：攻击时降下闪电 + 伤害提升（LivingHurtEvent）
-//   4. 被动技能「晨曦」背包中提供护甲 + 减伤（PlayerTickEvent + LivingHurtEvent）
+//   4. 被动「晨曦」背包中提供护甲 + 减伤（PlayerTickEvent + LivingHurtEvent）
 //   5. 冷却结束聊天栏提醒（PlayerTickEvent）
-//   6. 工具提示显示内置附魔（ItemTooltipEvent）
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class SwordOfTheFreeWillHandler {
@@ -64,30 +66,39 @@ public class SwordOfTheFreeWillHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     // ============================================================
-    // PersistentData 键名（所有数据存储在玩家 NBT 中）
+    // PersistentData 键名
     // ============================================================
-    private static final String KEY_COOLDOWN_END = "SOTFW_CooldownEnd";      // 冷却结束 tick
-    private static final String KEY_BUFF_END = "SOTFW_BuffEnd";            // 增益效果结束 tick
-    private static final String KEY_NOTIFIED = "SOTFW_CooldownNotified";   // 是否已通知冷却结束
+    private static final String KEY_COOLDOWN_END = "SOTFW_CooldownEnd";
+    private static final String KEY_BUFF_END = "SOTFW_BuffEnd";
+    private static final String KEY_NOTIFIED = "SOTFW_CooldownNotified";
 
     // ============================================================
-    // 修饰符 UUID（护甲被动，用于 Attributes.ARMOR）
+    // 修饰符 UUID（护甲）
     // ============================================================
     private static final UUID ARMOR_MODIFIER_UUID =
             UUID.fromString("d4e5f6a7-b8c9-0123-4567-890abcdef012");
-
-    // 修饰符名称
     private static final String ARMOR_MODIFIER_NAME = "SOTFW Armor Bonus";
 
     // ============================================================
-    // 工具方法：检查玩家背包/手中是否有人权剑
+    // 光柱粒子跟踪表
+    //   key   = 掉落物 ItemEntity 的 UUID
+    //   value = 该掉落物生成时所在维度的游戏时间（用于计算 5 秒到期）
+    //
+    // 为什么用 ConcurrentHashMap？
+    //   LevelTickEvent 可能在多个维度线程中并行触发，ConcurrentHashMap
+    //   保证线程安全，避免并发修改异常。
+    // ============================================================
+    private static final Map<UUID, Long> pendingBeamEntities = new ConcurrentHashMap<>();
+
+    // 光柱持续时间（tick，5 秒 = 100 tick）
+    private static final long BEAM_DURATION_TICKS = 100;
+
+    // ============================================================
+    // 工具方法：检查背包是否有人权剑
     // ============================================================
     private static boolean hasSwordInInventory(Player player) {
-        // 检查主手
         if (player.getMainHandItem().getItem() instanceof SwordOfTheFreeWill) return true;
-        // 检查副手
         if (player.getOffhandItem().getItem() instanceof SwordOfTheFreeWill) return true;
-        // 检查背包（9~35 为主背包，0~8 为快捷栏）
         for (ItemStack stack : player.getInventory().items) {
             if (stack.getItem() instanceof SwordOfTheFreeWill) return true;
         }
@@ -95,41 +106,38 @@ public class SwordOfTheFreeWillHandler {
     }
 
     // ============================================================
-    // 工具方法：检查玩家是否持有增益效果
+    // 工具方法：检查增益是否激活
     // ============================================================
     private static boolean hasActiveBuff(Player player) {
-        long buffEnd = player.getPersistentData().getLong(KEY_BUFF_END);
-        return buffEnd > player.level().getGameTime();
+        return player.getPersistentData().getLong(KEY_BUFF_END) > player.level().getGameTime();
     }
 
     // ============================================================
-    // 工具方法：检查玩家是否在冷却中
+    // 工具方法：检查冷却是否激活
     // ============================================================
     private static boolean isOnCooldown(Player player) {
-        long cooldownEnd = player.getPersistentData().getLong(KEY_COOLDOWN_END);
-        return cooldownEnd > player.level().getGameTime();
+        return player.getPersistentData().getLong(KEY_COOLDOWN_END) > player.level().getGameTime();
     }
 
     // ============================================================
-    // 工具方法：获取剩余冷却秒数
+    // 工具方法：剩余冷却秒数
     // ============================================================
     private static int getRemainingCooldownSeconds(Player player) {
-        long cooldownEnd = player.getPersistentData().getLong(KEY_COOLDOWN_END);
-        long remaining = cooldownEnd - player.level().getGameTime();
-        return Math.max(0, (int)(remaining / 20)); // tick → 秒
+        long remaining = player.getPersistentData().getLong(KEY_COOLDOWN_END)
+                - player.level().getGameTime();
+        return Math.max(0, (int) (remaining / 20));
     }
 
     // ============================================================
-    // 工具方法：为人权剑添加内置附魔 NBT（确保工具提示显示）
+    // 工具方法：创建带内置附魔的人权剑
+    //   锋利 X + 亡灵杀手 X + 击退 II + 拂晓 I + 星火不灭 I
     // ============================================================
     private static ItemStack createEnchantedSword() {
         ItemStack sword = new ItemStack(ModItems.SWORD_OF_THE_FREE_WILL.get());
 
-        // 直接操作 NBT 绕过兼容性限制（锋利 + 亡灵杀手不能共存）
         CompoundTag tag = sword.getOrCreateTag();
         ListTag enchantments = new ListTag();
 
-        // 存储附魔 NBT：{id: "minecraft:sharpness", lvl: 10}
         CompoundTag sharpness = new CompoundTag();
         sharpness.putString("id", "minecraft:sharpness");
         sharpness.putShort("lvl", (short) 10);
@@ -150,6 +158,11 @@ public class SwordOfTheFreeWillHandler {
         dawn.putShort("lvl", (short) 1);
         enchantments.add(dawn);
 
+        CompoundTag eternalSpark = new CompoundTag();
+        eternalSpark.putString("id", MODID + ":eternal_spark");
+        eternalSpark.putShort("lvl", (short) 1);
+        enchantments.add(eternalSpark);
+
         tag.put("Enchantments", enchantments);
         sword.setTag(tag);
 
@@ -157,21 +170,17 @@ public class SwordOfTheFreeWillHandler {
     }
 
     // ============================================================
-    // 工具方法：在目标位置播放金色闪电粒子
+    // 工具方法：播放金色闪电粒子（技能激活效果）
     // ============================================================
     private static void spawnGoldenLightningParticles(ServerLevel level, double x, double y, double z) {
-        // ELECTRIC_SPARK = 金色闪电粒子，数量 30，速度 0.2
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK,
-                x, y + 1, z,
-                30, 0.5, 0.5, 0.5, 0.2);
-        // DRAGON_BREATH 作为金色闪光辅助
+                x, y + 1, z, 30, 0.5, 0.5, 0.5, 0.2);
         level.sendParticles(ParticleTypes.DRAGON_BREATH,
-                x, y + 1, z,
-                10, 0.3, 0.3, 0.3, 0.1);
+                x, y + 1, z, 10, 0.3, 0.3, 0.3, 0.1);
     }
 
     // ============================================================
-    // 工具方法：扫描修改属性的修饰符状态
+    // 工具方法：护甲修饰符管理
     // ============================================================
     private static void manageArmorModifier(Player player, boolean shouldHave) {
         AttributeInstance armorAttr = player.getAttribute(Attributes.ARMOR);
@@ -197,51 +206,53 @@ public class SwordOfTheFreeWillHandler {
     }
 
     // ============================================================
-    // 事件1：凋灵掉落人权剑（LivingDropsEvent）
-    // — 仅在凋灵死亡时无条件掉落一次
-    // — 如果已有其他模组添加了该剑，不再重复添加
+    // 事件1：凋灵掉落人权剑 + 防摧毁 + 光柱粒子
     // ============================================================
     @SubscribeEvent
     public static void onWitherDrops(LivingDropsEvent event) {
         if (!(event.getEntity() instanceof WitherBoss)) return;
         if (event.getEntity().level().isClientSide()) return;
 
-        // 检查是否已有该剑的掉落
-        boolean alreadyDropped = false;
+        // 防止重复掉落
         for (ItemEntity itemEntity : event.getDrops()) {
-            if (itemEntity.getItem().getItem() instanceof SwordOfTheFreeWill) {
-                alreadyDropped = true;
-                break;
-            }
+            if (itemEntity.getItem().getItem() instanceof SwordOfTheFreeWill) return;
         }
-        if (alreadyDropped) return;
 
-        // 创建附魔人权剑
+        Level level = event.getEntity().level();
+
+        // 创建人权剑
         ItemStack sword = createEnchantedSword();
 
-        // 添加到掉落列表
         ItemEntity swordEntity = new ItemEntity(
-                event.getEntity().level(),
+                level,
                 event.getEntity().getX(),
                 event.getEntity().getY(),
                 event.getEntity().getZ(),
                 sword
         );
-        // 让剑不会被立即拾取，允许玩家看到掉落动画
+
+        // ================================================================
+        // ★ 防摧毁：免疫火焰、爆炸、闪电、岩浆 ★
+        //   setInvulnerable(true) 使 ItemEntity 免疫所有伤害类型，
+        //   包括火焰、爆炸、闪电、岩浆、仙人掌等。
+        //   配合掉落延迟（10 tick），玩家有充足时间看到并拾取。
+        // ================================================================
+        swordEntity.setInvulnerable(true);
         swordEntity.setPickUpDelay(10);
+
         event.getDrops().add(swordEntity);
 
-        LOGGER.info("[SOTFW] 凋灵已被击败，人权剑已掉落");
+        // ================================================================
+        // ★ 将掉落物 UUID 加入光柱粒子跟踪表 ★
+        //   LevelTickEvent 会自动为跟踪表中的掉落物播放心得 END_ROD 粒子
+        // ================================================================
+        pendingBeamEntities.put(swordEntity.getUUID(), level.getGameTime());
+
+        LOGGER.info("[SOTFW] 凋灵已被击败，人权剑已掉落（防摧毁 + 光柱激活）");
     }
 
     // ============================================================
     // 事件2：右键激活主动技能（PlayerInteractEvent.RightClickItem）
-    //
-    // 「人的意志」：
-    //   消耗当前 25% 生命值（生命值低于 50% 不再消耗，但仍可激活）
-    //   获得 10 分钟伤害提升 150% 增益效果
-    //   冷却时间 15 分钟
-    //   激活时播放金色闪电粒子 + 雷声
     // ============================================================
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
@@ -251,7 +262,6 @@ public class SwordOfTheFreeWillHandler {
         ItemStack stack = event.getItemStack();
         if (!(stack.getItem() instanceof SwordOfTheFreeWill)) return;
 
-        // 检查冷却
         if (isOnCooldown(player)) {
             int remaining = getRemainingCooldownSeconds(player);
             player.sendSystemMessage(Component.translatable(
@@ -261,45 +271,34 @@ public class SwordOfTheFreeWillHandler {
             return;
         }
 
-        // ================================================================
-        // 激活技能
-        // ================================================================
         long gameTime = player.level().getGameTime();
 
-        // 消耗生命值（如果当前生命值 > 50%）
+        // 消耗生命值（> 50% 时才消耗）
         float maxHealth = player.getMaxHealth();
         float currentHealth = player.getHealth();
-        if (currentHealth > maxHealth * Config.swordHealthThreshold) { // 默认 50%
-            float healthCost = currentHealth * (float) Config.swordHealthCostPercent; // 默认 25%
+        if (currentHealth > maxHealth * Config.swordHealthThreshold) {
+            float healthCost = currentHealth * (float) Config.swordHealthCostPercent;
             player.setHealth(currentHealth - healthCost);
         }
 
-        // 设置增益效果持续时间（默认 600 秒 = 12000 tick）
+        // 设置增益（默认 600 秒）
         player.getPersistentData().putLong(KEY_BUFF_END,
-                gameTime + (long)(Config.swordBuffDuration * 20));
-
-        // 设置冷却结束时间（默认 900 秒 = 18000 tick）
+                gameTime + (long) (Config.swordBuffDuration * 20));
+        // 设置冷却（默认 900 秒）
         player.getPersistentData().putLong(KEY_COOLDOWN_END,
-                gameTime + (long)(Config.swordCooldown * 20));
-
-        // 重置冷却通知标记
+                gameTime + (long) (Config.swordCooldown * 20));
+        // 重置通知标记
         player.getPersistentData().putBoolean(KEY_NOTIFIED, false);
 
-        // 播放金色闪电粒子 + 雷声（服务端广播给所有客户端）
+        // 粒子 + 音效
         if (player instanceof ServerPlayer serverPlayer) {
-            ServerLevel level = serverPlayer.serverLevel();
-
-            // 在玩家位置播放粒子
-            spawnGoldenLightningParticles(level,
+            ServerLevel serverLevel = serverPlayer.serverLevel();
+            spawnGoldenLightningParticles(serverLevel,
                     player.getX(), player.getY(), player.getZ());
-
-            // 播放雷声（使用 LIGHTNING_BOLT 撞击音效）
-            level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS,
-                    2.0F, 0.8F);
+            serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 2.0F, 0.8F);
         }
 
-        // 发送激活消息
         player.sendSystemMessage(Component.translatable(
                 "message.enchantment_expansion.sotfw.activated"
         ).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
@@ -308,83 +307,54 @@ public class SwordOfTheFreeWillHandler {
     }
 
     // ============================================================
-    // 事件3：攻击时触发（LivingHurtEvent）
-    //
-    // 作为攻击者时（持有正义之剑）：
-    //   a) 如果增益效果激活，伤害提升 150%
-    //   b) 如果增益效果激活且目标为怪物，90% 概率降下闪电
-    //      闪电造成固定真实伤害（默认 20）
-    //
-    // 作为受害者时（背包有剑）：
-    //   a) 受到的所有伤害降低 25%
+    // 事件3：攻击/受击事件（LivingHurtEvent）
     // ============================================================
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
         if (event.getEntity().level().isClientSide()) return;
 
-        // ================================================================
-        // — 玩家作为攻击者 —
-        // ================================================================
+        // ---- 玩家作为攻击者 ----
         if (event.getSource().getEntity() instanceof Player attacker) {
             ItemStack weapon = attacker.getMainHandItem();
             if (weapon.getItem() instanceof SwordOfTheFreeWill) {
-                // ---- a) 伤害提升（如果增益激活） ----
                 if (hasActiveBuff(attacker)) {
-                    float original = event.getAmount();
-                    float boosted = original * (1.0f + (float) Config.swordDamageBoostPercent);
-                    event.setAmount(boosted);
+                    // 伤害提升
+                    event.setAmount(event.getAmount()
+                            * (1.0f + (float) Config.swordDamageBoostPercent));
                 }
 
-                // ---- b) 闪电触发（如果增益激活、目标为怪物、概率判定通过） ----
                 if (hasActiveBuff(attacker) && event.getEntity() instanceof Monster monster) {
-                    // 概率判定
                     if (attacker.getRandom().nextDouble() < Config.swordLightningChance) {
-                        Level level = monster.level();
-
-                        // 召唤闪电实体（视觉 + 音效）
-                        if (level instanceof ServerLevel serverLevel) {
+                        if (monster.level() instanceof ServerLevel serverLevel) {
+                            // 闪电
                             LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(serverLevel);
                             if (lightning != null) {
                                 lightning.moveTo(monster.getX(), monster.getY(), monster.getZ());
-                                lightning.setVisualOnly(false); // 闪电会正常造成伤害和火焰
                                 serverLevel.addFreshEntity(lightning);
                             }
-
-                            // 播放金色闪电粒子
                             spawnGoldenLightningParticles(serverLevel,
                                     monster.getX(), monster.getY(), monster.getZ());
                         }
-
-                        // 应用固定真实伤害（魔法伤害无视护甲）
-                        float lightningDamage = (float) Config.swordLightningDamage;
-                        monster.hurt(monster.level().damageSources().magic(), lightningDamage);
-
-                        // 被闪电击中的怪物着火（视觉效果）
-                        monster.setRemainingFireTicks(40); // 2 秒火焰
+                        // 额外魔法伤害
+                        monster.hurt(monster.level().damageSources().magic(),
+                                (float) Config.swordLightningDamage);
+                        monster.setRemainingFireTicks(40);
                     }
                 }
             }
         }
 
-        // ================================================================
-        // — 玩家作为受害者 —
-        // ================================================================
+        // ---- 玩家作为受害者 ----
         if (event.getEntity() instanceof Player player) {
-            // 检查背包中是否有人权剑
             if (hasSwordInInventory(player)) {
-                // 25% 伤害减免
-                float reduction = (float) Config.swordPassiveDamageReduction;
-                event.setAmount(event.getAmount() * (1.0f - reduction));
+                event.setAmount(event.getAmount()
+                        * (1.0f - (float) Config.swordPassiveDamageReduction));
             }
         }
     }
 
     // ============================================================
-    // 事件4：玩家 Tick 事件（PlayerTickEvent）
-    //
-    // 用途：
-    //   a) 管理护甲修饰符（背包有人权剑时添加 10 护甲）
-    //   b) 冷却结束通知
+    // 事件4：玩家 Tick（护甲管理 + 冷却通知）
     // ============================================================
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -394,34 +364,29 @@ public class SwordOfTheFreeWillHandler {
         Player player = event.player;
         boolean hasSword = hasSwordInInventory(player);
 
-        // ---- a) 护甲修饰符管理 ----
+        // 护甲修饰符
         manageArmorModifier(player, hasSword);
 
-        // ---- b) 冷却结束通知 ----
+        // 冷却通知
         long cooldownEnd = player.getPersistentData().getLong(KEY_COOLDOWN_END);
         boolean notified = player.getPersistentData().getBoolean(KEY_NOTIFIED);
 
-        if (cooldownEnd > 0 && !notified) {
-            // 冷却已结束（当前时间 >= 冷却结束时间）
-            if (player.level().getGameTime() >= cooldownEnd) {
-                player.sendSystemMessage(Component.translatable(
-                        "message.enchantment_expansion.sotfw.cooldown_done"
-                ).withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
-
-                player.getPersistentData().putBoolean(KEY_NOTIFIED, true);
-                LOGGER.debug("[SOTFW] {} 的「人的意志」冷却已结束", player.getName().getString());
-            }
+        if (cooldownEnd > 0 && !notified && player.level().getGameTime() >= cooldownEnd) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.enchantment_expansion.sotfw.cooldown_done"
+            ).withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
+            player.getPersistentData().putBoolean(KEY_NOTIFIED, true);
+            LOGGER.debug("[SOTFW] {} 的「人的意志」冷却已结束", player.getName().getString());
         }
     }
 
     // ============================================================
-    // 事件5：物品丢弃时清除修饰符（ItemTossEvent）
+    // 事件5：物品丢弃时清除护甲修饰符
     // ============================================================
     @SubscribeEvent
     public static void onItemToss(ItemTossEvent event) {
         if (event.getEntity().getItem().getItem() instanceof SwordOfTheFreeWill) {
             if (event.getPlayer() != null) {
-                // 丢弃剑时立即移除护甲修饰符
                 AttributeInstance armorAttr = event.getPlayer().getAttribute(Attributes.ARMOR);
                 if (armorAttr != null) {
                     armorAttr.removeModifier(ARMOR_MODIFIER_UUID);
@@ -431,17 +396,75 @@ public class SwordOfTheFreeWillHandler {
     }
 
     // ============================================================
-    // 事件6：工具提示——显示内置附魔和描述（ItemTooltipEvent）
+    // 事件6：世界 Tick 事件 — 人权剑掉落光柱粒子
+    //
+    // 原理：
+    //   每当凋灵死亡掉落人权剑时，剑的 ItemEntity UUID 被加入
+    //   pendingBeamEntities 表。此方法每 tick 遍历该表，为每个
+    //   未超时的掉落物播放心得金色 END_ROD 粒子（从地面升起的光柱）。
+    //
+    // 为什么不用 getEntities() 全扫描？
+    //   直接通过 UUID 定位实体（level.getEntity(uuid)）是 O(1) 查找，
+    //   比全维度遍历快得多。Active 实体数量通常极少（1 个），开销可忽略。
+    // ============================================================
+    @SubscribeEvent
+    public static void onLevelTick(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        if (!(event.level instanceof ServerLevel serverLevel)) return;
+
+        long now = serverLevel.getGameTime();
+
+        // 遍历所有待处理的光柱实体
+        pendingBeamEntities.entrySet().removeIf(entry -> {
+            UUID entityId = entry.getKey();
+            long spawnTime = entry.getValue();
+            long elapsed = now - spawnTime;
+
+            // 已超过 5 秒 → 移除，不再处理
+            if (elapsed >= BEAM_DURATION_TICKS) return true;
+
+            // 从世界中获取该实体
+            Entity entity = serverLevel.getEntity(entityId);
+            if (entity == null || !entity.isAlive()) return true; // 已被拾取 → 移除
+
+            // ============================================================
+            // 播放金色光柱粒子
+            //   每 tick 生成 4 个 END_ROD 粒子，从物品下方到上方 2 格，
+            //   形成持续升起的金色光柱效果。
+            // ============================================================
+            double x = entity.getX();
+            double y = entity.getY();
+            double z = entity.getZ();
+
+            // 底部扩散光晕
+            serverLevel.sendParticles(ParticleTypes.END_ROD,
+                    x, y + 0.1, z,
+                    2, 0.3, 0.0, 0.3, 0.01);
+            // 中部上升粒子
+            serverLevel.sendParticles(ParticleTypes.END_ROD,
+                    x, y + 1.0, z,
+                    2, 0.2, 0.3, 0.2, 0.02);
+            // 顶部爆发
+            serverLevel.sendParticles(ParticleTypes.END_ROD,
+                    x, y + 2.0, z,
+                    1, 0.3, 0.1, 0.3, 0.03);
+
+            // 附加金色闪光（ELECTRIC_SPARK）加强光柱视觉效果
+            if (elapsed % 10 == 0) { // 每 0.5 秒额外闪一次
+                serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                        x, y + 1.0, z,
+                        6, 0.5, 0.8, 0.5, 0.1);
+            }
+
+            return false; // 保留在表中
+        });
+    }
+
+    // ============================================================
+    // 事件7：工具提示（不需要额外操作，NBT 附魔自动显示）
     // ============================================================
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
-        ItemStack stack = event.getItemStack();
-        if (!(stack.getItem() instanceof SwordOfTheFreeWill)) return;
-
-        List<Component> tooltip = event.getToolTip();
-
-        // 在物品名下方添加一行分隔提示（内置附魔）
-        // 默认 tooltip 已经包含物品名 + 属性 + 附魔，所以这里不做额外处理
-        // 附魔标签会自动显示因为 NBT 中有 Enchantments 数据
+        // 无需额外处理，Enchantments NBT 由父类自动渲染
     }
 }

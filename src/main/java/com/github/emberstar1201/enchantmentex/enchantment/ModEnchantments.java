@@ -103,6 +103,13 @@ public class ModEnchantments {
     public static final RegistryObject<QianpoQingMingSwordEnchantment> QIANPO_QINGMING_SWORD =
             ENCHANTMENTS.register("qianpo_qingming_sword", QianpoQingMingSwordEnchantment::new);
 
+    // ================================================================
+    // 星火不灭（Eternal Spark）
+    // 适用物品：剑/斧/三叉戟（WEAPON） | 最高等级：I | 获取：合成配方（下界之星×1+烈焰棒×4+书×4）
+    // ================================================================
+    public static final RegistryObject<EternalSparkEnchantment> ETERNAL_SPARK =
+            ENCHANTMENTS.register("eternal_spark", EternalSparkEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);

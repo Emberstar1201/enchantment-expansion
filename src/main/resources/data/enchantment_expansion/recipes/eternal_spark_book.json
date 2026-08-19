@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "b#b",
+    "#s#",
+    "b#b"
+  ],
+  "key": {
+    "b": {
+      "item": "minecraft:book"
+    },
+    "#": {
+      "item": "minecraft:blaze_rod"
+    },
+    "s": {
+      "item": "minecraft:nether_star"
+    }
+  },
+  "result": {
+    "item": "minecraft:enchanted_book",
+    "nbt": "{StoredEnchantments:[{id:\"enchantment_expansion:eternal_spark\",lvl:1}]}"
+  }
+}

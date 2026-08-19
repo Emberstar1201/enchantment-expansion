@@ -41,6 +41,8 @@
   "enchantment.enchantment_expansion.channeling_iii.desc": "投擲三叉戟擊中實體時召喚閃電，任意天氣及維度（包括地獄和終界）均可觸發",
   "enchantment.enchantment_expansion.end_approaches": "終末將至",
   "enchantment.enchantment_expansion.end_approaches.desc": "武器傷害提升250%，攻擊冷卻縮短90%",
+  "enchantment.enchantment_expansion.eternal_spark": "星火不滅",
+  "enchantment.enchantment_expansion.eternal_spark.desc": "攻擊疊加星火標記，每秒造成最大生命值2%真傷，疊加增傷，死亡擴散",
   "item.enchantment_expansion.end_star": "終界之星",
   "item.enchantment_expansion.end_star.desc": "結束了？",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "終末已至，新的開始",

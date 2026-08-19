@@ -43,6 +43,8 @@
   "enchantment.enchantment_expansion.end_approaches.desc": "武器伤害提升250%，攻击冷却缩短90%",
   "enchantment.enchantment_expansion.entropy": "熵增",
   "enchantment.enchantment_expansion.entropy.desc": "攻击叠加熵标记，2层减速，满层引爆造成已损失生命值30%的真实伤害并扩散",
+  "enchantment.enchantment_expansion.eternal_spark": "星火不灭",
+  "enchantment.enchantment_expansion.eternal_spark.desc": "攻击叠加星火标记，每秒造成最大生命值2%真伤，叠加增伤，死亡扩散",
   "item.enchantment_expansion.end_star": "终界之星",
   "item.enchantment_expansion.end_star.desc": "结束了？",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "终末已至，新的开始",

@@ -4,6 +4,7 @@ import com.github.emberstar1201.enchantmentex.enchantment.AncientYunLaiHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ArtisanLegacyHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.AutoSmeltHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.BloodthirstHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.EternalSparkHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingEventHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingLootHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.CreationFromNothingHandler;
@@ -86,6 +87,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(FlywheelEffectHandler.class);
         MinecraftForge.EVENT_BUS.register(GlacialArrowHandler.class);
         MinecraftForge.EVENT_BUS.register(LevisEchoHandler.class);
+        MinecraftForge.EVENT_BUS.register(EternalSparkHandler.class);
         MinecraftForge.EVENT_BUS.register(PlunderHandler.class);
         MinecraftForge.EVENT_BUS.register(QianpoQingMingSwordHandler.class);
         MinecraftForge.EVENT_BUS.register(SnatchHandler.class);

@@ -43,6 +43,8 @@
   "enchantment.enchantment_expansion.end_approaches.desc": "Weapon damage increased by 250%, attack cooldown reduced by 90%",
   "enchantment.enchantment_expansion.entropy": "Entropy",
   "enchantment.enchantment_expansion.entropy.desc": "Entropy mark stacks on hit. 2 stacks: slow. Full stacks: detonate 30% lost HP as true damage, spreads",
+  "enchantment.enchantment_expansion.eternal_spark": "Eternal Spark",
+  "enchantment.enchantment_expansion.eternal_spark.desc": "Attacks apply Spark mark (2% max HP/sec true dmg, stacks boost dmg, spreads on death)",
   "item.enchantment_expansion.end_star": "End Star",
   "item.enchantment_expansion.end_star.desc": "The end ？",
   "advancements.enchantment_expansion.the_end_new_beginning.title": "The End, A New Beginning",

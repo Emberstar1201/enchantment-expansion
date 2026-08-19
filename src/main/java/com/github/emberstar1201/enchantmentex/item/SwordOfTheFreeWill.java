@@ -9,7 +9,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ToolAction;
@@ -29,7 +28,7 @@ import java.util.function.Consumer;
 //   耐久度：无限（canBeDepleted() 返回 false）
 //
 // 【内置附魔】（通过 inventoryTick 自动补充 NBT 数据）
-//   锋利 X、亡灵杀手 X、击退 II、拂晓 I
+//   锋利 X、亡灵杀手 X、击退 II、拂晓 I、星火不灭 I
 //
 // 【获取方式】
 //   击败凋灵掉落（由 SwordOfTheFreeWillHandler 实现）
@@ -41,13 +40,14 @@ public class SwordOfTheFreeWill extends SwordItem {
 
     // ================================================================
     // 自定义 Tier：基础伤害为 0，耐久很高但不可损坏
+    // getEnchantmentValue() 返回 15（允许附魔台附魔）
     // ================================================================
     private static final Tier FREE_WILL_TIER = new Tier() {
         @Override public int getUses() { return 99999; }
         @Override public float getSpeed() { return 9.0f; }
         @Override public float getAttackDamageBonus() { return 0; }
         @Override public int getLevel() { return 4; }
-        @Override public int getEnchantmentValue() { return 0; }
+        @Override public int getEnchantmentValue() { return 15; }
         @Override public Ingredient getRepairIngredient() {
             return Ingredient.of(Items.NETHERITE_BLOCK);
         }
@@ -119,6 +119,12 @@ public class SwordOfTheFreeWill extends SwordItem {
         dawn.putShort("lvl", (short) 1);
         enchList.add(dawn);
 
+        // 星火不灭 I
+        CompoundTag eternalSpark = new CompoundTag();
+        eternalSpark.putString("id", "enchantment_expansion:eternal_spark");
+        eternalSpark.putShort("lvl", (short) 1);
+        enchList.add(eternalSpark);
+
         tag.put("Enchantments", enchList);
         tag.putBoolean(NBT_ENCH_INIT, true);
         stack.setTag(tag);
@@ -138,6 +144,7 @@ public class SwordOfTheFreeWill extends SwordItem {
         map.put(Enchantments.SMITE, 10);
         map.put(Enchantments.KNOCKBACK, 2);
         map.put(ModEnchantments.DAWN.get(), 1);
+        map.put(ModEnchantments.ETERNAL_SPARK.get(), 1);
         return map;
     }
 
@@ -154,19 +161,6 @@ public class SwordOfTheFreeWill extends SwordItem {
     public <T extends LivingEntity> int damageItem(ItemStack stack, int amount,
                                                     T entity, Consumer<T> onBroken) {
         return 0;
-    }
-
-    // ================================================================
-    // 不可在附魔台/铁砧上额外附魔
-    // ================================================================
-    @Override
-    public boolean isEnchantable(ItemStack stack) {
-        return false;
-    }
-
-    @Override
-    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
-        return false;
     }
 
     // ================================================================

@@ -509,6 +509,34 @@ public class Config {
             .comment("人权剑：被动伤害减免百分比（默认 0.25 = 25%）")
             .defineInRange("swordOfFreeWill.passiveDamageReduction", 0.25, 0.0, 1.0);
 
+    // ================================================================
+    // 星火不灭（Eternal Spark）配置
+    // ================================================================
+    private static final ForgeConfigSpec.IntValue ETERNAL_SPARK_DURATION_SECONDS = BUILDER
+            .comment("星火不灭：标记持续时间（秒，默认 5；超过此时间标记自行消失，不再提供额外伤害加成）")
+            .defineInRange("eternalSpark.durationSeconds", 5, 1, 7200);
+
+    private static final ForgeConfigSpec.DoubleValue ETERNAL_SPARK_BASE_DAMAGE_PERCENT = BUILDER
+            .comment("星火不灭：每次攻击每层基础伤害百分比（默认 5.0 = 每层每次攻击造成 5% 最大生命值真实伤害）",
+                    "层数1→5%, 层数2→10%, 层数3→15%")
+            .defineInRange("eternalSpark.baseDamagePercent", 5.0, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue ETERNAL_SPARK_ACTIVE_DAMAGE_PERCENT = BUILDER
+            .comment("星火不灭：人权剑「人的意志」激活期间每次攻击每层伤害百分比（默认 8.0 = 每层 8% 最大生命值真实伤害）",
+                    "层数1→8%, 层数2→16%, 层数3→24%")
+            .defineInRange("eternalSpark.activeDamagePercent", 8.0, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue ETERNAL_SPARK_STACK_BONUS_PERCENT = BUILDER
+            .comment("星火不灭：每层额外伤害倍率加成（默认 0.0 = 无额外加成）",
+                    "公式：总百分比 = basePercent × stacks × (1 + (stacks-1) × stackBonusPercent / 100)",
+                    "若希望层数3伤害翻倍（即层数3 = 层数1 × 2），则填 25（此时 (1 + 2×0.25) = 1.5 倍）")
+            .defineInRange("eternalSpark.stackBonusPercent", 0.0, 0.0, 500.0);
+
+    private static final ForgeConfigSpec.DoubleValue ETERNAL_SPARK_SPREAD_RANGE = BUILDER
+            .comment("星火不灭：死亡扩散半径（格，默认 5.0 格）",
+                    "人权剑 buff 激活期间此半径自动 × 2 = 10 格")
+            .defineInRange("eternalSpark.spreadRange", 5.0, 0.5, 100.0);
+
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // 加载时缓存到静态字段
@@ -638,6 +666,13 @@ public class Config {
     public static int swordCooldown;
     public static double swordPassiveArmor;
     public static double swordPassiveDamageReduction;
+
+    // 星火不灭
+    public static int eternalSparkDurationSeconds;
+    public static double eternalSparkBaseDamagePercent;
+    public static double eternalSparkActiveDamagePercent;
+    public static double eternalSparkStackBonusPercent;
+    public static double eternalSparkSpreadRange;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -772,5 +807,12 @@ public class Config {
         swordCooldown = SWORD_COOLDOWN.get();
         swordPassiveArmor = SWORD_PASSIVE_ARMOR.get();
         swordPassiveDamageReduction = SWORD_PASSIVE_DAMAGE_REDUCTION.get();
+
+        // 星火不灭
+        eternalSparkDurationSeconds = ETERNAL_SPARK_DURATION_SECONDS.get();
+        eternalSparkBaseDamagePercent = ETERNAL_SPARK_BASE_DAMAGE_PERCENT.get();
+        eternalSparkActiveDamagePercent = ETERNAL_SPARK_ACTIVE_DAMAGE_PERCENT.get();
+        eternalSparkStackBonusPercent = ETERNAL_SPARK_STACK_BONUS_PERCENT.get();
+        eternalSparkSpreadRange = ETERNAL_SPARK_SPREAD_RANGE.get();
     }
 }
