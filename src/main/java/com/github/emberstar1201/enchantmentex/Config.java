@@ -72,67 +72,56 @@ public class Config {
             .defineInRange("endApproaches.lootRolls", 0.5, 0.0, 1.0);
 
     // ================================================================
-    // 琉璃冰魄箭 配置
+    // 琉璃冰魄箭 配置（简化版：取消二段蓄力，直接散射）
     // ================================================================
-    private static final ForgeConfigSpec.IntValue GLACIAL_ARROW_CHARGE_THRESHOLD = BUILDER
-            .comment("琉璃冰魄箭：二段蓄力所需 tick 数（默认 30 = 1.5 秒）")
-            .defineInRange("glacialArrow.chargeThreshold", 30, 10, 200);
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_DRAW_TIME = BUILDER
+            .comment("琉璃冰魄箭：蓄力时间（秒，原版=1.0s，默认 0.5s = 原版的50%）",
+                    "代码内部换算为蓄力倍率 = 1.0 / 蓄力时间")
+            .defineInRange("glacialArrow.drawTimeSeconds", 0.5, 0.05, 1.0);
 
-    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE1_SPEED = BUILDER
-            .comment("琉璃冰魄箭：一段蓄力箭矢速度倍率（原版满弦=1.0，默认 3.0）")
-            .defineInRange("glacialArrow.stage1.speedMultiplier", 3.0, 1.0, 20.0);
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SPEED = BUILDER
+            .comment("琉璃冰魄箭：母箭速度倍率（原版满弦=1.0，默认 3.2）")
+            .defineInRange("glacialArrow.speedMultiplier", 3.2, 1.0, 20.0);
 
-    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE1_DAMAGE = BUILDER
-            .comment("琉璃冰魄箭：一段蓄力范围伤害倍率（默认 1.5）")
-            .defineInRange("glacialArrow.stage1.damageMultiplier", 1.5, 1.0, 100.0);
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_DAMAGE = BUILDER
+            .comment("琉璃冰魄箭：母箭范围伤害倍率（默认 2.5）")
+            .defineInRange("glacialArrow.damageMultiplier", 2.5, 1.0, 100.0);
 
-    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE1_AOE_RANGE = BUILDER
-            .comment("琉璃冰魄箭：一段蓄力范围伤害半径（默认 1.0）")
-            .defineInRange("glacialArrow.stage1.aoeRange", 1.0, 0.5, 10.0);
-
-    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE2_SPEED = BUILDER
-            .comment("琉璃冰魄箭：二段蓄力母箭速度倍率（默认 5.0）")
-            .defineInRange("glacialArrow.stage2.speedMultiplier", 5.0, 1.0, 20.0);
-
-    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE2_DAMAGE = BUILDER
-            .comment("琉璃冰魄箭：二段蓄力母箭范围伤害倍率（默认 2.5）")
-            .defineInRange("glacialArrow.stage2.damageMultiplier", 2.5, 1.0, 100.0);
-
-    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_STAGE2_AOE_RANGE = BUILDER
-            .comment("琉璃冰魄箭：二段蓄力母箭范围伤害半径（默认 2.5）")
-            .defineInRange("glacialArrow.stage2.aoeRange", 2.5, 0.5, 10.0);
+    private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_AOE_RANGE = BUILDER
+            .comment("琉璃冰魄箭：母箭范围伤害半径（默认 2.5）")
+            .defineInRange("glacialArrow.aoeRange", 2.5, 0.5, 10.0);
 
     private static final ForgeConfigSpec.IntValue GLACIAL_ARROW_PIERCE_COUNT = BUILDER
             .comment("琉璃冰魄箭：母箭穿透次数（默认 3，穿透多个敌人后消失）")
             .defineInRange("glacialArrow.pierceCount", 3, 1, 50);
 
     private static final ForgeConfigSpec.IntValue GLACIAL_ARROW_SUB_COUNT = BUILDER
-            .comment("琉璃冰魄箭：二段蓄力子箭数量（默认 12）")
-            .defineInRange("glacialArrow.stage2.subArrowCount", 12, 0, 50);
+            .comment("琉璃冰魄箭：子箭数量（散射，默认 12）")
+            .defineInRange("glacialArrow.subArrowCount", 12, 0, 50);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_FAN_ANGLE = BUILDER
-            .comment("琉璃冰魄箭：二段蓄力子箭扇形角度（度，默认 30）")
-            .defineInRange("glacialArrow.stage2.fanAngle", 30.0, 5.0, 180.0);
+            .comment("琉璃冰魄箭：子箭扇形角度（度，默认 30）")
+            .defineInRange("glacialArrow.fanAngle", 30.0, 5.0, 180.0);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SUB_SPEED = BUILDER
             .comment("琉璃冰魄箭：子箭速度倍率（母箭速度 × 此值，默认 0.8）")
-            .defineInRange("glacialArrow.stage2.subSpeedMultiplier", 0.8, 0.1, 2.0);
+            .defineInRange("glacialArrow.subSpeedMultiplier", 0.8, 0.1, 2.0);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SUB_DAMAGE = BUILDER
-            .comment("琉璃冰魄箭：子箭伤害倍率（母箭伤害 × 此值，默认 0.8）")
-            .defineInRange("glacialArrow.stage2.subDamageMultiplier", 0.8, 0.1, 2.0);
+            .comment("琉璃冰魄箭：子箭范围伤害倍率（母箭基础伤害 × 此值，默认 1.0）")
+            .defineInRange("glacialArrow.subDamageMultiplier", 1.0, 0.1, 2.0);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_SUB_AOE_RANGE = BUILDER
-            .comment("琉璃冰魄箭：子箭范围伤害半径（默认 1.5）")
-            .defineInRange("glacialArrow.stage2.subAoeRange", 1.5, 0.5, 10.0);
+            .comment("琉璃冰魄箭：子箭范围伤害半径（默认 2.0）")
+            .defineInRange("glacialArrow.subAoeRange", 2.0, 0.5, 10.0);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_PULL_STRENGTH = BUILDER
             .comment("琉璃冰魄箭：母箭命中后拉人强度（格，默认 0.4）")
-            .defineInRange("glacialArrow.stage2.pullStrength", 0.4, 0.0, 5.0);
+            .defineInRange("glacialArrow.pullStrength", 0.4, 0.0, 5.0);
 
     private static final ForgeConfigSpec.DoubleValue GLACIAL_ARROW_PULL_RANGE = BUILDER
             .comment("琉璃冰魄箭：母箭命中后拉人范围（格，默认 2.0）")
-            .defineInRange("glacialArrow.stage2.pullRange", 2.0, 0.5, 10.0);
+            .defineInRange("glacialArrow.pullRange", 2.0, 0.5, 10.0);
 
     private static final ForgeConfigSpec.IntValue GLACIAL_ARROW_PARTICLE_INTERVAL = BUILDER
             .comment("琉璃冰魄箭：粒子生成间隔（tick，默认 2）")
@@ -329,25 +318,25 @@ public class Config {
     // 千破·青溟剑 配置
     // ================================================================
     private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL1 = BUILDER
-            .comment("千破·青溟剑：I级额外伤害（默认 10）",
-                    "该伤害无视护盾、保护、盔甲防御，直接作用于生命值")
-            .defineInRange("qianpoQingMing.damageLevel1", 10.0, 0.0, Double.MAX_VALUE);
+            .comment("千破·青溟剑：I级额外魔法伤害（默认 12）",
+                    "该伤害为魔法伤害，无视盔甲，但受保护附魔和抗性提升影响")
+            .defineInRange("qianpoQingMing.damageLevel1", 12.0, 0.0, Double.MAX_VALUE);
 
     private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL2 = BUILDER
-            .comment("千破·青溟剑：II级额外伤害（默认 20）")
-            .defineInRange("qianpoQingMing.damageLevel2", 20.0, 0.0, Double.MAX_VALUE);
+            .comment("千破·青溟剑：II级额外魔法伤害（默认 24）")
+            .defineInRange("qianpoQingMing.damageLevel2", 24.0, 0.0, Double.MAX_VALUE);
 
     private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL3 = BUILDER
-            .comment("千破·青溟剑：III级额外伤害（默认 30）")
-            .defineInRange("qianpoQingMing.damageLevel3", 30.0, 0.0, Double.MAX_VALUE);
+            .comment("千破·青溟剑：III级额外魔法伤害（默认 36）")
+            .defineInRange("qianpoQingMing.damageLevel3", 36.0, 0.0, Double.MAX_VALUE);
 
     private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL4 = BUILDER
-            .comment("千破·青溟剑：IV级额外伤害（默认 40）")
-            .defineInRange("qianpoQingMing.damageLevel4", 40.0, 0.0, Double.MAX_VALUE);
+            .comment("千破·青溟剑：IV级额外魔法伤害（默认 48）")
+            .defineInRange("qianpoQingMing.damageLevel4", 48.0, 0.0, Double.MAX_VALUE);
 
     private static final ForgeConfigSpec.DoubleValue QIANPO_QINGMING_DAMAGE_LEVEL5 = BUILDER
-            .comment("千破·青溟剑：V级额外伤害（默认 50）")
-            .defineInRange("qianpoQingMing.damageLevel5", 50.0, 0.0, Double.MAX_VALUE);
+            .comment("千破·青溟剑：V级额外魔法伤害（默认 60）")
+            .defineInRange("qianpoQingMing.damageLevel5", 60.0, 0.0, Double.MAX_VALUE);
 
     private static final ForgeConfigSpec.BooleanValue QIANPO_QINGMING_VISUAL_ENABLED = BUILDER
             .comment("千破·青溟剑：是否启用粒子+音效视觉反馈（默认 true）",
@@ -537,6 +526,21 @@ public class Config {
                     "人权剑 buff 激活期间此半径自动 × 2 = 10 格")
             .defineInRange("eternalSpark.spreadRange", 5.0, 0.5, 100.0);
 
+    // ================================================================
+    // 无烟冲击（Smokeless Dash）配置
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue SMOKELESS_DASH_MAX_MULTIPLIER = BUILDER
+            .comment("无烟冲击：最大速度倍率（原版滑翔=1.0，烟花火箭≈2.0，默认上限 3.0）")
+            .defineInRange("smokelessDash.maxMultiplier", 3.0, 1.0, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue SMOKELESS_DASH_SCROLL_SENSITIVITY = BUILDER
+            .comment("无烟冲击：滚轮灵敏度（每次滚轮调整的速度增量，值越大调得越快，推荐 0.15）")
+            .defineInRange("smokelessDash.scrollSensitivity", 0.15, 0.01, 2.0);
+
+    private static final ForgeConfigSpec.DoubleValue SMOKELESS_DASH_BASE_BOOST = BUILDER
+            .comment("无烟冲击：基础加速常数（每 tick 沿视线方向的加速度，值越大加速越猛，推荐 0.12）")
+            .defineInRange("smokelessDash.baseBoost", 0.12, 0.001, 1.0);
+
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // 加载时缓存到静态字段
@@ -558,14 +562,11 @@ public class Config {
     public static boolean endApproachesAnnounce;
     public static double endApproachesLootRolls;
 
-    // 琉璃冰魄箭
-    public static int glacialArrowChargeThreshold;
-    public static double glacialArrowStage1Speed;
-    public static double glacialArrowStage1Damage;
-    public static double glacialArrowStage1AoeRange;
-    public static double glacialArrowStage2Speed;
-    public static double glacialArrowStage2Damage;
-    public static double glacialArrowStage2AoeRange;
+    // 琉璃冰魄箭（简化版）
+    public static double glacialArrowChargeMultiplier;  // 由 drawTime 换算
+    public static double glacialArrowSpeed;
+    public static double glacialArrowDamage;
+    public static double glacialArrowAoeRange;
     public static int glacialArrowPierceCount;
     public static int glacialArrowSubCount;
     public static double glacialArrowFanAngle;
@@ -674,6 +675,11 @@ public class Config {
     public static double eternalSparkStackBonusPercent;
     public static double eternalSparkSpreadRange;
 
+    // 无烟冲击
+    public static double smokelessDashMaxMultiplier;
+    public static double smokelessDashScrollSensitivity;
+    public static double smokelessDashBaseBoost;
+
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
         // 古·云来弓法 & 云来弓法：将蓄力时间换算为蓄力加速倍率
@@ -693,14 +699,11 @@ public class Config {
         endApproachesEndermanRange = END_APPROACHES_ENDERMAN_RANGE.get();
         endApproachesAnnounce = END_APPROACHES_ANNOUNCE.get();
         endApproachesLootRolls = END_APPROACHES_LOOT_ROLLS.get();
-        // 琉璃冰魄箭
-        glacialArrowChargeThreshold = GLACIAL_ARROW_CHARGE_THRESHOLD.get();
-        glacialArrowStage1Speed = GLACIAL_ARROW_STAGE1_SPEED.get();
-        glacialArrowStage1Damage = GLACIAL_ARROW_STAGE1_DAMAGE.get();
-        glacialArrowStage1AoeRange = GLACIAL_ARROW_STAGE1_AOE_RANGE.get();
-        glacialArrowStage2Speed = GLACIAL_ARROW_STAGE2_SPEED.get();
-        glacialArrowStage2Damage = GLACIAL_ARROW_STAGE2_DAMAGE.get();
-        glacialArrowStage2AoeRange = GLACIAL_ARROW_STAGE2_AOE_RANGE.get();
+        // 琉璃冰魄箭（简化版）
+        glacialArrowChargeMultiplier = 1.0 / GLACIAL_ARROW_DRAW_TIME.get();
+        glacialArrowSpeed = GLACIAL_ARROW_SPEED.get();
+        glacialArrowDamage = GLACIAL_ARROW_DAMAGE.get();
+        glacialArrowAoeRange = GLACIAL_ARROW_AOE_RANGE.get();
         glacialArrowPierceCount = GLACIAL_ARROW_PIERCE_COUNT.get();
         glacialArrowSubCount = GLACIAL_ARROW_SUB_COUNT.get();
         glacialArrowFanAngle = GLACIAL_ARROW_FAN_ANGLE.get();
@@ -814,5 +817,10 @@ public class Config {
         eternalSparkActiveDamagePercent = ETERNAL_SPARK_ACTIVE_DAMAGE_PERCENT.get();
         eternalSparkStackBonusPercent = ETERNAL_SPARK_STACK_BONUS_PERCENT.get();
         eternalSparkSpreadRange = ETERNAL_SPARK_SPREAD_RANGE.get();
+
+        // 无烟冲击
+        smokelessDashMaxMultiplier = SMOKELESS_DASH_MAX_MULTIPLIER.get();
+        smokelessDashScrollSensitivity = SMOKELESS_DASH_SCROLL_SENSITIVITY.get();
+        smokelessDashBaseBoost = SMOKELESS_DASH_BASE_BOOST.get();
     }
 }

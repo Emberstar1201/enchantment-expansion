@@ -2,10 +2,10 @@ package com.github.emberstar1201.enchantmentex.enchantment;
 
 import com.github.emberstar1201.enchantmentex.Config;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -21,28 +21,21 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // ========================================================================
 // "千破·青溟剑"附魔事件处理器
 //
-// 【核心效果：附加"无视一切防御"的真实伤害】
+// 【核心效果：附加魔法伤害（无视护甲，受保护附魔和抗性提升影响）】
 //
-//   为什么不直接调用 hurt()？
-//     因为任何通过 LivingEntity.hurt(DamageSource) 的伤害都会经过：
-//       1. 伤害减免（盔甲值 Armor）
-//       2. 附魔减伤（Protection 系列）
-//       3. 盾牌格挡
-//     无法达到"无视护盾/保护/防御"的要求。
+//   使用 DamageSource.magic() 魔法伤害类型：
+//     1. 无视盔甲值（Armor）→ 对高护甲目标依然有效
+//     2. 受保护附魔（Protection）减免
+//     3. 受抗性提升（Resistance）效果减免
+//     4. 无法被盾牌格挡
 //
-//   正确做法：直接 setHealth(getHealth() - extraDamage)
-//     1. 完全绕过所有减伤层 → 真实伤害
-//     2. 但副作用：不会触发 LivingHurtEvent 的减伤、不会显示受伤数字
-//        不会让 shield 进行格挡判定、不会正确触发死亡逻辑
-//
-//   完整流程（兼顾"真伤"和"正常游戏流程"）：
+//   实现方式（利用 hurt() 方法）：
 //     ① 玩家原始攻击 → LivingHurtEvent 触发（本次事件，HIGH 优先级）
 //     ② 检查附魔等级，计算 extraDamage
-//     ③ 记录 NBT 标记（防止递归）→ setHealth(getHealth() - extraDamage)
-//     ④ 手动触发 hurt 标记（设置 hurtTime、hurtDuration）保证受伤动画
-//     ⑤ 如果生命<=0，手动调用 die(damageSource) 触发正常死亡流程
-//     ⑥ 清除 NBT 标记
-//     ⑦ 视觉反馈（粒子+音效）
+//     ③ 记录 NBT 标记（防止递归）→ target.hurt(magicDamage, extraDamage)
+//     ④ hurt() 自动处理受伤动画、击退方向、死亡流程
+//     ⑤ 清除 NBT 标记
+//     ⑥ 视觉反馈（粒子+音效）
 //
 // 【视觉】玩家→目标的橙色尾焰轨迹 (ParticleTypes.FLAME)
 // 【音效】铁傀儡挥击音 (SoundEvents.IRON_GOLEM_ATTACK)
@@ -50,13 +43,13 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class QianpoQingMingSwordHandler {
 
-    // NBT 标签：用于在直接 setHealth 调用前标记，
-    // 防止 hurt() 触发的 LivingHurtEvent 再次叠加伤害（递归）
+    // NBT 标签：用于在调用 hurt() 前标记，
+    // 防止递归触发 LivingHurtEvent 再次进入此方法
     private static final String TAG_APPLYING_QIANPO = "QianpoQingMingApplying";
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
-        // ★ 递归保护：如果已经在处理"千破"真实伤害，立即返回
+        // ★ 递归保护：如果已经在处理"千破"魔法伤害，立即返回
         LivingEntity target = event.getEntity();
         if (target.getPersistentData().getBoolean(TAG_APPLYING_QIANPO)) return;
 
@@ -95,44 +88,32 @@ public class QianpoQingMingSwordHandler {
         }
 
         // =================================================================
-        // ★ 核心：无视一切防御的真实伤害 ★
+        // ★ 核心：魔法伤害（无视护甲，受保护附魔和抗性提升影响） ★
         // =================================================================
-        // 先在目标 NBT 上标记"正在应用千破真伤"，防止 die()/hurt 导致的
+        // 使用 DamageSource.magic() 创建魔法伤害类型，
+        // 魔法伤害无视盔甲值（Armor），但会被保护附魔（Protection）和
+        // 抗性提升（Resistance）效果减免。
+        //
+        // 先在目标 NBT 上标记"正在应用千破魔法伤害"，防止 hurt() 触发的
         // LivingHurtEvent 再次进入此方法形成递归
-        CompoundTag targetTag = target.getPersistentData();
-        targetTag.putBoolean(TAG_APPLYING_QIANPO, true);
+        target.getPersistentData().putBoolean(TAG_APPLYING_QIANPO, true);
 
         try {
-            float currentHealth = target.getHealth();
-            float newHealth = currentHealth - extraDamage;
-
-            // 限制最低 0（不能直接 <=0 会死得不对）
-            newHealth = Math.max(0, newHealth);
-            target.setHealth(newHealth);
-
-            // ★ 设置受伤时间（让目标有红色闪白效果和硬直）★
-            // 原版 LivingEntity.hurt() 会做这件事，setHealth 不会，
-            // 所以我们手动设置
-            target.hurtDuration = 10;   // 硬直时间（tick）
-            target.hurtTime = 10;       // 受伤动画计时
-            // 标记伤害来源方向（这样受击时目标会被击退，朝向攻击者）
-            target.setLastHurtByMob(attacker);
-
-            // ★ 如果目标血量 <= 0，手动触发死亡流程 ★
-            //   setHealth(0) 本身不会触发 onDeath()、掉落、死亡音效等，
-            //   必须手动调用 die()
-            if (newHealth <= 0) {
-                // 使用原始 DamageSource 作为死亡原因（这样死亡消息会正常显示）
-                target.die(event.getSource());
-            }
+            // 创建魔法伤害来源（发射者为攻击者）
+            DamageSource magicDamage = target.damageSources().magic();
+            // 直接调用 hurt() 应用伤害，这会自动处理：
+            //   - 受伤动画（hurtDuration/hurtTime）
+            //   - 击退方向（setLastHurtByMob）
+            //   - 死亡流程（die()）
+            target.hurt(magicDamage, extraDamage);
         } finally {
             // 无论是否抛异常，必须清除标记防止卡死
-            targetTag.remove(TAG_APPLYING_QIANPO);
+            target.getPersistentData().remove(TAG_APPLYING_QIANPO);
         }
 
         // 注意：不修改 event.setAmount()！
         // 玩家原始攻击伤害仍然正常走盔甲/保护减伤流程，
-        // 千破的 extraDamage 是"叠加"在上面的独立真伤，完全符合要求
+        // 千破的 extraDamage 是"叠加"在上面的独立魔法伤害，完全符合要求
     }
 
     // ========================================================================

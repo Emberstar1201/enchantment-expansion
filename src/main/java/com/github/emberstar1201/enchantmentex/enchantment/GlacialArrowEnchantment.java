@@ -10,11 +10,12 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 // ========================================================================
 // "琉璃冰魄箭"附魔 - 弓专属
 //
-// 【效果】
-//   一段蓄力（< 阈值 tick）：箭速 ×3，命中后半径1格 AOE（伤害×1.5），淡蓝粒子拖尾
-//   二段蓄力（≥ 阈值 tick）：母箭速 ×5，半径2.5格 AOE（伤害×2.5），
-//     射出2支子箭（120°扇面），子箭速度=母箭×0.8，伤害=母箭×0.5，AOE半径1.5格，
-//     母箭和子箭命中后拉人（2格内→命中点，0.4格），冰晶粒子拖尾
+// 【效果】（简化版：取消二段蓄力，改为直接散射）
+//   蓄力加速：蓄力时间降至原版的50%（默认 0.5秒）
+//   母箭速度：3.2倍原版箭速度，命中后半径2.5格 AOE 范围伤害
+//   散射机制：射出时立即散射12支子箭（30°扇形）
+//   牵引效果：母箭命中后牵引周围敌人
+//   穿透效果：母箭可穿透3个敌人
 //
 // 【等级】1级（附魔台可获得，非宝藏）
 // 【冲突】与力量(POWER)兼容
@@ -78,78 +79,65 @@ public class GlacialArrowEnchantment extends Enchantment {
     }
 
     // ========================================================================
-    // 对外 API：获取蓄力阈值（二段蓄力所需 tick 数）
+    // 对外 API
     // ========================================================================
-    public static int getChargeThreshold() {
-        return Config.glacialArrowChargeThreshold;
+
+    /** 获取蓄力加速倍率（蓄力时间=0.5s → 倍率=2.0，即原版2倍速蓄力） */
+    public static double getChargeSpeedMultiplier() {
+        return Config.glacialArrowChargeMultiplier;
     }
 
-    // 对外 API：获取一段蓄力速度倍率
-    public static double getStage1Speed() {
-        return Config.glacialArrowStage1Speed;
+    /** 获取母箭速度倍率 */
+    public static double getSpeed() {
+        return Config.glacialArrowSpeed;
     }
 
-    // 对外 API：获取一段蓄力伤害倍率
-    public static double getStage1Damage() {
-        return Config.glacialArrowStage1Damage;
+    /** 获取母箭伤害倍率 */
+    public static double getDamage() {
+        return Config.glacialArrowDamage;
     }
 
-    // 对外 API：获取一段蓄力 AOE 半径
-    public static double getStage1AoeRange() {
-        return Config.glacialArrowStage1AoeRange;
+    /** 获取母箭AOE范围半径 */
+    public static double getAoeRange() {
+        return Config.glacialArrowAoeRange;
     }
 
-    // 对外 API：获取二段蓄力母箭速度倍率
-    public static double getStage2Speed() {
-        return Config.glacialArrowStage2Speed;
-    }
-
-    // 对外 API：获取二段蓄力母箭伤害倍率
-    public static double getStage2Damage() {
-        return Config.glacialArrowStage2Damage;
-    }
-
-    // 对外 API：获取二段蓄力母箭 AOE 半径
-    public static double getStage2AoeRange() {
-        return Config.glacialArrowStage2AoeRange;
-    }
-
-    // 对外 API：获取子箭数量
+    /** 获取子箭数量 */
     public static int getSubArrowCount() {
         return Config.glacialArrowSubCount;
     }
 
-    // 对外 API：获取子箭扇形角度
+    /** 获取扇形角度 */
     public static double getFanAngle() {
         return Config.glacialArrowFanAngle;
     }
 
-    // 对外 API：获取子箭速度倍率（相对于母箭）
+    /** 获取子箭速度倍率 */
     public static double getSubSpeedMultiplier() {
         return Config.glacialArrowSubSpeed;
     }
 
-    // 对外 API：获取子箭伤害倍率（相对于母箭）
+    /** 获取子箭伤害倍率 */
     public static double getSubDamageMultiplier() {
         return Config.glacialArrowSubDamage;
     }
 
-    // 对外 API：获取子箭 AOE 半径
+    /** 获取子箭AOE范围半径 */
     public static double getSubAoeRange() {
         return Config.glacialArrowSubAoeRange;
     }
 
-    // 对外 API：获取拉人强度
+    /** 获取牵引强度 */
     public static double getPullStrength() {
         return Config.glacialArrowPullStrength;
     }
 
-    // 对外 API：获取拉人范围
+    /** 获取牵引范围 */
     public static double getPullRange() {
         return Config.glacialArrowPullRange;
     }
 
-    // 对外 API：获取粒子间隔
+    /** 获取粒子间隔 */
     public static int getParticleInterval() {
         return Config.glacialArrowParticleInterval;
     }

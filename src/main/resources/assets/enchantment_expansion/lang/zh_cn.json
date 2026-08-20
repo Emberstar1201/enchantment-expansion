@@ -19,6 +19,8 @@
   "enchantment.enchantment_expansion.plunder.desc": "稀有战利品必定掉落，等级影响数量",
   "enchantment.enchantment_expansion.dawn": "拂晓",
   "enchantment.enchantment_expansion.dawn.desc": "击杀生物永久成长：伤害+暴击率+暴击伤害，攻速惩罚，攻击距离+2.5格（Boss击杀额外成长）",
+  "enchantment.enchantment_expansion.qianpo_qingming_sword": "千破·青溟剑",
+  "enchantment.enchantment_expansion.qianpo_qingming_sword.desc": "攻击时造成额外伤害，等级越高伤害越高",
   "enchantment.enchantment_expansion.glacial_arrow": "琉璃冰魄箭",
   "enchantment.enchantment_expansion.glacial_arrow.desc": "冰晶之力注入箭矢，蓄力越久威力越强，命中后爆发范围伤害并牵引敌人",
   "enchantment.enchantment_expansion.auto_smelt": "自动冶炼",
@@ -44,6 +46,10 @@
   "enchantment.enchantment_expansion.entropy": "熵增",
   "enchantment.enchantment_expansion.entropy.desc": "攻击叠加熵标记，2层减速，满层引爆造成已损失生命值30%的真实伤害并扩散",
   "enchantment.enchantment_expansion.eternal_spark": "星火不灭",
+  "enchantment.enchantment_expansion.smokeless_dash": "无烟冲击",
+  "enchantment.enchantment_expansion.smokeless_dash.desc": "鞘翅飞行时无需烟花火箭，滚轮调速",
+  "key.enchantment_expansion.dash_speed_up": "无烟冲击加速",
+  "key.enchantment_expansion.dash_speed_down": "无烟冲击减速",
   "enchantment.enchantment_expansion.eternal_spark.desc": "攻击叠加星火标记，每秒造成最大生命值2%真伤，叠加增伤，死亡扩散",
   "item.enchantment_expansion.end_star": "终界之星",
   "item.enchantment_expansion.end_star.desc": "结束了？",
@@ -55,5 +61,5 @@
   "message.enchantment_expansion.sotfw.cooldown": "§c「人的意志」冷却中，剩余 %d 分 %d 秒",
   "message.enchantment_expansion.sotfw.cooldown_done": "§a§l【人的意志】冷却已完成！可再次使用！",
   "advancements.enchantment_expansion.we_fall_we_remain.title": "我们逝去，我们永恒",
-  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5我们逝去，我们永恒。"
+  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5获得人权剑。"
 }

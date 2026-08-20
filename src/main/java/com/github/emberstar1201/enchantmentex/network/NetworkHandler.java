@@ -38,5 +38,28 @@ public class NetworkHandler {
                 FlywheelDashPacket::new,    // 通过 FriendlyByteBuf 构造
                 FlywheelDashPacket::handle
         );
+
+        // ================================================================
+        // 无烟冲击数据包（C2S 滚轮调速信号）
+        // ================================================================
+        CHANNEL.registerMessage(
+                packetId++,
+                SmokelessDashPacket.class,
+                SmokelessDashPacket::encode,
+                SmokelessDashPacket::new,
+                SmokelessDashPacket::handle
+        );
+
+        // ================================================================
+        // 无烟冲击同步包（S2C 速度倍率同步）
+        // 服务端每 10 tick 发送，供客户端 HUD 显示当前速度倍率
+        // ================================================================
+        CHANNEL.registerMessage(
+                packetId++,
+                SmokelessDashSyncPacket.class,
+                SmokelessDashSyncPacket::encode,
+                SmokelessDashSyncPacket::new,
+                SmokelessDashSyncPacket::handle
+        );
     }
 }

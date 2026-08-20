@@ -110,6 +110,13 @@ public class ModEnchantments {
     public static final RegistryObject<EternalSparkEnchantment> ETERNAL_SPARK =
             ENCHANTMENTS.register("eternal_spark", EternalSparkEnchantment::new);
 
+    // ================================================================
+    // 无烟冲击（Smokeless Dash）
+    // 适用物品：鞘翅（ARMOR_CHEST，运行时仅鞘翅生效） | 最高等级：I | 获取：附魔台/宝箱/村民
+    // ================================================================
+    public static final RegistryObject<SmokelessDashEnchantment> SMOKELESS_DASH =
+            ENCHANTMENTS.register("smokeless_dash", SmokelessDashEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);

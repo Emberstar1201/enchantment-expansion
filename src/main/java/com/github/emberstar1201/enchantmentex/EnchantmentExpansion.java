@@ -19,6 +19,7 @@ import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import com.github.emberstar1201.enchantmentex.enchantment.PlunderHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.QianpoQingMingSwordHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.SnatchHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.SmokelessDashHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.WindRippleHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiArcheryHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHandler;
@@ -95,6 +96,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(YunLaiArcheryHandler.class);
         MinecraftForge.EVENT_BUS.register(YunLaiSwordmanshipHandler.class);
         MinecraftForge.EVENT_BUS.register(SwordOfTheFreeWillHandler.class);
+        MinecraftForge.EVENT_BUS.register(SmokelessDashHandler.class);
 
         // ================================================================
         // 注册网络通道（飞轮效应等 C2S 数据包）

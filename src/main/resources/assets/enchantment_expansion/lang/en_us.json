@@ -19,6 +19,8 @@
   "enchantment.enchantment_expansion.plunder.desc": "Rare loot always drops, level affects quantity",
   "enchantment.enchantment_expansion.dawn": "Dawn",
   "enchantment.enchantment_expansion.dawn.desc": "Permanent growth per kill: +DMG, +Crit Rate, +Crit DMG, -ATK Speed, +2.5 Range. Boss kills grant extra growth",
+  "enchantment.enchantment_expansion.qianpo_qingming_sword": "Qianpo Qingming Sword",
+  "enchantment.enchantment_expansion.qianpo_qingming_sword.desc": "Deals bonus damage on attack, higher level deals more damage",
   "enchantment.enchantment_expansion.glacial_arrow": "Glacial Arrow",
   "enchantment.enchantment_expansion.glacial_arrow.desc": "Infuses arrows with ice crystal power. Longer charge = greater power. AoE damage and enemy pull on hit",
   "enchantment.enchantment_expansion.auto_smelt": "Auto Smelt",
@@ -44,6 +46,10 @@
   "enchantment.enchantment_expansion.entropy": "Entropy",
   "enchantment.enchantment_expansion.entropy.desc": "Entropy mark stacks on hit. 2 stacks: slow. Full stacks: detonate 30% lost HP as true damage, spreads",
   "enchantment.enchantment_expansion.eternal_spark": "Eternal Spark",
+  "enchantment.enchantment_expansion.smokeless_dash": "Smokeless Dash",
+  "enchantment.enchantment_expansion.smokeless_dash.desc": "Scroll wheel adjusts elytra speed, no fireworks needed",
+  "key.enchantment_expansion.dash_speed_up": "Smokeless Speed Up",
+  "key.enchantment_expansion.dash_speed_down": "Smokeless Slow Down",
   "enchantment.enchantment_expansion.eternal_spark.desc": "Attacks apply Spark mark (2% max HP/sec true dmg, stacks boost dmg, spreads on death)",
   "item.enchantment_expansion.end_star": "End Star",
   "item.enchantment_expansion.end_star.desc": "The end ？",
@@ -54,6 +60,6 @@
   "message.enchantment_expansion.sotfw.activated": "§6§l【Will of Man】Activated! +150% damage for 10 min, 90% chance to strike lightning!",
   "message.enchantment_expansion.sotfw.cooldown": "§c【Will of Man】Cooldown: %d min %d s remaining",
   "message.enchantment_expansion.sotfw.cooldown_done": "§a§l【Will of Man】Cooldown complete! Ready to use!",
-  "advancements.enchantment_expansion.we_fall_we_remain.title": "We Fall, We Remain",
-  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5Though we return to dust, our will endures on this blade."
+  "advancements.enchantment_expansion.we_fall_we_remain.title": "Though we return to dust, our will endures on this blade.",
+  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5Obtain the sword of the free will"
 }
