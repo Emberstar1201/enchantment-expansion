@@ -40,6 +40,10 @@ public class Config {
             .comment("云来剑法：攻击距离加成（格，ADDITION 操作，默认 2.5，基础 3 格 → 5.5 格）")
             .defineInRange("yunlaiSwordmanship.attackReach", 2.5, 0.0, 50.0);
 
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORDMANSHIP_DAMAGE_MULTIPLIER = BUILDER
+            .comment("云来剑法：伤害倍率（基础伤害 × 此值，默认 1.10 = +10%）")
+            .defineInRange("yunlaiSwordmanship.damageMultiplier", 1.10, 1.0, 10.0);
+
     private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_SPEED = BUILDER
             .comment("古·云来剑法：攻击速度加成（ADDITION 操作，默认 5.0，基础攻速 4.0 → 9.0）")
             .defineInRange("ancientYunlaiSwordmanship.attackSpeed", 5.0, 0.0, 100.0);
@@ -47,6 +51,11 @@ public class Config {
     private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_REACH = BUILDER
             .comment("古·云来剑法：攻击距离加成（格，ADDITION 操作，默认 5.0，基础 3 格 → 8 格）")
             .defineInRange("ancientYunlaiSwordmanship.attackReach", 5.0, 0.0, 50.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORDMANSHIP_DAMAGE_MULTIPLIER = BUILDER
+            .comment("古·云来剑法：伤害倍率（基础伤害 × 此值，默认 1.50 = +50%）",
+                    "宝藏级剑法的终局强化，配合攻速/距离加成定位\"终结剑法\"")
+            .defineInRange("ancientYunlaiSwordmanship.damageMultiplier", 1.50, 1.0, 10.0);
 
     // ================================================================
     // 终末将至 附魔配置
@@ -547,8 +556,10 @@ public class Config {
     // 云来剑法 & 古·云来剑法
     public static double yunlaiSwordmanshipAttackSpeed;
     public static double yunlaiSwordmanshipAttackReach;
+    public static double yunlaiSwordmanshipDamageMultiplier;
     public static double ancientYunlaiSwordmanshipAttackSpeed;
     public static double ancientYunlaiSwordmanshipAttackReach;
+    public static double ancientYunlaiSwordmanshipDamageMultiplier;
 
     // 古·云来弓法 & 云来弓法
     public static double ancientYunLaiArrowSpeed;
@@ -690,8 +701,10 @@ public class Config {
         // 云来剑法 & 古·云来剑法
         yunlaiSwordmanshipAttackSpeed = YUNLAI_SWORDMANSHIP_ATTACK_SPEED.get();
         yunlaiSwordmanshipAttackReach = YUNLAI_SWORDMANSHIP_ATTACK_REACH.get();
+        yunlaiSwordmanshipDamageMultiplier = YUNLAI_SWORDMANSHIP_DAMAGE_MULTIPLIER.get();
         ancientYunlaiSwordmanshipAttackSpeed = ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_SPEED.get();
         ancientYunlaiSwordmanshipAttackReach = ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_REACH.get();
+        ancientYunlaiSwordmanshipDamageMultiplier = ANCIENT_YUNLAI_SWORDMANSHIP_DAMAGE_MULTIPLIER.get();
 
         // 终末将至
         endApproachesDamageMultiplier = END_APPROACHES_DAMAGE_MULTIPLIER.get();

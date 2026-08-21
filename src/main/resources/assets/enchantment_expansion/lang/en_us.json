@@ -8,9 +8,9 @@
   "enchantment.enchantment_expansion.creation_from_nothing": "Creation from Nothing",
   "enchantment.enchantment_expansion.creation_from_nothing.desc": "Breaking blocks has a chance to drop rare treasures",
   "enchantment.enchantment_expansion.yunlai_swordmanship": "YunLai Swordmanship",
-  "enchantment.enchantment_expansion.yunlai_swordmanship.desc": "While held: Attack Speed +2.5, Attack Reach +2.5 blocks",
+  "enchantment.enchantment_expansion.yunlai_swordmanship.desc": "While held: Attack Speed +2.5, Attack Reach +2.5 blocks, Damage x1.10",
   "enchantment.enchantment_expansion.ancient_yunlai_swordmanship": "Ancient YunLai Swordmanship",
-  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship.desc": "While held: Attack Speed +5.0, Attack Reach +5.0 blocks",
+  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship.desc": "While held: Attack Speed +5.0, Attack Reach +5.0 blocks, Damage x1.50",
   "enchantment.enchantment_expansion.elegant_catwalk": "Elegant Catwalk",
   "enchantment.enchantment_expansion.elegant_catwalk.desc": "Swift as a cat, light as a cat",
   "enchantment.enchantment_expansion.snatch": "Snatch",
@@ -61,5 +61,9 @@
   "message.enchantment_expansion.sotfw.cooldown": "§c【Will of Man】Cooldown: %d min %d s remaining",
   "message.enchantment_expansion.sotfw.cooldown_done": "§a§l【Will of Man】Cooldown complete! Ready to use!",
   "advancements.enchantment_expansion.we_fall_we_remain.title": "Though we return to dust, our will endures on this blade.",
-  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5Obtain the sword of the free will"
+  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5Obtain the sword of the free will",
+  "item.enchantment_expansion.ocean_star": "Ocean star",
+  "item.enchantment_expansion.ocean_star.desc": "The abyss bows before you. No need to breathe underwater; immune to drowning.",
+  "advancements.enchantment_expansion.face_the_deep.title": "Face the Deep",
+  "advancements.enchantment_expansion.face_the_deep.description": "The abyss bows before you."
 }

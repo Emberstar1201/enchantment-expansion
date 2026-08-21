@@ -11,7 +11,8 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 //   最高等级：I 级
 //   攻击速度：+2.5（ADDITION 操作）
 //   攻击距离：+2.5 格（基础 3 格 → 5.5 格）
-//   手持时直接生效，无额外机制
+//   伤害倍率：×1.10（+10%，配置可调）
+//   手持时直接生效
 //
 // 【获取】
 //   附魔台可出（treasure = false）

@@ -1,0 +1,37 @@
+{
+  "display": {
+    "icon": {
+      "item": "enchantment_expansion:ocean_star"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.face_the_deep.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.face_the_deep.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "minecraft:adventure/root",
+  "criteria": {
+    "has_ocean_star": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "enchantment_expansion:ocean_star"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_ocean_star"
+    ]
+  ]
+}

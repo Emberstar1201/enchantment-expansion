@@ -18,7 +18,7 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 //   穿透效果：母箭可穿透3个敌人
 //
 // 【等级】1级（附魔台可获得，非宝藏）
-// 【冲突】与力量(POWER)兼容
+// 【冲突】与云来弓法、古·云来弓法互斥（不可同时附魔）；与力量(POWER)兼容
 // ========================================================================
 public class GlacialArrowEnchantment extends Enchantment {
 
@@ -70,6 +70,19 @@ public class GlacialArrowEnchantment extends Enchantment {
     @Override
     public boolean isAllowedOnBooks() {
         return true;
+    }
+
+    // ========================================================================
+    // 【冲突规则】与云来弓法、古·云来弓法互斥
+    // ========================================================================
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        // 与云来弓法互斥
+        if (other instanceof YunLaiArcheryEnchantment) return false;
+        // 与古·云来弓法互斥
+        if (other instanceof AncientYunLaiEnchantment) return false;
+        // 其余沿用父类逻辑（力量等 BOW 附魔可共存）
+        return super.checkCompatibility(other);
     }
 
     // 检测是否可附魔到该物品（仅弓）

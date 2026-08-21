@@ -24,8 +24,9 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 //
 // 【冲突规则】
 //   ✅ 与力量（POWER）→ 兼容
-//   ✅ 与云来弓法基础版 → 兼容（可共存叠加）
-//   ❌ 与原版无限/火矢/冲击：同 BOW 类别默认互斥
+//   ❌ 与云来弓法基础版 → 互斥（不可同时附魔）
+//   ❌ 与琉璃冰魄箭 → 互斥（不可同时附魔）
+//   ✅ 与原版无限/火矢/冲击 → 兼容（弓类附魔默认可共存）
 // ========================================================================
 public class AncientYunLaiEnchantment extends Enchantment {
 
@@ -145,6 +146,19 @@ public class AncientYunLaiEnchantment extends Enchantment {
     @Deprecated
     public static double getSpeedMultiplier(int level) {
         return getFlightSpeedMultiplier(level);
+    }
+
+    // ========================================================================
+    // 【冲突规则】与云来弓法、琉璃冰魄箭互斥
+    // ========================================================================
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        // 与云来弓法基础版互斥
+        if (other instanceof YunLaiArcheryEnchantment) return false;
+        // 与琉璃冰魄箭互斥
+        if (other instanceof GlacialArrowEnchantment) return false;
+        // 其余沿用父类逻辑（力量等 BOW 附魔可共存）
+        return super.checkCompatibility(other);
     }
 
     // 检查此附魔是否可应用到给定物品栈（仅弓可以附魔）

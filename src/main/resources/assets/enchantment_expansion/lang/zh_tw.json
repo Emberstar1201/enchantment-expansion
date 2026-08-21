@@ -8,9 +8,9 @@
   "enchantment.enchantment_expansion.creation_from_nothing": "無中生有",
   "enchantment.enchantment_expansion.creation_from_nothing.desc": "破壞方塊時有機率掉落稀有寶物",
   "enchantment.enchantment_expansion.yunlai_swordmanship": "雲來劍法",
-  "enchantment.enchantment_expansion.yunlai_swordmanship.desc": "手持時攻擊速度+2.5，攻擊距離+2.5格",
+  "enchantment.enchantment_expansion.yunlai_swordmanship.desc": "手持時攻擊速度+2.5，攻擊距離+2.5格，傷害×1.10",
   "enchantment.enchantment_expansion.ancient_yunlai_swordmanship": "古·雲來劍法",
-  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship.desc": "手持時攻擊速度+5.0，攻擊距離+5.0格",
+  "enchantment.enchantment_expansion.ancient_yunlai_swordmanship.desc": "手持時攻擊速度+5.0，攻擊距離+5.0格，傷害×1.50",
   "enchantment.enchantment_expansion.elegant_catwalk": "優雅貓步",
   "enchantment.enchantment_expansion.elegant_catwalk.desc": "如貓般迅捷，如貓般輕盈",
   "enchantment.enchantment_expansion.snatch": "攫取",
@@ -59,5 +59,9 @@
   "message.enchantment_expansion.sotfw.cooldown": "§c「人的意志」冷卻中，剩餘 %d 分 %d 秒",
   "message.enchantment_expansion.sotfw.cooldown_done": "§a§l【人的意志】冷卻已完成！可再次使用！",
   "advancements.enchantment_expansion.we_fall_we_remain.title": "我們逝去，我們永恆",
-  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5獲得人權劍。"
+  "advancements.enchantment_expansion.we_fall_we_remain.description": "§5獲得人權劍。",
+  "item.enchantment_expansion.ocean_star": "海洋之星",
+  "item.enchantment_expansion.ocean_star.desc": "深淵在你面前低頭。水下無需呼吸，免疫溺水。",
+  "advancements.enchantment_expansion.face_the_deep.title": "直面深海",
+  "advancements.enchantment_expansion.face_the_deep.description": "深淵在你面前低頭。"
 }

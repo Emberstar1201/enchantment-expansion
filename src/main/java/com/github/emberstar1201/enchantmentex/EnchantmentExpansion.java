@@ -25,6 +25,7 @@ import com.github.emberstar1201.enchantmentex.enchantment.YunLaiArcheryHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHandler;
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.item.handler.OceanStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.SwordOfTheFreeWillHandler;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
 import com.mojang.logging.LogUtils;
@@ -62,6 +63,9 @@ public class EnchantmentExpansion {
         // ================================================================
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        // 海洋之星独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, OceanStarConfig.SPEC,
+                "enchantment_expansion-ocean_star.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
@@ -95,6 +99,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(WindRippleHandler.class);
         MinecraftForge.EVENT_BUS.register(YunLaiArcheryHandler.class);
         MinecraftForge.EVENT_BUS.register(YunLaiSwordmanshipHandler.class);
+        MinecraftForge.EVENT_BUS.register(OceanStarHandler.class);
         MinecraftForge.EVENT_BUS.register(SwordOfTheFreeWillHandler.class);
         MinecraftForge.EVENT_BUS.register(SmokelessDashHandler.class);
 

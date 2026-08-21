@@ -11,7 +11,8 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 //   最高等级：I 级
 //   攻击速度：+5.0（ADDITION 操作）
 //   攻击距离：+5.0 格（基础 3 格 → 8 格）
-//   手持时直接生效，无额外机制
+//   伤害倍率：×1.50（+50%，配置可调）
+//   手持时直接生效
 //
 // 【获取】
 //   仅宝箱/村民交易（treasure = true）

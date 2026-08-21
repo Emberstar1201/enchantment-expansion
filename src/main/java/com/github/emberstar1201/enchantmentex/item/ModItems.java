@@ -69,6 +69,27 @@ public class ModItems {
             ITEMS.register("sword_of_the_free_will", SwordOfTheFreeWill::new);
 
     // ========================================================================
+    // 【海洋之星】（Ocean star）
+    //   在海洋神殿结构内的宝箱中获得（每神殿仅一个，100%生成）
+    //
+    // Item.Properties 配置：
+    //   .stacksTo(1)         ：不可堆叠（唯一宝物）
+    //   .rarity(Rarity.EPIC) ：史诗稀有度，物品名显示为紫色
+    //   .fireResistant()     ：不会被火焰/岩浆销毁
+    //
+    // 物品属性定义见 OceanStarItem（浮光 + 描述文字），
+    // 被动效果（水下挖掘/水流免疫/守卫者中立等）由 OceanStarHandler 事件驱动。
+    // 注册ID：ocean_star
+    // ========================================================================
+    public static final RegistryObject<Item> OCEAN_STAR = ITEMS.register("ocean_star",
+            () -> new OceanStarItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.EPIC)
+                    .fireResistant()
+            )
+    );
+
+    // ========================================================================
     // 注册方法：在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     // ========================================================================
     public static void register(IEventBus eventBus) {
@@ -94,6 +115,7 @@ public class ModItems {
             //   ResourceKey<CreativeModeTab> = minecraft:tools_and_utilities
             if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
                 event.accept(END_STAR);
+                event.accept(OCEAN_STAR);
             }
         }
     }

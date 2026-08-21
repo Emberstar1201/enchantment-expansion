@@ -20,7 +20,11 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 // 【与"古·云来弓法"的区别】
 //   - 古·云来弓法：箭矢加速 + 蓄力加速（双效果，宝藏附魔，附魔台无法获得）
 //   - 云来弓法（基础版）：仅蓄力加速（单效果，附魔台可获得）
-//   - 两者可共存叠加（用户明确要求）
+//
+// 【冲突规则】
+//   ❌ 与古·云来弓法 → 互斥（不可同时附魔）
+//   ❌ 与琉璃冰魄箭 → 互斥（不可同时附魔）
+//   ✅ 与力量（POWER）→ 兼容
 //
 // ========================================================================
 public class YunLaiArcheryEnchantment extends Enchantment {
@@ -93,6 +97,19 @@ public class YunLaiArcheryEnchantment extends Enchantment {
     @Override
     public boolean isAllowedOnBooks() {
         return true;
+    }
+
+    // ========================================================================
+    // 【冲突规则】与古·云来弓法、琉璃冰魄箭互斥
+    // ========================================================================
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        // 与古·云来弓法互斥
+        if (other instanceof AncientYunLaiEnchantment) return false;
+        // 与琉璃冰魄箭互斥
+        if (other instanceof GlacialArrowEnchantment) return false;
+        // 其余沿用父类逻辑（力量等 BOW 附魔可共存）
+        return super.checkCompatibility(other);
     }
 
     // ========================================================================

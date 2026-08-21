@@ -1,10 +1,7 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
 import com.github.emberstar1201.enchantmentex.Config;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -14,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
@@ -26,13 +24,16 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // 云来剑法 / 古·云来剑法 事件处理器
 //
 // 【职责】
-//   在 PlayerTickEvent 中检测玩家主手武器是否携带云来剑法或古·云来剑法，
-//   若持有则添加攻击速度（ATTACK_SPEED）和攻击距离（ATTACK_REACH）修饰符，
-//   若不再持有则移除修饰符。
+//   1. PlayerTickEvent 中检测玩家主手武器是否携带云来剑法或古·云来剑法，
+//      若持有则添加攻击速度（ATTACK_SPEED）和攻击距离（ATTACK_REACH）修饰符，
+//      若不再持有则移除修饰符。
+//   2. LivingHurtEvent 中按附魔伤害倍率放大造成伤害（提升输出价值）。
 //
 // 【技术方案】
 //   使用 UUID 标识修饰符，每次 tick 检查主手物品，
 //   需要时添加，不需要时移除。
+//   伤害倍率与"终末将至/拂晓重制"同为 NORMAL 优先级，
+//   倍率乘算（乘法交换律，顺序无关），可正常叠加。
 //
 // 【修饰符 UUID（固定，用于标识）】
 //   云来剑法 - 攻速：f5a8d4c2-9b7e-4e3c-8d1f-6a2b5c4d3e2f
@@ -112,6 +113,41 @@ public class YunLaiSwordmanshipHandler {
                     hasYunLai, hasAncientYunLai,
                     Config.yunlaiSwordmanshipAttackSpeed,
                     Config.yunlaiSwordmanshipAttackReach);
+        }
+    }
+
+    // ============================================================
+    // 【伤害倍率】LivingHurtEvent
+    //   玩家主手武器带有云来剑法/古·云来剑法时，按配置倍率放大伤害。
+    //   两把剑法互斥，同一时间至多一种生效（先查云来，再查古·云来）。
+    // ============================================================
+    @SubscribeEvent
+    public static void onLivingHurt(LivingHurtEvent event) {
+        // 伤害来源必须是玩家近战攻击
+        if (!(event.getSource().getEntity() instanceof Player attacker)) return;
+        if (attacker.level().isClientSide()) return;
+
+        ItemStack weapon = attacker.getMainHandItem();
+        if (weapon.isEmpty()) return;
+
+        double multiplier = 1.0;
+
+        // 云来剑法：伤害 ×1.10
+        int yunlaiLevel = EnchantmentHelper.getItemEnchantmentLevel(
+                ModEnchantments.YUNLAI_SWORDMANSHIP.get(), weapon);
+        if (yunlaiLevel > 0) {
+            multiplier = Config.yunlaiSwordmanshipDamageMultiplier;
+        } else {
+            // 古·云来剑法：伤害 ×1.50（两把互斥，此处不叠加）
+            int ancientLevel = EnchantmentHelper.getItemEnchantmentLevel(
+                    ModEnchantments.ANCIENT_YUNLAI_SWORDMANSHIP.get(), weapon);
+            if (ancientLevel > 0) {
+                multiplier = Config.ancientYunlaiSwordmanshipDamageMultiplier;
+            }
+        }
+
+        if (multiplier > 1.0) {
+            event.setAmount(event.getAmount() * (float) multiplier);
         }
     }
 

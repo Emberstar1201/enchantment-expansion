@@ -4,7 +4,7 @@
 爱发电赞助接:https://www.ifdian.net/a/Emberstar
 爱发电主页：https://www.ifdian.net/a/Emberstar
 内测人员感谢：Shixiangye,Shasnow,andan_,鸿銞
-赞助者感谢:andan_ 20元 鸿銞 5元 。乄夜幽魂。☆ 5元
+赞助者感谢:andan_ 20元 鸿銞 5元 。乄夜幽魂。☆ 5元 丝羽珍 14.5元
 反馈人员感谢：Shasnow,andan_,鸿銞
 
 制作参与人员：Shasnow   
