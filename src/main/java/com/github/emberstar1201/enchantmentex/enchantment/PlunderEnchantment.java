@@ -1,22 +1,27 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.resources.ResourceLocation;
 
 // ========================================================================
-// 【强夺】附魔 - 剑类武器专属
-// 效果：
-//   1. 稀有战利品（头颅、唱片）100% 掉落，不再受原版概率影响
-//   2. 按附魔等级额外增加稀有战利品数量：
-//        Lv I = +1, Lv II = +2, Lv III = +3
-//   3. 击杀爬行者时，必定额外掉落一张音乐唱片（无需骷髅射杀）
-//   4. 非稀有战利品不受影响（仍按原版概率和数量掉落）
-//   5. BOSS 固定掉落物（下界之星、龙蛋）不触发额外加成
+// 【强夺】附魔 - 武器通用（剑、斧、三叉戟等）
+// 效果（v3 调整版，数值见 PlunderConfig）：
+//   一、稀有战利品保底（头颅、唱片）：
+//        I级 ：75%  概率保底，掉落 1~2 个
+//        II级：100% 概率保底，掉落 2~3 个
+//        III级：100% 概率保底，掉落 3~4 个
+//   二、怪物武器/盔甲掉落：
+//        I级 ：大概率掉落（默认 60%），耐久度约 25%（极低概率满耐久）
+//        II级：100% 掉落，耐久度 50%~75%
+//        III级：100% 掉落，满耐久
+//   三、BOSS 固定掉落物（下界之星、龙蛋）不受影响
 // 获取方式：仅以附魔书形式在遗迹宝箱中出现（附魔台无法获得）
 // 稀有度：非常稀有（Rarity.VERY_RARE）
 // 冲突：抢夺（Looting）——同属"击杀掉落强化"类附魔，互斥
@@ -111,18 +116,11 @@ public class PlunderEnchantment extends Enchantment {
     }
 
     // 检查此附魔是否可应用到给定物品栈
-    // 严格限制为 SwordItem（仅剑），与 SnatchEnchantment 保持一致
+    // 武器通用：剑、斧、三叉戟（与 EnchantmentCategory.WEAPON 匹配）
     @Override
     public boolean canEnchant(ItemStack stack) {
-        return stack.getItem() instanceof SwordItem;
-    }
-
-    // ========================================================================
-    // 工具方法：给定附魔等级，返回"稀有战利品额外掉落数量"
-    //   Lv I = +1, Lv II = +2, Lv III = +3
-    // 等级超出范围则钳制：<1 按 1 级，>3 按 3 级
-    // ========================================================================
-    public static int getExtraRareLootCount(int level) {
-        return Math.max(1, Math.min(level, MAX_LEVEL));
+        return stack.getItem() instanceof SwordItem
+                || stack.getItem() instanceof AxeItem
+                || stack.getItem() instanceof TridentItem;
     }
 }

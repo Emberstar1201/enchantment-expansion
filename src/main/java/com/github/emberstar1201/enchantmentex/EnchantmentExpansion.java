@@ -66,6 +66,9 @@ public class EnchantmentExpansion {
         // 海洋之星独立配置（显式指定文件名，避免与主配置默认命名冲突）
         context.registerConfig(ModConfig.Type.COMMON, OceanStarConfig.SPEC,
                 "enchantment_expansion-ocean_star.toml");
+        // 强夺附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, PlunderConfig.SPEC,
+                "enchantment_expansion-plunder.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★

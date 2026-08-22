@@ -27,6 +27,20 @@ public class DawnData {
     private static final String KEY_ACCUMULATED_CRIT = "accumulatedCrit";
 
     // ========================================================================
+    // 刺破长夜 状态键（仅服务器端 PersistData 维护，不同步到客户端）
+    //   combo:            当前连击数（相邻击杀间隔 ≤ 连击窗口才累计）
+    //   lastKillTime:     上次击杀的游戏 tick 时间戳
+    //   activeTicks:      刺破长夜激活剩余 tick（>0 表示激活中）
+    //   activeType:       激活类型：1=连击爆发（移速+攻距），2=低血狂暴（吸血）
+    //   cooldownTicks:    共享冷却剩余 tick
+    // ========================================================================
+    private static final String KEY_COMBO = "combo";
+    private static final String KEY_LAST_KILL_TIME = "lastKillTime";
+    private static final String KEY_ACTIVE_TICKS = "activeTicks";
+    private static final String KEY_ACTIVE_TYPE = "activeType";
+    private static final String KEY_COOLDOWN_TICKS = "cooldownTicks";
+
+    // ========================================================================
     // Player PersistentData 存取（服务器端持久化）
     // ========================================================================
 
@@ -74,6 +88,75 @@ public class DawnData {
     }
 
     // ========================================================================
+    // 刺破长夜 状态存取（全部存玩家 PersistentData，仅服务器端）
+    // ========================================================================
+
+    /** 获取当前连击数 */
+    public static int getCombo(Player player) {
+        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_COMBO);
+    }
+
+    /** 设置连击数 */
+    public static void setCombo(Player player, int combo) {
+        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+        data.putInt(KEY_COMBO, Math.max(0, combo));
+        player.getPersistentData().put(TAG_ROOT, data);
+    }
+
+    /** 记录上次击杀的游戏 tick 时间戳 */
+    public static void setLastKillTime(Player player, long time) {
+        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+        data.putLong(KEY_LAST_KILL_TIME, time);
+        player.getPersistentData().put(TAG_ROOT, data);
+    }
+
+    /** 获取上次击杀的游戏 tick 时间戳（无记录时返回 0） */
+    public static long getLastKillTime(Player player) {
+        return player.getPersistentData().getCompound(TAG_ROOT).getLong(KEY_LAST_KILL_TIME);
+    }
+
+    /** 获取刺破长夜激活剩余 tick */
+    public static int getActiveTicks(Player player) {
+        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_ACTIVE_TICKS);
+    }
+
+    /** 设置刺破长夜激活剩余 tick */
+    public static void setActiveTicks(Player player, int ticks) {
+        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+        data.putInt(KEY_ACTIVE_TICKS, Math.max(0, ticks));
+        player.getPersistentData().put(TAG_ROOT, data);
+    }
+
+    /** 获取激活类型（1=连击爆发 2=低血狂暴） */
+    public static int getActiveType(Player player) {
+        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_ACTIVE_TYPE);
+    }
+
+    /** 设置激活类型 */
+    public static void setActiveType(Player player, int type) {
+        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+        data.putInt(KEY_ACTIVE_TYPE, type);
+        player.getPersistentData().put(TAG_ROOT, data);
+    }
+
+    /** 获取共享冷却剩余 tick */
+    public static int getCooldownTicks(Player player) {
+        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_COOLDOWN_TICKS);
+    }
+
+    /** 设置共享冷却剩余 tick */
+    public static void setCooldownTicks(Player player, int ticks) {
+        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+        data.putInt(KEY_COOLDOWN_TICKS, Math.max(0, ticks));
+        player.getPersistentData().put(TAG_ROOT, data);
+    }
+
+    /** 刺破长夜是否激活中 */
+    public static boolean isPierceActive(Player player) {
+        return getActiveTicks(player) > 0;
+    }
+
+    // ========================================================================
     // 武器 ItemStack NBT 存取（自动同步到客户端，用于 Tooltip 显示）
     // ========================================================================
 
@@ -112,11 +195,5 @@ public class DawnData {
     /** 暴击伤害百分比 */
     public static double getCritDamagePercent(double kills) {
         return Math.min(kills * Config.dawnCritDamagePerKill, Config.dawnCritDamageMax);
-    }
-
-    /** 攻速惩罚百分比（正值表示减少量，如 50 = 减少50%攻速） */
-    public static double getAttackSpeedPenaltyPercent(double kills) {
-        return Math.min(kills * Math.abs(Config.dawnAttackSpeedPerKill),
-                Math.abs(Config.dawnAttackSpeedMax));
     }
 }

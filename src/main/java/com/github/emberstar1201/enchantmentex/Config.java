@@ -263,14 +263,6 @@ public class Config {
             .comment("拂晓重制：暴击伤害上限百分比（默认 100% = 200杀达上限）")
             .defineInRange("dawn.critDamageMax", 100.0, 0.0, 10000.0);
 
-    private static final ForgeConfigSpec.DoubleValue DAWN_ATTACK_SPEED_PER_KILL = BUILDER
-            .comment("拂晓重制：每击杀攻速惩罚百分比（默认 0.25 = 减少0.25%/杀）")
-            .defineInRange("dawn.attackSpeedPerKill", 0.25, 0.0, 100.0);
-
-    private static final ForgeConfigSpec.DoubleValue DAWN_ATTACK_SPEED_MAX = BUILDER
-            .comment("拂晓重制：攻速惩罚上限百分比（默认 50% = 攻速减少50%，200杀达上限）")
-            .defineInRange("dawn.attackSpeedMax", 50.0, 0.0, 100.0);
-
     private static final ForgeConfigSpec.DoubleValue DAWN_ATTACK_RANGE = BUILDER
             .comment("拂晓重制：攻击距离加成（格，默认 2.5）")
             .defineInRange("dawn.attackRange", 2.5, 0.0, 20.0);
@@ -286,6 +278,84 @@ public class Config {
     private static final ForgeConfigSpec.DoubleValue DAWN_BOSS_HEALTH_THRESHOLD = BUILDER
             .comment("拂晓重制：Boss判定血量阈值（默认 200，≥此值的实体视为 Boss）")
             .defineInRange("dawn.bossHealthThreshold", 200.0, 1.0, Double.MAX_VALUE);
+
+    // ================================================================
+    // 拂晓重制 - 新机制（低血处决 + 击杀吸血/溅射）
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue DAWN_EXECUTE_THRESHOLD = BUILDER
+            .comment("拂晓重制：处决血线（目标剩余生命比例 ≤ 此值时本击必定暴击，默认 0.15 = 15%）")
+            .defineInRange("dawn.executeThreshold", 0.15, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_EXECUTE_DAMAGE_MULTIPLIER = BUILDER
+            .comment("拂晓重制：处决额外伤害倍率（处决时 = 暴击伤害 × 此倍率，默认 2.0）")
+            .defineInRange("dawn.executeDamageMultiplier", 2.0, 1.0, 100.0);
+
+    private static final ForgeConfigSpec.BooleanValue DAWN_LIFESTEAL_ENABLED = BUILDER
+            .comment("拂晓重制：击杀吸血（默认 true）")
+            .define("dawn.lifestealEnabled", true);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_LIFESTEAL_PERCENT = BUILDER
+            .comment("拂晓重制：击杀吸血比例（回复 = 目标最大生命 × 此值，默认 0.05 = 5%）")
+            .defineInRange("dawn.lifestealPercent", 0.05, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.BooleanValue DAWN_SPLASH_ENABLED = BUILDER
+            .comment("拂晓重制：击杀范围溅射（默认 true）")
+            .define("dawn.splashEnabled", true);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_SPLASH_RADIUS = BUILDER
+            .comment("拂晓重制：击杀溅射半径（格，默认 3.0）")
+            .defineInRange("dawn.splashRadius", 3.0, 0.5, 20.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_SPLASH_DAMAGE_PERCENT = BUILDER
+            .comment("拂晓重制：击杀溅射伤害（溅射伤害 = 目标最大生命 × 此值，默认 0.5 = 50%")
+            .defineInRange("dawn.splashDamagePercent", 0.5, 0.0, 100.0);
+
+    // ================================================================
+    // 拂晓重制 - 刺破长夜 配置（方案A+B 混合：连击爆发主 + 低血狂暴副，共享冷却）
+    // ================================================================
+    private static final ForgeConfigSpec.BooleanValue DAWN_PIERCE_ENABLED = BUILDER
+            .comment("刺破长夜：总开关（默认 true）")
+            .define("dawn.pierceEnabled", true);
+
+    private static final ForgeConfigSpec.IntValue DAWN_PIERCE_COMBO_THRESHOLD = BUILDER
+            .comment("刺破长夜·连击爆发：触发所需连击数（默认 3）")
+            .defineInRange("dawn.pierceComboThreshold", 3, 1, 10);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_PIERCE_COMBO_WINDOW_SECONDS = BUILDER
+            .comment("刺破长夜·连击爆发：连击窗口（秒，相邻击杀间隔 ≤ 此值才累计，默认 8）")
+            .defineInRange("dawn.pierceComboWindowSeconds", 8.0, 1.0, 120.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_PIERCE_DURATION_SECONDS = BUILDER
+            .comment("刺破长夜：激活持续时间（秒，两种触发共用，默认 8）")
+            .defineInRange("dawn.pierceDurationSeconds", 8.0, 1.0, 60.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_PIERCE_COOLDOWN_SECONDS = BUILDER
+            .comment("刺破长夜：冷却时间（秒，连击与低血共享冷却，默认 15）")
+            .defineInRange("dawn.pierceCooldownSeconds", 15.0, 1.0, 300.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_PIERCE_COMBO_DAMAGE_MULTIPLIER = BUILDER
+            .comment("刺破长夜·连击爆发：伤害倍率（默认 1.5 = +50%）")
+            .defineInRange("dawn.pierceComboDamageMultiplier", 1.5, 1.0, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_PIERCE_COMBO_MOVE_SPEED_PERCENT = BUILDER
+            .comment("刺破长夜·连击爆发：移动速度加成百分比（默认 10 = +10%）")
+            .defineInRange("dawn.pierceComboMoveSpeedPercent", 10.0, 0.0, 100.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_PIERCE_COMBO_REACH_BONUS = BUILDER
+            .comment("刺破长夜·连击爆发：额外攻击距离（格，默认 2）")
+            .defineInRange("dawn.pierceComboReachBonus", 2.0, 0.0, 20.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_PIERCE_LOW_HP_THRESHOLD = BUILDER
+            .comment("刺破长夜·低血狂暴：生命 ≤ 此比例时自动激活（默认 0.40 = 40%）")
+            .defineInRange("dawn.pierceLowHpThreshold", 0.40, 0.05, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_PIERCE_LOW_HP_DAMAGE_MULTIPLIER = BUILDER
+            .comment("刺破长夜·低血狂暴：伤害倍率（数值减半，默认 1.4 = +40%）")
+            .defineInRange("dawn.pierceLowHpDamageMultiplier", 1.4, 1.0, 10.0);
+
+    private static final ForgeConfigSpec.DoubleValue DAWN_PIERCE_LOW_HP_LIFESTEAL_PERCENT = BUILDER
+            .comment("刺破长夜·低血狂暴：吸血百分比（按造成伤害回复，数值减半，默认 5%）")
+            .defineInRange("dawn.pierceLowHpLifestealPercent", 5.0, 0.0, 100.0);
 
     // ================================================================
     // 飞轮效应 配置
@@ -621,12 +691,30 @@ public class Config {
     public static double dawnCritRateMax;
     public static double dawnCritDamagePerKill;
     public static double dawnCritDamageMax;
-    public static double dawnAttackSpeedPerKill;
-    public static double dawnAttackSpeedMax;
     public static double dawnAttackRange;
     public static double dawnBossMultiplierMin;
     public static double dawnBossMultiplierMax;
     public static double dawnBossHealthThreshold;
+    public static double dawnExecuteThreshold;
+    public static double dawnExecuteDamageMultiplier;
+    public static boolean dawnLifestealEnabled;
+    public static double dawnLifestealPercent;
+    public static boolean dawnSplashEnabled;
+    public static double dawnSplashRadius;
+    public static double dawnSplashDamagePercent;
+
+    // 刺破长夜（方案A+B 混合）
+    public static boolean dawnPierceEnabled;
+    public static int dawnPierceComboThreshold;
+    public static double dawnPierceComboWindowSeconds;
+    public static double dawnPierceDurationSeconds;
+    public static double dawnPierceCooldownSeconds;
+    public static double dawnPierceComboDamageMultiplier;
+    public static double dawnPierceComboMoveSpeedPercent;
+    public static double dawnPierceComboReachBonus;
+    public static double dawnPierceLowHpThreshold;
+    public static double dawnPierceLowHpDamageMultiplier;
+    public static double dawnPierceLowHpLifestealPercent;
 
     // 飞轮效应
     public static double flywheelDistance1;
@@ -765,12 +853,30 @@ public class Config {
         dawnCritRateMax = DAWN_CRIT_RATE_MAX.get();
         dawnCritDamagePerKill = DAWN_CRIT_DAMAGE_PER_KILL.get();
         dawnCritDamageMax = DAWN_CRIT_DAMAGE_MAX.get();
-        dawnAttackSpeedPerKill = DAWN_ATTACK_SPEED_PER_KILL.get();
-        dawnAttackSpeedMax = DAWN_ATTACK_SPEED_MAX.get();
         dawnAttackRange = DAWN_ATTACK_RANGE.get();
         dawnBossMultiplierMin = DAWN_BOSS_MULTIPLIER_MIN.get();
         dawnBossMultiplierMax = DAWN_BOSS_MULTIPLIER_MAX.get();
         dawnBossHealthThreshold = DAWN_BOSS_HEALTH_THRESHOLD.get();
+        dawnExecuteThreshold = DAWN_EXECUTE_THRESHOLD.get();
+        dawnExecuteDamageMultiplier = DAWN_EXECUTE_DAMAGE_MULTIPLIER.get();
+        dawnLifestealEnabled = DAWN_LIFESTEAL_ENABLED.get();
+        dawnLifestealPercent = DAWN_LIFESTEAL_PERCENT.get();
+        dawnSplashEnabled = DAWN_SPLASH_ENABLED.get();
+        dawnSplashRadius = DAWN_SPLASH_RADIUS.get();
+        dawnSplashDamagePercent = DAWN_SPLASH_DAMAGE_PERCENT.get();
+
+        // 刺破长夜（方案A+B 混合）
+        dawnPierceEnabled = DAWN_PIERCE_ENABLED.get();
+        dawnPierceComboThreshold = DAWN_PIERCE_COMBO_THRESHOLD.get();
+        dawnPierceComboWindowSeconds = DAWN_PIERCE_COMBO_WINDOW_SECONDS.get();
+        dawnPierceDurationSeconds = DAWN_PIERCE_DURATION_SECONDS.get();
+        dawnPierceCooldownSeconds = DAWN_PIERCE_COOLDOWN_SECONDS.get();
+        dawnPierceComboDamageMultiplier = DAWN_PIERCE_COMBO_DAMAGE_MULTIPLIER.get();
+        dawnPierceComboMoveSpeedPercent = DAWN_PIERCE_COMBO_MOVE_SPEED_PERCENT.get();
+        dawnPierceComboReachBonus = DAWN_PIERCE_COMBO_REACH_BONUS.get();
+        dawnPierceLowHpThreshold = DAWN_PIERCE_LOW_HP_THRESHOLD.get();
+        dawnPierceLowHpDamageMultiplier = DAWN_PIERCE_LOW_HP_DAMAGE_MULTIPLIER.get();
+        dawnPierceLowHpLifestealPercent = DAWN_PIERCE_LOW_HP_LIFESTEAL_PERCENT.get();
 
         // 飞轮效应
         flywheelDistance1 = FLYWHEEL_DISTANCE_1.get();
