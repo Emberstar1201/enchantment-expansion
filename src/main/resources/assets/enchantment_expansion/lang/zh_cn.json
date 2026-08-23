@@ -48,6 +48,8 @@
   "enchantment.enchantment_expansion.eternal_spark": "星火不灭",
   "enchantment.enchantment_expansion.smokeless_dash": "无烟冲击",
   "enchantment.enchantment_expansion.smokeless_dash.desc": "鞘翅飞行时无需烟花火箭，滚轮调速",
+  "enchantment.enchantment_expansion.swift_crossbow": "迅捷之弩",
+  "enchantment.enchantment_expansion.swift_crossbow.desc": "弩箭附加魔法伤害（无视护甲）并加快装填。I:+2伤害/装填加速0.25s，II:+4/0.5s，III:+6/1.0s，IV:+8/1.25s",
   "key.enchantment_expansion.dash_speed_up": "无烟冲击加速",
   "key.enchantment_expansion.dash_speed_down": "无烟冲击减速",
   "enchantment.enchantment_expansion.eternal_spark.desc": "攻击叠加星火标记，每秒造成最大生命值2%真伤，叠加增伤，死亡扩散",

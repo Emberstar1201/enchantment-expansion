@@ -20,6 +20,7 @@ import com.github.emberstar1201.enchantmentex.enchantment.PlunderHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.QianpoQingMingSwordHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.SnatchHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.SmokelessDashHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.SwiftCrossbowHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.WindRippleHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiArcheryHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHandler;
@@ -69,6 +70,9 @@ public class EnchantmentExpansion {
         // 强夺附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
         context.registerConfig(ModConfig.Type.COMMON, PlunderConfig.SPEC,
                 "enchantment_expansion-plunder.toml");
+        // 迅捷之弩附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, SwiftCrossbowConfig.SPEC,
+                "enchantment_expansion-swift_crossbow.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
@@ -104,6 +108,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(YunLaiSwordmanshipHandler.class);
         MinecraftForge.EVENT_BUS.register(OceanStarHandler.class);
         MinecraftForge.EVENT_BUS.register(SwordOfTheFreeWillHandler.class);
+        MinecraftForge.EVENT_BUS.register(SwiftCrossbowHandler.class);
         MinecraftForge.EVENT_BUS.register(SmokelessDashHandler.class);
 
         // ================================================================

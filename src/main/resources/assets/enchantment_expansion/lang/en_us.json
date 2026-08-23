@@ -48,6 +48,8 @@
   "enchantment.enchantment_expansion.eternal_spark": "Eternal Spark",
   "enchantment.enchantment_expansion.smokeless_dash": "Smokeless Dash",
   "enchantment.enchantment_expansion.smokeless_dash.desc": "Scroll wheel adjusts elytra speed, no fireworks needed",
+  "enchantment.enchantment_expansion.swift_crossbow": "Swift Crossbow",
+  "enchantment.enchantment_expansion.swift_crossbow.desc": "Crossbow bolts deal bonus magic damage (ignores armor) and load faster. I:+2/+0.25s, II:+4/+0.5s, III:+6/+1.0s, IV:+8/+1.25s",
   "key.enchantment_expansion.dash_speed_up": "Smokeless Speed Up",
   "key.enchantment_expansion.dash_speed_down": "Smokeless Slow Down",
   "enchantment.enchantment_expansion.eternal_spark.desc": "Attacks apply Spark mark (2% max HP/sec true dmg, stacks boost dmg, spreads on death)",

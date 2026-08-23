@@ -117,6 +117,14 @@ public class ModEnchantments {
     public static final RegistryObject<SmokelessDashEnchantment> SMOKELESS_DASH =
             ENCHANTMENTS.register("smokeless_dash", SmokelessDashEnchantment::new);
 
+    // ================================================================
+    // 迅捷之弩（Swift Crossbow）
+    // 适用物品：弩（CROSSBOW） | 最高等级：IV | 获取：仅宝箱
+    // 效果：弩箭附加魔法伤害（I:+2/II:+4/III:+6/IV:+8，无视护甲）+ 装填加速
+    // ================================================================
+    public static final RegistryObject<SwiftCrossbowEnchantment> SWIFT_CROSSBOW =
+            ENCHANTMENTS.register("swift_crossbow", SwiftCrossbowEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);
