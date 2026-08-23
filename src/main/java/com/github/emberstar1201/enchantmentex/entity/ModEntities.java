@@ -49,6 +49,22 @@ public class ModEntities {
                             .updateInterval(2)
                             .build("crescent"));
 
+    // ================================================================
+    // 3. 自定义闪电实体（人权剑「人的意志」使用）
+    //    与原版 LightningBolt 尺寸/跟踪参数一致：
+    //    sized(0,0)         → 无碰撞箱（闪电不阻挡实体）
+    //    clientTrackingRange(16) → 与原版闪电一致
+    //    updateInterval(MAX)  → 服务器几乎不推送状态更新（视觉由客户端模拟）
+    // ================================================================
+    public static final RegistryObject<EntityType<CustomLightningEntity>> CUSTOM_LIGHTNING =
+            ENTITY_TYPES.register("custom_lightning",
+                    () -> EntityType.Builder.<CustomLightningEntity>of(
+                                    CustomLightningEntity::new, MobCategory.MISC)
+                            .sized(0.0F, 0.0F)
+                            .clientTrackingRange(16)
+                            .updateInterval(Integer.MAX_VALUE)
+                            .build("custom_lightning"));
+
     // 在主类构造函数中调用的注册方法
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

@@ -1,5 +1,6 @@
 package com.github.emberstar1201.enchantmentex;
 
+import com.github.emberstar1201.enchantmentex.enchantment.AgricultureHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.AncientYunLaiHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ArtisanLegacyHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.AutoSmeltHandler;
@@ -73,6 +74,9 @@ public class EnchantmentExpansion {
         // 迅捷之弩附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
         context.registerConfig(ModConfig.Type.COMMON, SwiftCrossbowConfig.SPEC,
                 "enchantment_expansion-swift_crossbow.toml");
+        // 农业生产系附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, AgricultureConfig.SPEC,
+                "enchantment_expansion-agriculture.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
@@ -109,6 +113,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(OceanStarHandler.class);
         MinecraftForge.EVENT_BUS.register(SwordOfTheFreeWillHandler.class);
         MinecraftForge.EVENT_BUS.register(SwiftCrossbowHandler.class);
+        MinecraftForge.EVENT_BUS.register(AgricultureHandler.class);
         MinecraftForge.EVENT_BUS.register(SmokelessDashHandler.class);
 
         // ================================================================
@@ -132,5 +137,8 @@ public class EnchantmentExpansion {
                 com.github.emberstar1201.enchantmentex.entity.client.GlacialArrowRenderer::new);
         event.registerEntityRenderer(ModEntities.CRESCENT.get(),
                 com.github.emberstar1201.enchantmentex.entity.client.CrescentRenderer::new);
+        // 自定义闪电实体：沿用原版闪电渲染器（保证视觉效果保持一致）
+        event.registerEntityRenderer(ModEntities.CUSTOM_LIGHTNING.get(),
+                net.minecraft.client.renderer.entity.LightningBoltRenderer::new);
     }
 }

@@ -3,6 +3,7 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.entity.CustomLightningEntity;
 import com.github.emberstar1201.enchantmentex.item.SwordOfTheFreeWill;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
@@ -16,8 +17,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -326,16 +325,15 @@ public class SwordOfTheFreeWillHandler {
                 if (hasActiveBuff(attacker) && event.getEntity() instanceof Monster monster) {
                     if (attacker.getRandom().nextDouble() < Config.swordLightningChance) {
                         if (monster.level() instanceof ServerLevel serverLevel) {
-                            // 闪电
-                            LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(serverLevel);
-                            if (lightning != null) {
-                                lightning.moveTo(monster.getX(), monster.getY(), monster.getZ());
-                                serverLevel.addFreshEntity(lightning);
-                            }
+                            // ★ 使用自定义闪电实体（纯视觉）：
+                            //   原版闪电会销毁附近掉落物、误伤玩家、点燃方块，
+                            //   自定义闪电只保留渲染与雷声，副作用全部取消。
+                            CustomLightningEntity.spawn(serverLevel,
+                                    monster.getX(), monster.getY(), monster.getZ());
                             spawnGoldenLightningParticles(serverLevel,
                                     monster.getX(), monster.getY(), monster.getZ());
                         }
-                        // 额外魔法伤害
+                        // 额外魔法伤害（只对目标怪物，不波及其他实体）
                         monster.hurt(monster.level().damageSources().magic(),
                                 (float) Config.swordLightningDamage);
                         monster.setRemainingFireTicks(40);

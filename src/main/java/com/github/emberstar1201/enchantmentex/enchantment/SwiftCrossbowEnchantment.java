@@ -1,9 +1,11 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraftforge.registries.ForgeRegistries;
 
 // ========================================================================
 // 【迅捷之弩】附魔 - 弩专用（SWIFT_CROSSBOW）
@@ -86,5 +88,27 @@ public class SwiftCrossbowEnchantment extends Enchantment {
     @Override
     public boolean canEnchant(ItemStack stack) {
         return stack.getItem() instanceof CrossbowItem;
+    }
+
+    // ========================================================================
+    // 【冲突设置】与原版「快速装填」（Quick Charge）互斥
+    //
+    // 原因：迅捷之弩本身就通过 Mixin 缩短装填时间，与原版快速装填
+    //       的效果完全重叠；叠加后 IV 级 + 快速装填 III 会导致装填
+    //       时间被压到下限以下（即使有 minChargeTicks 保底，两者叠加
+    //       也会让数值意义归零）。
+    // 实现：用注册表 ID 比较（minecraft:quick_charge），避免 mapping
+    //       字段名（QUICK_CHARGE）在开发/生产环境下的差异。
+    // ========================================================================
+    private static final ResourceLocation QUICK_CHARGE_RL =
+            ResourceLocation.parse("minecraft:quick_charge");
+
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        ResourceLocation otherRL = ForgeRegistries.ENCHANTMENTS.getKey(other);
+        if (QUICK_CHARGE_RL.equals(otherRL)) {
+            return false;  // 与快速装填互斥
+        }
+        return super.checkCompatibility(other);
     }
 }

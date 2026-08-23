@@ -125,6 +125,25 @@ public class ModEnchantments {
     public static final RegistryObject<SwiftCrossbowEnchantment> SWIFT_CROSSBOW =
             ENCHANTMENTS.register("swift_crossbow", SwiftCrossbowEnchantment::new);
 
+    // ================================================================
+    // 农业生产系附魔（四个一起注册）
+    //   spring_harvest   春华秋实：锄头，一键开垦 + 一键收获补种（I/II）
+    //   all_nature_revive 万物回春：锄头，右键范围催熟（I/II）
+    //   fertile_bounty   丰饶之息：锄头，生长光环 + 收获翻倍（I/II）
+    //   fishing_master   渔获大师：鱼竿，咬钩加速 + 战利品提升（I~III）
+    // ================================================================
+    public static final RegistryObject<SpringHarvestEnchantment> SPRING_HARVEST =
+            ENCHANTMENTS.register("spring_harvest", SpringHarvestEnchantment::new);
+
+    public static final RegistryObject<AllNatureReviveEnchantment> ALL_NATURE_REVIVE =
+            ENCHANTMENTS.register("all_nature_revive", AllNatureReviveEnchantment::new);
+
+    public static final RegistryObject<FertileBountyEnchantment> FERTILE_BOUNTY =
+            ENCHANTMENTS.register("fertile_bounty", FertileBountyEnchantment::new);
+
+    public static final RegistryObject<FishingMasterEnchantment> FISHING_MASTER =
+            ENCHANTMENTS.register("fishing_master", FishingMasterEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);
