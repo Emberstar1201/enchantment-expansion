@@ -5,7 +5,12 @@ import com.github.emberstar1201.enchantmentex.enchantment.AncientYunLaiHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ArtisanLegacyHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.AutoSmeltHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.BloodthirstHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.ChainArrowHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.DarkWalkerHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.EternalSparkHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.ExplosiveArrowHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.FallCushionHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.TemperatureConstantHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingEventHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingLootHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.CreationFromNothingHandler;
@@ -77,6 +82,21 @@ public class EnchantmentExpansion {
         // 农业生产系附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
         context.registerConfig(ModConfig.Type.COMMON, AgricultureConfig.SPEC,
                 "enchantment_expansion-agriculture.toml");
+        // 幽匿行者附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, DarkWalkerConfig.SPEC,
+                "enchantment_expansion-dark_walker.toml");
+        // 爆破箭矢附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, ExplosiveArrowConfig.SPEC,
+                "enchantment_expansion-explosive_arrow.toml");
+        // 贯穿链条附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, ChainArrowConfig.SPEC,
+                "enchantment_expansion-chain_arrow.toml");
+        // 温度恒定附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, TemperatureConstantConfig.SPEC,
+                "enchantment_expansion-temperature_constant.toml");
+        // 坠落缓冲附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, FallCushionConfig.SPEC,
+                "enchantment_expansion-fall_cushion.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
@@ -115,6 +135,11 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(SwiftCrossbowHandler.class);
         MinecraftForge.EVENT_BUS.register(AgricultureHandler.class);
         MinecraftForge.EVENT_BUS.register(SmokelessDashHandler.class);
+        MinecraftForge.EVENT_BUS.register(DarkWalkerHandler.class);
+        MinecraftForge.EVENT_BUS.register(ExplosiveArrowHandler.class);
+        MinecraftForge.EVENT_BUS.register(ChainArrowHandler.class);
+        MinecraftForge.EVENT_BUS.register(TemperatureConstantHandler.class);
+        MinecraftForge.EVENT_BUS.register(FallCushionHandler.class);
 
         // ================================================================
         // 注册网络通道（飞轮效应等 C2S 数据包）

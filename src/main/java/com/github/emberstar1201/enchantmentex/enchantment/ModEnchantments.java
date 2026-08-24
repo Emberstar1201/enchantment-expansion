@@ -144,6 +144,46 @@ public class ModEnchantments {
     public static final RegistryObject<FishingMasterEnchantment> FISHING_MASTER =
             ENCHANTMENTS.register("fishing_master", FishingMasterEnchantment::new);
 
+    // ================================================================
+    // 幽匿行者（Dark Walker）
+    // 适用物品：靴子（ARMOR_FEET） | 最高等级：I | 获取：附魔台 + 遗迹宝箱
+    // 效果：深暗之域中不触发幽匿方块、不产生振动、监守者无法检测
+    // ================================================================
+    public static final RegistryObject<DarkWalkerEnchantment> DARK_WALKER =
+            ENCHANTMENTS.register("dark_walker", DarkWalkerEnchantment::new);
+
+    // ================================================================
+    // 爆破箭矢（Explosive Arrow）
+    // 适用物品：弓 + 弩（BOW/弩） | 最高等级：III | 获取：附魔台/宝箱/村民
+    // 效果：箭命中后产生小型爆炸（不破坏地形），等级提升半径与伤害
+    // ================================================================
+    public static final RegistryObject<ExplosiveArrowEnchantment> EXPLOSIVE_ARROW =
+            ENCHANTMENTS.register("explosive_arrow", ExplosiveArrowEnchantment::new);
+
+    // ================================================================
+    // 贯穿链条（Chain Arrow）
+    // 适用物品：弓 + 弩（BOW/弩） | 最高等级：III | 获取：附魔台/宝箱/村民
+    // 效果：箭命中后弹射到附近下一个敌人，等级提升弹射次数
+    // ================================================================
+    public static final RegistryObject<ChainArrowEnchantment> CHAIN_ARROW =
+            ENCHANTMENTS.register("chain_arrow", ChainArrowEnchantment::new);
+
+    // ================================================================
+    // 温度恒定（Temperature Constant）
+    // 适用物品：护甲任意部位（ARMOR） | 最高等级：I | 获取：附魔台/宝箱/村民
+    // 效果：免疫冰冻（细雪）与高温（火焰/岩浆/灼热地面）伤害
+    // ================================================================
+    public static final RegistryObject<TemperatureConstantEnchantment> TEMPERATURE_CONSTANT =
+            ENCHANTMENTS.register("temperature_constant", TemperatureConstantEnchantment::new);
+
+    // ================================================================
+    // 坠落缓冲（Fall Cushion）
+    // 适用物品：靴子（ARMOR_FEET） | 最高等级：II | 获取：附魔台/宝箱/村民
+    // 效果：高坠落地减伤 + 冲击波击退周围敌人
+    // ================================================================
+    public static final RegistryObject<FallCushionEnchantment> FALL_CUSHION =
+            ENCHANTMENTS.register("fall_cushion", FallCushionEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);

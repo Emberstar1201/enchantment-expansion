@@ -6,7 +6,9 @@
   "refmap": "enchantment_expansion.refmap.json",
   "mixins": [
     "CrossbowChargeDurationMixin",
-    "FishingHookTickMixin"
+    "FishingHookTickMixin",
+    "ServerLevelGameEventMixin",
+    "WardenCanTargetMixin"
   ],
   "injectors": {
     "defaultRequire": 1
