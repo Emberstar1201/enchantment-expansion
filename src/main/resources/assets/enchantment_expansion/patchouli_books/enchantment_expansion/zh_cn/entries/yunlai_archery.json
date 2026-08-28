@@ -1,0 +1,13 @@
+{
+  "name": "云来弓法",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "云来弓法",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 弓\n\n§l效果：§r 基础心法，仅提升拉弓速度，蓄力约 0.45 秒。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

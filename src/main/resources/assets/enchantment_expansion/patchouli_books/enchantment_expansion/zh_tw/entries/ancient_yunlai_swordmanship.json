@@ -1,0 +1,13 @@
+{
+  "name": "古·云来剑法",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "古·云来剑法",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 剑\n\n§l效果：§r 攻击速度 +5.0、攻击距离 +5.0 格、伤害 ×1.50；命中有 75% 概率发射金色剑气，伤害 ×0.75、射程 10 格。\n\n§l获取方式：§r 仅宝箱、村民交易（宝藏级）"
+    }
+  ]
+}

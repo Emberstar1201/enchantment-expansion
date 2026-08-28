@@ -1,0 +1,14 @@
+{
+  "name": "海洋之星",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:ocean_star",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:ocean_star",
+      "title": "海洋之星",
+      "text": "§l获取方式：§r 在海洋神殿顶部的宝箱中获得，每个神殿仅生成一个且必定生成。\n\n§l效果：§r\n手持时生效：免疫水下挖掘惩罚，水下挖掘速度提升至 1.25 倍；免疫水流减速与水流推力；水下无需呼吸并免疫溺水伤害；守卫者与远古守卫者不主动攻击持有者，但被攻击后会正常反击。"
+    }
+  ]
+}

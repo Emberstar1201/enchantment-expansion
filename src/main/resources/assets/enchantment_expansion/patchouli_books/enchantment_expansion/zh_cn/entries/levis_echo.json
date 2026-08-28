@@ -1,0 +1,13 @@
+{
+  "name": "兵长的回声",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 11,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "兵长的回声",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 近战武器\n\n§l效果：§r 攻击叠加标记，3 层后对生命值至少 50 的目标造成基于其最大生命值的魔法伤害。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

@@ -126,11 +126,10 @@ public class ModEnchantments {
             ENCHANTMENTS.register("swift_crossbow", SwiftCrossbowEnchantment::new);
 
     // ================================================================
-    // 农业生产系附魔（四个一起注册）
+    // 农业生产系附魔（三个一起注册）
     //   spring_harvest   春华秋实：锄头，一键开垦 + 一键收获补种（I/II）
     //   all_nature_revive 万物回春：锄头，右键范围催熟（I/II）
     //   fertile_bounty   丰饶之息：锄头，生长光环 + 收获翻倍（I/II）
-    //   fishing_master   渔获大师：鱼竿，咬钩加速 + 战利品提升（I~III）
     // ================================================================
     public static final RegistryObject<SpringHarvestEnchantment> SPRING_HARVEST =
             ENCHANTMENTS.register("spring_harvest", SpringHarvestEnchantment::new);
@@ -140,9 +139,6 @@ public class ModEnchantments {
 
     public static final RegistryObject<FertileBountyEnchantment> FERTILE_BOUNTY =
             ENCHANTMENTS.register("fertile_bounty", FertileBountyEnchantment::new);
-
-    public static final RegistryObject<FishingMasterEnchantment> FISHING_MASTER =
-            ENCHANTMENTS.register("fishing_master", FishingMasterEnchantment::new);
 
     // ================================================================
     // 幽匿行者（Dark Walker）
@@ -183,6 +179,39 @@ public class ModEnchantments {
     // ================================================================
     public static final RegistryObject<FallCushionEnchantment> FALL_CUSHION =
             ENCHANTMENTS.register("fall_cushion", FallCushionEnchantment::new);
+
+    // ================================================================
+    // 连锁挖掘（Chain Breaker）
+    // 适用物品：镐/斧/锹（DIGGER） | 最高等级：III | 获取：附魔台/宝箱/村民
+    // 效果：按住 ~ 键挖掘时连锁破坏周围同类型方块（3×3×3 / 5×5×5 / 9×9×9）
+    // ================================================================
+    public static final RegistryObject<ChainBreakerEnchantment> CHAIN_BREAKER =
+            ENCHANTMENTS.register("chain_breaker", ChainBreakerEnchantment::new);
+
+    // ================================================================
+    // 难度馈赠（Difficulty Gift）
+    // 适用物品：武器（剑/斧/三叉戟）+ 盔甲 | 最高等级：I | 获取：附魔台/宝箱/村民
+    // 效果：根据当前游戏难度提供固定数值加成（伤害/攻速/护甲/韧性）
+    // ================================================================
+    public static final RegistryObject<DifficultyGiftEnchantment> DIFFICULTY_GIFT =
+            ENCHANTMENTS.register("difficulty_gift", DifficultyGiftEnchantment::new);
+
+    // ================================================================
+    // 蓄积（Accumulate）
+    // 适用物品：剑/斧/三叉戟（WEAPON） | 最高等级：III | 获取：附魔台/宝箱/村民
+    // 效果：长按右键蓄力，每 5 秒完成一阶（上限=附魔等级），
+    //       蓄满后下一次攻击造成阶级倍数伤害 + 击退（中断条件详见 Handler）
+    // ================================================================
+    public static final RegistryObject<AccumulateEnchantment> ACCUMULATE =
+            ENCHANTMENTS.register("accumulate", AccumulateEnchantment::new);
+
+    // 末影箭（Ender Arrow）：弓/弩命中后将射手传送至命中位置。
+    public static final RegistryObject<EnderArrowEnchantment> ENDER_ARROW =
+            ENCHANTMENTS.register("ender_arrow", EnderArrowEnchantment::new);
+
+    // 画饼充饥（Illusory Feast）：武器命中生物时恢复饥饿值和饱食度。
+    public static final RegistryObject<IllusoryFeastEnchantment> ILLUSORY_FEAST =
+            ENCHANTMENTS.register("illusory_feast", IllusoryFeastEnchantment::new);
 
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {

@@ -242,7 +242,7 @@ public class GlacialArrowEntity extends AbstractArrow {
         if (this.isSubArrow) return;  // 子箭不再生成子箭
         if (this.level().isClientSide()) return;
 
-        // 母箭的飞行方向作为基准方向
+        // 母箭的飞行方向作为基准方向（已含俯仰角，跟随玩家视线）
         Vec3 baseDirection = this.getDeltaMovement().normalize();
         if (baseDirection.lengthSqr() < 0.001) {
             baseDirection = Vec3.directionFromRotation(this.getXRot(), this.getYRot());
@@ -253,15 +253,17 @@ public class GlacialArrowEntity extends AbstractArrow {
         double angleStep = subCount > 1 ? fanAngleRad / (subCount - 1) : 0;
         double startAngle = -fanAngleRad / 2.0;
 
-        // 获取水平基准方向（忽略 Y 轴，用于水平散射）
-        Vec3 horizontalDir = new Vec3(baseDirection.x, 0, baseDirection.z).normalize();
+        // ★ 散射平面跟随视线方向：
+        // 以母箭飞行方向为轴线，在「飞行方向 × 水平横向」平面内展开扇形。
+        // 玩家俯视/仰视时扇形会随视线轴一起旋转，不再固定水平散射。
         Vec3 up = new Vec3(0, 1, 0);
-        Vec3 right = horizontalDir.cross(up).normalize();
+        Vec3 right = up.cross(baseDirection).normalize();
         if (right.lengthSqr() < 0.001) {
-            right = new Vec3(0, 0, 1);
+            right = new Vec3(1, 0, 0);
         }
 
-        Vec3 spawnCenter = this.position();
+        // ★ 生成位置沿母箭飞行方向前移（避免子箭从玩家头部位置挤出）
+        Vec3 spawnCenter = this.position().add(baseDirection.scale(1.5));
         double motherBaseDamage = this.getBaseDamage();
         double subDamageMultiplier = Config.glacialArrowSubDamage;
         double subSpeedMultiplier = Config.glacialArrowSubSpeed;
@@ -269,8 +271,8 @@ public class GlacialArrowEntity extends AbstractArrow {
         for (int i = 0; i < subCount; i++) {
             double angleOffset = startAngle + angleStep * i;
 
-            // 旋转基准方向得到子箭方向（水平旋转）
-            Vec3 subDirection = horizontalDir
+            // 在「飞行方向-横向」平面内旋转，扇形跟随视线轴展开
+            Vec3 subDirection = baseDirection
                     .scale(Math.cos(angleOffset))
                     .add(right.scale(Math.sin(angleOffset)))
                     .normalize();
@@ -281,7 +283,7 @@ public class GlacialArrowEntity extends AbstractArrow {
             // 速度 = 母箭速度 × 配置倍率
             double subSpeed = this.getDeltaMovement().length() * subSpeedMultiplier;
 
-            // 在母箭位置前方偏移生成，避免子箭立即互相碰撞
+            // 生成位置继续前移，避免子箭互相碰撞
             Vec3 spawnPos = spawnCenter.add(subDirection.scale(1.0));
 
             // 创建子箭实体

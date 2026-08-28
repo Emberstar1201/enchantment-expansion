@@ -1,0 +1,6 @@
+{
+  "name": "武器",
+  "description": "本分类介绍模组中的武器和适用于武器的战斗内容，包括特殊武器、近战效果与战斗机制。",
+  "icon": "minecraft:diamond_sword",
+  "sortnum": 1
+}

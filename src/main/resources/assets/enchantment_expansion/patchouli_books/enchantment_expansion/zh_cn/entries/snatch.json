@@ -1,0 +1,13 @@
+{
+  "name": "攫取",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 8,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "攫取",
+      "text": "§l最高等级：§r V\n\n§l适用物品：§r 近战武器\n\n§l效果：§r 攻击概率打落敌方武器与盔甲，等级越高概率越高。武器打落概率 I=10%、II=20%、III=40%、IV=60%、V=80%；盔甲打落概率为武器的一半。\n\n§l获取方式：§r I-III 附魔台，IV-V 仅遗迹宝箱"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "patchouli"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "b#b",
+    "#s#",
+    "b#b"
+  ],
+  "key": {
+    "b": {
+      "item": "minecraft:book"
+    },
+    "#": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "s": {
+      "item": "minecraft:nether_star"
+    }
+  },
+  "result": {
+    "item": "patchouli:guide_book",
+    "nbt": "{\"patchouli:book\":\"enchantment_expansion:enchantment_expansion\"}"
+  }
+}

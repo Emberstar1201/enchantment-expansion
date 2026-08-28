@@ -1,0 +1,13 @@
+{
+  "name": "飞轮效应",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 35,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "飞轮效应",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 鞘翅\n\n§l效果：§r 按 R 朝准心冲刺，期间无敌并可穿透实体，撞墙停止并退还耐久。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

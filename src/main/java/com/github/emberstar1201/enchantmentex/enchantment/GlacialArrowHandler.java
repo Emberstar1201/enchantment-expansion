@@ -124,10 +124,23 @@ public class GlacialArrowHandler {
                 arrow.level(), player,
                 position.x, position.y, position.z);
 
-        // 设置母箭速度和基础伤害
+        // ================================================================
+        // ★ 弹道修复：使用玩家视线方向作为发射方向（俯仰角正确生效）
+        //
+        // 原版箭实体加入世界服务端时，其 getDeltaMovement() 可能已是
+        // 重新计算过的值（不保留玩家的俯仰角），导致箭矢水平发射。
+        // 修复方式：用 player.getLookAngle() 作为方向向量，保持原箭速度大小
+        //（motion 的模长），再乘以附魔速度倍率，确保射出方向严格跟随视线。
+        // ================================================================
+        double originalSpeed = motion.length();
         double speedMultiplier = Config.glacialArrowSpeed;
         double damageMultiplier = Config.glacialArrowDamage;
-        glacialArrow.setDeltaMovement(motion.scale(speedMultiplier));
+
+        // 玩家视线方向向量（含俯仰角）
+        Vec3 lookDirection = player.getLookAngle();
+        // 放大到原箭速度 × 附魔倍率
+        Vec3 newVelocity = lookDirection.scale(originalSpeed * speedMultiplier);
+        glacialArrow.setDeltaMovement(newVelocity);
         glacialArrow.setBaseDamage(arrow.getBaseDamage() * damageMultiplier);
 
         // 设置母箭穿透次数

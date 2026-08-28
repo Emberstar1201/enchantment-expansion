@@ -1,0 +1,13 @@
+{
+  "name": "迅捷之弩",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 31,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "迅捷之弩",
+      "text": "§l最高等级：§r IV\n\n§l适用物品：§r 弩\n\n§l效果：§r 弩箭附加无视护甲的魔法伤害（I:+2/II:+4/III:+6/IV:+8）+ 装填加速。\n\n§l获取方式：§r 仅宝箱"
+    }
+  ]
+}

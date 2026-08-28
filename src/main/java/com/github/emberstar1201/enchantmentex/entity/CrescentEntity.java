@@ -209,72 +209,53 @@ public class CrescentEntity extends Projectile {
         Vec3 right = dir.cross(up).normalize();
         Vec3 localUp = right.cross(dir).normalize();
 
-        // 月牙形状参数：半圆弧上的点
-        // 生成一个 C 形（月牙）：在 -120° ~ +120° 范围内取点，但去掉中间部分（形成月牙缺口）
-        int particleCount = 6 + world.random.nextInt(3); // 6~8 个粒子
+        // 使用固定角度的双层弧线，而不是随机散点。
+        // 随机散点在高速移动时会叠成一条直线；固定的外弧和内弧能稳定呈现半月轮廓。
+        double outerRadius = type == 1 ? 0.70D : 0.90D;
+        double innerRadius = outerRadius * 0.62D;
+        int arcPoints = 15;
 
-        for (int i = 0; i < particleCount; i++) {
-            // 角度范围：-150° ~ +150°，中间 -30°~+30° 跳过（形成月牙缺口）
-            float angleDeg;
-            if (i % 2 == 0) {
-                angleDeg = -150.0f + world.random.nextFloat() * 90.0f;   // 左翼 -150° ~ -60°
-            } else {
-                angleDeg = 60.0f + world.random.nextFloat() * 90.0f;     // 右翼 60° ~ 150°
-            }
-            float angleRad = (float) Math.toRadians(angleDeg);
+        for (int i = 0; i < arcPoints; i++) {
+            double progress = (double) i / (arcPoints - 1);
+            double angle = Math.toRadians(-115.0D + progress * 230.0D);
 
-            // 月牙半径（约 0.3~0.5 格）
-            float radius = 0.3f + world.random.nextFloat() * 0.2f;
+            // 外弧构成半月外轮廓；内弧向开口方向偏移，形成有厚度的弯月。
+            spawnCrescentParticle(serverLevel, pos, right, localUp,
+                    Math.cos(angle) * outerRadius,
+                    Math.sin(angle) * outerRadius, type, false);
+            spawnCrescentParticle(serverLevel, pos, right, localUp,
+                    Math.cos(angle) * innerRadius + outerRadius * 0.28D,
+                    Math.sin(angle) * innerRadius, type, true);
+        }
+    }
 
-            // 计算在垂直平面上的位置（垂直于飞行方向）
-            double dx = right.x * Math.cos(angleRad) * radius + localUp.x * Math.sin(angleRad) * radius;
-            double dy = right.y * Math.cos(angleRad) * radius + localUp.y * Math.sin(angleRad) * radius;
-            double dz = right.z * Math.cos(angleRad) * radius + localUp.z * Math.sin(angleRad) * radius;
+    private void spawnCrescentParticle(ServerLevel level, Vec3 center,
+                                       Vec3 right, Vec3 localUp,
+                                       double rightOffset, double upOffset,
+                                       int type, boolean innerArc) {
+        Vec3 particlePosition = center
+                .add(right.scale(rightOffset))
+                .add(localUp.scale(upOffset));
 
-            double px = pos.x + dx;
-            double py = pos.y + dy;
-            double pz = pos.z + dz;
-
-            // 选择粒子颜色
-            if (type == 1) {
-                // 云来剑法：淡蓝色 DustParticleOptions
-                // Vec3(红, 绿, 蓝) 值域 0~1
-                serverLevel.sendParticles(
-                        new DustParticleOptions(new Vector3f(0.5f, 0.8f, 1.0f), 0.6f),
-                        px, py, pz, 1, 0, 0, 0, 0
-                );
-            } else {
-                // 古·云来剑法：金色 + 青色混合
-                if (world.random.nextBoolean()) {
-                    // 金色 DustParticleOptions
-                    serverLevel.sendParticles(
-                            new DustParticleOptions(new Vector3f(1.0f, 0.85f, 0.0f), 0.7f),
-                            px, py, pz, 1, 0, 0, 0, 0
-                    );
-                } else {
-                    // 青色 DustParticleOptions
-                    serverLevel.sendParticles(
-                            new DustParticleOptions(new Vector3f(0.0f, 1.0f, 1.0f), 0.6f),
-                            px, py, pz, 1, 0, 0, 0, 0
-                    );
-                }
-            }
+        if (type == 1) {
+            level.sendParticles(
+                    new DustParticleOptions(
+                            new Vector3f(0.45f, 0.80f, 1.0f),
+                            innerArc ? 0.55f : 0.75f),
+                    particlePosition.x, particlePosition.y, particlePosition.z,
+                    1, 0, 0, 0, 0
+            );
+            return;
         }
 
-        // 额外：在剑气中心生成一个光点（尾迹效果）
-        if (world.random.nextFloat() < 0.4f) {
-            if (type == 1) {
-                serverLevel.sendParticles(
-                        new DustParticleOptions(new Vector3f(0.7f, 0.9f, 1.0f), 0.3f),
-                        pos.x, pos.y, pos.z, 1, 0, 0, 0, 0
-                );
-            } else {
-                // 古·云来：金色光点
-                serverLevel.sendParticles(
-                        new DustParticleOptions(new Vector3f(1.0f, 0.9f, 0.4f), 0.4f),
-                        pos.x, pos.y, pos.z, 1, 0, 0, 0, 0
-                );
-            }
-        }
+        // 古·云来保持金色主轮廓，内弧使用青色增强半月层次。
+        Vector3f color = innerArc
+                ? new Vector3f(0.10f, 1.0f, 0.95f)
+                : new Vector3f(1.0f, 0.82f, 0.05f);
+        level.sendParticles(
+                new DustParticleOptions(color, innerArc ? 0.65f : 0.85f),
+                particlePosition.x, particlePosition.y, particlePosition.z,
+                1, 0, 0, 0, 0
+        );
     }
 }

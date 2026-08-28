@@ -1,0 +1,13 @@
+{
+  "name": "自动冶炼",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 15,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "自动冶炼",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 镐\n\n§l效果：§r 挖掘矿石直接掉落成品，等级越高额外掉落概率越高。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

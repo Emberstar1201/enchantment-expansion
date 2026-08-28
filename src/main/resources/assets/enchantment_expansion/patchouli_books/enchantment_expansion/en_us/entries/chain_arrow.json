@@ -1,0 +1,13 @@
+{
+  "name": "贯穿链条",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 29,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "贯穿链条",
+      "text": "§l最高等级：§r III\n\n§l适用物品：§r 弓、弩\n\n§l效果：§r 箭矢命中后继续弹射附近敌人，等级越高弹射次数越多。与爆破箭矢冲突。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

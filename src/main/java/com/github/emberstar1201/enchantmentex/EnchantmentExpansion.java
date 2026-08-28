@@ -1,6 +1,9 @@
 package com.github.emberstar1201.enchantmentex;
 
+import com.github.emberstar1201.enchantmentex.enchantment.AccumulateHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.AgricultureHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.ChainBreakerHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.DifficultyGiftHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.AncientYunLaiHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ArtisanLegacyHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.AutoSmeltHandler;
@@ -9,7 +12,10 @@ import com.github.emberstar1201.enchantmentex.enchantment.ChainArrowHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.DarkWalkerHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.EternalSparkHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ExplosiveArrowHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.EnderArrowHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.FallCushionHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.IllusoryFeastHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.IllusoryFeastLootHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.TemperatureConstantHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingEventHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingLootHandler;
@@ -34,6 +40,7 @@ import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.item.handler.OceanStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.SwordOfTheFreeWillHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.TerminalBookHandler;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
@@ -97,6 +104,18 @@ public class EnchantmentExpansion {
         // 坠落缓冲附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
         context.registerConfig(ModConfig.Type.COMMON, FallCushionConfig.SPEC,
                 "enchantment_expansion-fall_cushion.toml");
+        // 连锁挖掘附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, ChainBreakerConfig.SPEC,
+                "enchantment_expansion-chain_breaker.toml");
+        // 难度馈赠附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, DifficultyGiftConfig.SPEC,
+                "enchantment_expansion-difficulty_gift.toml");
+        // 蓄积附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, AccumulateConfig.SPEC,
+                "enchantment_expansion-accumulate.toml");
+        // 画饼充饥附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, IllusoryFeastConfig.SPEC,
+                "enchantment_expansion-illusory_feast.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
@@ -132,14 +151,21 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(YunLaiSwordmanshipHandler.class);
         MinecraftForge.EVENT_BUS.register(OceanStarHandler.class);
         MinecraftForge.EVENT_BUS.register(SwordOfTheFreeWillHandler.class);
+        MinecraftForge.EVENT_BUS.register(TerminalBookHandler.class);
         MinecraftForge.EVENT_BUS.register(SwiftCrossbowHandler.class);
         MinecraftForge.EVENT_BUS.register(AgricultureHandler.class);
         MinecraftForge.EVENT_BUS.register(SmokelessDashHandler.class);
         MinecraftForge.EVENT_BUS.register(DarkWalkerHandler.class);
         MinecraftForge.EVENT_BUS.register(ExplosiveArrowHandler.class);
+        MinecraftForge.EVENT_BUS.register(EnderArrowHandler.class);
         MinecraftForge.EVENT_BUS.register(ChainArrowHandler.class);
         MinecraftForge.EVENT_BUS.register(TemperatureConstantHandler.class);
         MinecraftForge.EVENT_BUS.register(FallCushionHandler.class);
+        MinecraftForge.EVENT_BUS.register(ChainBreakerHandler.class);
+        MinecraftForge.EVENT_BUS.register(DifficultyGiftHandler.class);
+        MinecraftForge.EVENT_BUS.register(AccumulateHandler.class);
+        MinecraftForge.EVENT_BUS.register(IllusoryFeastHandler.class);
+        MinecraftForge.EVENT_BUS.register(IllusoryFeastLootHandler.class);
 
         // ================================================================
         // 注册网络通道（飞轮效应等 C2S 数据包）

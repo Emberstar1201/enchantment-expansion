@@ -1,0 +1,13 @@
+{
+  "name": "星火不灭",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 13,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "星火不灭",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 剑、斧、三叉戟\n\n§l效果：§r 攻击叠加最多 3 层星火标记，每层造成最大生命值百分比真实伤害；目标死亡时向周围敌人扩散。\n\n§l获取方式：§r 合成配方（下界之星×1+烈焰棒×4+书×4）"
+    }
+  ]
+}

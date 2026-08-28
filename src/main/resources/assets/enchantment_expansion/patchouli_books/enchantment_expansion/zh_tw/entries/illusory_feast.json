@@ -1,0 +1,13 @@
+{
+  "name": "画饼充饥",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 36,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "画饼充饥",
+      "text": "§l最高等级：§r III\n\n§l适用物品：§r 近战武器\n\n§l效果：§r 武器命中生物时恢复饥饿值与饱食度；I/II/III 级分别恢复 1/0.5、2/1.0、3/1.5。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

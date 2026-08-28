@@ -1,0 +1,13 @@
+{
+  "name": "温度恒定",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 37,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "温度恒定",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 护甲任意部位\n\n§l效果：§r 免疫冰冻（细雪）与高温（火焰/岩浆/灼热地面）伤害。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

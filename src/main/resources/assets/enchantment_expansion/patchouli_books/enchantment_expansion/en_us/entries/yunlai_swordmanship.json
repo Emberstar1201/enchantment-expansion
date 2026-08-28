@@ -1,0 +1,13 @@
+{
+  "name": "云来剑法",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "云来剑法",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 剑\n\n§l效果：§r 攻击速度 +2.5、攻击距离 +2.5 格、伤害 ×1.10；命中有 60% 概率发射淡蓝剑气，伤害 ×0.5、射程 6 格。\n\n§l获取方式：§r 附魔台"
+    }
+  ]
+}

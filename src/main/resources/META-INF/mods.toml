@@ -66,6 +66,21 @@ description='''${mod_description}'''
     ordering="NONE"
     side="BOTH"
 
+# ================================================================
+# Patchouli 软前置（数据驱动游戏内手册）
+# - mandatory=false：玩家未安装 Patchouli 也能加载本模组
+# - ordering=AFTER：若玩家安装了 Patchouli，本模组在其后加载，确保手册注册生效
+# - side=BOTH：客户端需要 Patchouli 才能渲染手册 GUI；服务端无 GUI 也无需强制
+# - 仅在调用 vazkii.patchouli.api.PatchouliAPI 时应使用 Helper#isModLoaded()
+#   或 mods.toml 自身的 dependency 检查，避免类加载直接报错
+# ================================================================
+[[dependencies.${mod_id}]]
+    modId="patchouli"
+    mandatory=false
+    versionRange="${patchouli_version_range}"
+    ordering="AFTER"
+    side="BOTH"
+
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
 # stop your mod loading on the server for example.

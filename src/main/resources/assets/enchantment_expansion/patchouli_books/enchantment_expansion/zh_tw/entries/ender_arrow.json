@@ -1,0 +1,13 @@
+{
+  "name": "末影箭",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "末影箭",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 弓、弩\n\n§l效果：§r 箭矢命中方块或实体时将射手传送至命中位置；命中实体默认传送至其正前方一格，冷却 3 秒。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

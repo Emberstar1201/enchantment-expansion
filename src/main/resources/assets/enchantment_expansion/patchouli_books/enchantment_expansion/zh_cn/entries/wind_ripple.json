@@ -1,0 +1,13 @@
+{
+  "name": "风踏涟漪",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 24,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "风踏涟漪",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 靴子\n\n§l效果：§r 陆上疾行，水面如履平地。与深海探索者、冰霜行者、灵魂疾行、轻灵潜行冲突。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

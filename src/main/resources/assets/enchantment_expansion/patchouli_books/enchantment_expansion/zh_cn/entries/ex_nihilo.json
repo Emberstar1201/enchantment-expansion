@@ -1,0 +1,13 @@
+{
+  "name": "无中生有·重制",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 18,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "无中生有·重制",
+      "text": "§l最高等级：§r III\n\n§l适用物品：§r 镐、剪刀\n\n§l效果：§r 挖掘石质方块有概率获得矿物，等级越高概率越高。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

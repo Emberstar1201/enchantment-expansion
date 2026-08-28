@@ -135,6 +135,13 @@ repositories {
         name = 'SpongePowered'
         url = 'https://repo.spongepowered.org/repository/maven-public/'
     }
+
+    // BlameJared Maven：提供 Patchouli（数据驱动游戏内手册）制品
+    // 主页：https://maven.blamejared.com/vazkii/patchouli/Patchouli/
+    maven {
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com'
+    }
 }
 
 dependencies {
@@ -147,6 +154,17 @@ dependencies {
 
     // Mixin 注解处理器（编译期生成 refmap，配合 org.spongepowered.mixin 插件使用）
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    // ================================================================
+    // Patchouli 软前置（数据驱动游戏内手册）
+    // - compileOnly + :api classifier：仅引入 API 包，编译期可见，不会被打包进 jar
+    // - runtimeOnly：开发环境运行时需要完整 jar 才能打开手册界面
+    // - fg.deobf() 让 ForgeGradle 在开发期把 Patchouli 从 SRG 重映射到当前 mappings
+    // - MixinGradle 已自动处理 Patchouli 的 refmap 重映射，无需手动修复
+    // - mods.toml 中声明为 mandatory=false，玩家缺失 Patchouli 也能进入游戏
+    // ================================================================
+    compileOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}:api")
+    runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}")
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -173,6 +191,7 @@ tasks.named('processResources', ProcessResources).configure {
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
             forge_version: forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
+            patchouli_version_range: patchouli_version_range,
             mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
             mod_authors: mod_authors, mod_description: mod_description,
     ]

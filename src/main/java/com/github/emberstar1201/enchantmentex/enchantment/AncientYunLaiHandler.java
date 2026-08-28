@@ -1,19 +1,28 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
+
 import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 
 // 古·云来弓法 附魔事件处理器
-// 处理两个核心效果：1. 缩短弓蓄力时间  2. 提升箭矢飞行速度
+// 处理两个核心效果：1. 缩短弓蓄力时间  2. 生成箭矢飞行轨迹粒子
 //
 // 【蓄力加速与"云来弓法"共存规则】：
 //   由于古·云来弓法与基础版"云来弓法"互不冲突（用户要求可共存），
@@ -23,6 +32,9 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //   累加效果即"两者倍率分别算出的 extraProgress 之和"。
 @Mod.EventBusSubscriber(modid = MODID)
 public class AncientYunLaiHandler {
+
+    private static final double PARTICLE_SPACING = 0.1D;
+    private static final Map<UUID, Vec3> ARROW_PARTICLE_POSITIONS = new HashMap<>();
 
     // ========================================================================
     // 【效果一】缩短弓的蓄力时间（加速拉弓）
@@ -97,11 +109,9 @@ public class AncientYunLaiHandler {
     }
 
     // ========================================================================
-    // 【效果二】提升箭矢射出后的飞行速度
-    // 原理：在箭矢实体加入世界（EntityJoinLevelEvent）时，
-    //       判断其发射者（owner）是否手持带有古·云来弓法附魔的弓，
-    //       若是，则将箭矢的运动向量（motion）直接乘以速度倍率。
-    // 实现方式：修改 AbstractArrow#setDeltaMovement（即motion x/y/z）
+    // 【效果二】生成箭矢飞行轨迹粒子
+    // 原理：在带有古·云来弓法的箭矢加入服务端世界时记录初始位置，
+    //       后续每 tick 在箭矢上一位置与当前位置之间插值生成粒子。
     // ========================================================================
     @SubscribeEvent
     public static void onArrowJoinWorld(EntityJoinLevelEvent event) {
@@ -133,24 +143,58 @@ public class AncientYunLaiHandler {
             return;
         }
 
-        // 获取箭矢飞行速度倍率（查表法，与蓄力加速为两套独立数值）
-        double flightMultiplier = AncientYunLaiEnchantment.getFlightSpeedMultiplier(enchantLevel);
-        if (flightMultiplier <= 1.0) {
+        if (arrow.level().isClientSide()) {
             return;
         }
 
-        // 【核心】将箭矢的飞行速度整体乘以倍率
-        // 这样x/y/z三个方向都等比例放大，弹道更直、飞行更快
-        // 原方向向量不变，仅改变模长（速度大小）
-        arrow.setDeltaMovement(
-                arrow.getDeltaMovement().x * flightMultiplier,
-                arrow.getDeltaMovement().y * flightMultiplier,
-                arrow.getDeltaMovement().z * flightMultiplier
-        );
+        // 保留既有的高速箭效果；粒子插值只修复视觉拖尾，不改变速度数值。
+        double flightMultiplier = AncientYunLaiEnchantment
+                .getFlightSpeedMultiplier(enchantLevel);
+        if (flightMultiplier > 1.0) {
+            arrow.setDeltaMovement(arrow.getDeltaMovement().scale(flightMultiplier));
+            arrow.setBaseDamage(arrow.getBaseDamage() * flightMultiplier);
+        }
 
-        // 同时同步箭矢的基础伤害：原版箭伤害与速度正相关（粗略公式 damage = speed * 0.6）
-        // 这里将基础伤害也乘以飞行倍率，让高速箭造成更高伤害，更符合直觉
-        arrow.setBaseDamage(arrow.getBaseDamage() * flightMultiplier);
+        ARROW_PARTICLE_POSITIONS.put(arrow.getUUID(), arrow.position());
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+
+        Iterator<Map.Entry<UUID, Vec3>> iterator = ARROW_PARTICLE_POSITIONS.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, Vec3> entry = iterator.next();
+            AbstractArrow arrow = findArrow(event.getServer().getAllLevels(), entry.getKey());
+            if (arrow == null || !arrow.isAlive()) {
+                iterator.remove();
+                continue;
+            }
+
+            Vec3 previousPosition = entry.getValue();
+            Vec3 currentPosition = arrow.position();
+            Vec3 movement = currentPosition.subtract(previousPosition);
+            int particleCount = Math.max(1, (int) Math.ceil(movement.length() / PARTICLE_SPACING));
+            ServerLevel level = (ServerLevel) arrow.level();
+            for (int i = 0; i <= particleCount; i++) {
+                Vec3 particlePosition = previousPosition.lerp(currentPosition, (double) i / particleCount);
+                level.sendParticles(ParticleTypes.END_ROD,
+                        particlePosition.x, particlePosition.y, particlePosition.z,
+                        1, 0.0, 0.0, 0.0, 0.0);
+            }
+            entry.setValue(currentPosition);
+        }
+    }
+
+    private static AbstractArrow findArrow(Iterable<ServerLevel> levels, UUID arrowId) {
+        for (ServerLevel level : levels) {
+            if (level.getEntity(arrowId) instanceof AbstractArrow arrow) {
+                return arrow;
+            }
+        }
+        return null;
     }
 
     // ========================================================================

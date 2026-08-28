@@ -1,0 +1,13 @@
+{
+  "name": "强夺",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 9,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "强夺",
+      "text": "§l最高等级：§r III\n\n§l适用物品：§r 剑\n\n§l效果：§r 稀有战利品保底掉落，等级越高数量越多（+1/+2/+3）；击杀爬行者必定掉落唱片。\n\n§l获取方式：§r 仅宝箱（宝藏级）"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "拂晓",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "拂晓",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 剑、斧、三叉戟\n\n§l效果：§r 击杀生物永久成长伤害、暴击率与暴击伤害，攻击距离 +2.5 格；目标低于 15% 生命值时必定暴击并使伤害 ×2。击杀可吸血，并对周围敌人造成溅射；连击三杀或生命值低于 40% 时可激活刺破长夜状态。\n\n§l获取方式：§r 合成配方（下界之星×1+烈焰棒×4+书×4）"
+    }
+  ]
+}

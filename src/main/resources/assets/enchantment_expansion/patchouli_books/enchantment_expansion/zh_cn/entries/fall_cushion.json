@@ -1,0 +1,13 @@
+{
+  "name": "坠落缓冲",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 26,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "坠落缓冲",
+      "text": "§l最高等级：§r II\n\n§l适用物品：§r 靴子\n\n§l效果：§r 高坠落地减伤 + 冲击波击退周围敌人。与优雅猫步冲突。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

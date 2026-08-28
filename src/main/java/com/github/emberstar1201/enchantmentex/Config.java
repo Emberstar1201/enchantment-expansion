@@ -57,6 +57,42 @@ public class Config {
                     "宝藏级剑法的终局强化，配合攻速/距离加成定位\"终结剑法\"")
             .defineInRange("ancientYunlaiSwordmanship.damageMultiplier", 1.50, 1.0, 10.0);
 
+    // ----------------------------------------------------------------
+    // 剑气波（云来剑法 / 古·云来剑法）
+    // 近战命中时按概率向前方发射一道月牙形剑气，直线飞行并穿透敌人
+    // ----------------------------------------------------------------
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORDMANSHIP_SWORD_QI_CHANCE = BUILDER
+            .comment("云来剑法：剑气波触发概率（默认 0.6 = 每次近战命中 60% 概率发射剑气）")
+            .defineInRange("yunlaiSwordmanship.swordQiChance", 0.6, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORDMANSHIP_SWORD_QI_DAMAGE = BUILDER
+            .comment("云来剑法：剑气伤害（攻击伤害 × 此倍率，默认 0.5）")
+            .defineInRange("yunlaiSwordmanship.swordQiDamageMultiplier", 0.5, 0.1, 5.0);
+
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORDMANSHIP_SWORD_QI_RANGE = BUILDER
+            .comment("云来剑法：剑气射程（格，默认 6）")
+            .defineInRange("yunlaiSwordmanship.swordQiRange", 6.0, 2.0, 32.0);
+
+    private static final ForgeConfigSpec.DoubleValue YUNLAI_SWORDMANSHIP_SWORD_QI_SPEED = BUILDER
+            .comment("云来剑法：剑气飞行速度（格/tick，默认 0.75 = 每秒 15 格）")
+            .defineInRange("yunlaiSwordmanship.swordQiSpeed", 0.75, 0.2, 3.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORDMANSHIP_SWORD_QI_CHANCE = BUILDER
+            .comment("古·云来剑法：剑气波触发概率（默认 0.75 = 每次近战命中 75% 概率发射剑气）")
+            .defineInRange("ancientYunlaiSwordmanship.swordQiChance", 0.75, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORDMANSHIP_SWORD_QI_DAMAGE = BUILDER
+            .comment("古·云来剑法：剑气伤害（攻击伤害 × 此倍率，默认 0.75）")
+            .defineInRange("ancientYunlaiSwordmanship.swordQiDamageMultiplier", 0.75, 0.1, 5.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORDMANSHIP_SWORD_QI_RANGE = BUILDER
+            .comment("古·云来剑法：剑气射程（格，默认 10，比云来更远）")
+            .defineInRange("ancientYunlaiSwordmanship.swordQiRange", 10.0, 2.0, 32.0);
+
+    private static final ForgeConfigSpec.DoubleValue ANCIENT_YUNLAI_SWORDMANSHIP_SWORD_QI_SPEED = BUILDER
+            .comment("古·云来剑法：剑气飞行速度（格/tick，默认 1.0 = 每秒 20 格）")
+            .defineInRange("ancientYunlaiSwordmanship.swordQiSpeed", 1.0, 0.2, 3.0);
+
     // ================================================================
     // 终末将至 附魔配置
     // ================================================================
@@ -630,6 +666,15 @@ public class Config {
     public static double ancientYunlaiSwordmanshipAttackSpeed;
     public static double ancientYunlaiSwordmanshipAttackReach;
     public static double ancientYunlaiSwordmanshipDamageMultiplier;
+    // 云来剑法 / 古·云来剑法：剑气波
+    public static double yunlaiSwordmanshipSwordQiChance;
+    public static double yunlaiSwordmanshipSwordQiDamageMultiplier;
+    public static double yunlaiSwordmanshipSwordQiRange;
+    public static double yunlaiSwordmanshipSwordQiSpeed;
+    public static double ancientYunlaiSwordmanshipSwordQiChance;
+    public static double ancientYunlaiSwordmanshipSwordQiDamageMultiplier;
+    public static double ancientYunlaiSwordmanshipSwordQiRange;
+    public static double ancientYunlaiSwordmanshipSwordQiSpeed;
 
     // 古·云来弓法 & 云来弓法
     public static double ancientYunLaiArrowSpeed;
@@ -793,6 +838,16 @@ public class Config {
         ancientYunlaiSwordmanshipAttackSpeed = ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_SPEED.get();
         ancientYunlaiSwordmanshipAttackReach = ANCIENT_YUNLAI_SWORDMANSHIP_ATTACK_REACH.get();
         ancientYunlaiSwordmanshipDamageMultiplier = ANCIENT_YUNLAI_SWORDMANSHIP_DAMAGE_MULTIPLIER.get();
+
+        // 剑气波（云来剑法 / 古·云来剑法）
+        yunlaiSwordmanshipSwordQiChance = YUNLAI_SWORDMANSHIP_SWORD_QI_CHANCE.get();
+        yunlaiSwordmanshipSwordQiDamageMultiplier = YUNLAI_SWORDMANSHIP_SWORD_QI_DAMAGE.get();
+        yunlaiSwordmanshipSwordQiRange = YUNLAI_SWORDMANSHIP_SWORD_QI_RANGE.get();
+        yunlaiSwordmanshipSwordQiSpeed = YUNLAI_SWORDMANSHIP_SWORD_QI_SPEED.get();
+        ancientYunlaiSwordmanshipSwordQiChance = ANCIENT_YUNLAI_SWORDMANSHIP_SWORD_QI_CHANCE.get();
+        ancientYunlaiSwordmanshipSwordQiDamageMultiplier = ANCIENT_YUNLAI_SWORDMANSHIP_SWORD_QI_DAMAGE.get();
+        ancientYunlaiSwordmanshipSwordQiRange = ANCIENT_YUNLAI_SWORDMANSHIP_SWORD_QI_RANGE.get();
+        ancientYunlaiSwordmanshipSwordQiSpeed = ANCIENT_YUNLAI_SWORDMANSHIP_SWORD_QI_SPEED.get();
 
         // 终末将至
         endApproachesDamageMultiplier = END_APPROACHES_DAMAGE_MULTIPLIER.get();

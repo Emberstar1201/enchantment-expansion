@@ -1,0 +1,13 @@
+{
+  "name": "难度馈赠",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "难度馈赠",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 武器、盔甲\n\n§l效果：§r 根据难度提供加成。和平无加成；简单为伤害 +1、攻速 +0.2、护甲 +1、韧性 +0.5；普通为 +2/+0.4/+2/+1.0；困难为 +4/+0.6/+3/+1.5。武器获得伤害与攻速，盔甲获得护甲与韧性。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

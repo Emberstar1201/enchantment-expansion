@@ -1,0 +1,13 @@
+{
+  "name": "优雅猫步",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 25,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "优雅猫步",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 靴子\n\n§l效果：§r 如猫般迅捷，如猫般轻盈。与坠落缓冲冲突。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

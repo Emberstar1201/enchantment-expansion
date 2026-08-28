@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +23,6 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.PotatoBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.ItemFishedEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -38,12 +36,10 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // ========================================================================
 // 【农业生产系】附魔事件处理器
 //
-// 处理四个农业附魔：
+// 处理三个农业附魔：
 //   A. 春华秋实（spring_harvest）：右键一键开垦 + 一键收获补种
 //   B. 万物回春（all_nature_revive）：右键未成熟作物 → 范围催熟
 //   C. 丰饶之息（fertile_bounty）：手持光环催熟 + 收获翻倍
-//   D. 渔获大师（fishing_master）：钓起时追加稀有战利品
-//      （咬钩加速见 FishingHookTickMixin）
 //
 // 右键分流逻辑（同一把锄头可同附春华秋实+万物回春+丰饶之息）：
 //   中心方块是成熟作物  → 春华秋实：范围收获+补种（有丰饶之息则翻倍）
@@ -151,47 +147,6 @@ public class AgricultureHandler {
             serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,
                     player.getX(), player.getY() + 0.5, player.getZ(),
                     Math.min(grown, 10), 1.5, 1.0, 1.5, 0);
-        }
-    }
-
-    // ========================================================================
-    // 事件3：ItemFishedEvent → 渔获大师战利品追加
-    // ========================================================================
-    @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onItemFished(ItemFishedEvent event) {
-        // 1.20.1 的 ItemFishedEvent 没有 getPlayer()，射手从钓钩的 owner 获取
-        if (!(event.getHookEntity().getOwner() instanceof Player player)) return;
-        if (player.level().isClientSide()) return;
-        ItemStack rod = player.getMainHandItem();
-        int level = EnchantmentHelper.getItemEnchantmentLevel(
-                ModEnchantments.FISHING_MASTER.get(), rod);
-        if (level <= 0 || !(player.level() instanceof ServerLevel serverLevel)) return;
-
-        List<ItemStack> drops = event.getDrops();
-        RandomSource random = serverLevel.random;
-
-        if (level >= 2) {
-            // II 起：附魔书 + 命名牌
-            if (random.nextDouble() < AgricultureConfig.fishingMasterBookChanceLevel2) {
-                drops.add(randomEnchantedBook(serverLevel));
-            }
-            if (random.nextDouble() < AgricultureConfig.fishingMasterNameTagChanceLevel2) {
-                drops.add(new ItemStack(net.minecraft.world.item.Items.NAME_TAG));
-            }
-        }
-        if (level >= 3) {
-            // III：概率更高 + 钻石 + 青金石块
-            if (random.nextDouble() < AgricultureConfig.fishingMasterBookChanceLevel3) {
-                drops.add(randomEnchantedBook(serverLevel));
-            }
-            if (random.nextDouble() < AgricultureConfig.fishingMasterNameTagChanceLevel3) {
-                drops.add(new ItemStack(net.minecraft.world.item.Items.NAME_TAG));
-            }
-            if (random.nextDouble() < AgricultureConfig.fishingMasterDiamondChanceLevel3) {
-                drops.add(new ItemStack(net.minecraft.world.item.Items.DIAMOND));
-            }
-            int lapisCount = 1 + random.nextInt((int) AgricultureConfig.fishingMasterLapisCountLevel3 + 1);
-            drops.add(new ItemStack(net.minecraft.world.item.Items.LAPIS_LAZULI, lapisCount));
         }
     }
 
@@ -375,30 +330,6 @@ public class AgricultureHandler {
             serverLevel.playSound(null, center, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, 1.0F, 1.2F);
         }
         return any;
-    }
-
-    // ========================================================================
-    // 工具：随机附魔书（渔获大师战利品）
-    // ========================================================================
-    private static ItemStack randomEnchantedBook(ServerLevel level) {
-        // 1.20.1 Registry 直接遍历得到 Enchantment（非 Holder）
-        List<net.minecraft.world.item.enchantment.Enchantment> pool = new ArrayList<>();
-        for (net.minecraft.world.item.enchantment.Enchantment e
-                : net.minecraft.core.registries.BuiltInRegistries.ENCHANTMENT) {
-            if (e.isDiscoverable() && e.isAllowedOnBooks() && !e.isTreasureOnly()) {
-                pool.add(e);
-            }
-        }
-        if (pool.isEmpty()) {
-            return new ItemStack(Items.ENCHANTED_BOOK);
-        }
-        net.minecraft.world.item.enchantment.Enchantment chosen =
-                pool.get(level.random.nextInt(pool.size()));
-        int lvl = chosen.getMinLevel()
-                + level.random.nextInt(chosen.getMaxLevel() - chosen.getMinLevel() + 1);
-        // EnchantedBookItem 位于 world.item 包（非 enchantment 子包）
-        return net.minecraft.world.item.EnchantedBookItem.createForEnchantment(
-                new net.minecraft.world.item.enchantment.EnchantmentInstance(chosen, lvl));
     }
 
     // ========================================================================

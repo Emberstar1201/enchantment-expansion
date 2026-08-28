@@ -1,0 +1,14 @@
+{
+  "name": "人权剑",
+  "category": "enchantment_expansion:weapons",
+  "icon": "enchantment_expansion:sword_of_the_free_will",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:sword_of_the_free_will",
+      "title": "人权剑",
+      "text": "§l获取方式：§r 击败凋灵后掉落，无法合成。\n\n§l被动效果：§r\n护甲 +10、伤害减免 25%，内置锋利 X、亡灵杀手 X、击退 II、拂晓 I。\n\n§l主动技能「人的意志」：§r\n右键激活，10 分钟内伤害 +150%，每次攻击有 90% 概率降下闪电；消耗 25% 生命值，冷却 15 分钟。"
+    }
+  ]
+}

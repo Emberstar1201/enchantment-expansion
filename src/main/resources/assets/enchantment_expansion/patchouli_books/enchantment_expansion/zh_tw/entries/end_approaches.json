@@ -1,0 +1,13 @@
+{
+  "name": "终末将至",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "终末将至",
+      "text": "§l最高等级：§r I\n\n§l适用物品：§r 剑、斧、三叉戟\n\n§l效果：§r 武器伤害提升 250%，攻击冷却缩短 90%。\n\n§l获取方式：§r 仅要塞图书馆宝箱"
+    }
+  ]
+}

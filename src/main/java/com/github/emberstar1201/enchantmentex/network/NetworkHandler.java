@@ -61,5 +61,29 @@ public class NetworkHandler {
                 SmokelessDashSyncPacket::new,
                 SmokelessDashSyncPacket::handle
         );
+
+        // ================================================================
+        // 连锁挖掘数据包（C2S 按键按住状态同步）
+        // 客户端按住/松开 ~ 键时发送，服务端据此决定是否触发连锁
+        // ================================================================
+        CHANNEL.registerMessage(
+                packetId++,
+                ChainBreakerPacket.class,
+                ChainBreakerPacket::encode,
+                ChainBreakerPacket::new,
+                ChainBreakerPacket::handle
+        );
+
+        // ================================================================
+        // 蓄积数据包（C2S 右键按住状态同步）
+        // 客户端按住/松开右键时发送，服务端据此管理蓄力计时
+        // ================================================================
+        CHANNEL.registerMessage(
+                packetId++,
+                AccumulateChargePacket.class,
+                AccumulateChargePacket::encode,
+                AccumulateChargePacket::new,
+                AccumulateChargePacket::handle
+        );
     }
 }

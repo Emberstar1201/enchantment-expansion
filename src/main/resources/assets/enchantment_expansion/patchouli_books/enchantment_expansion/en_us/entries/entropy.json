@@ -1,0 +1,13 @@
+{
+  "name": "熵增",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "熵增",
+      "text": "§l最高等级：§r III\n\n§l适用物品：§r 近战武器\n\n§l效果：§r 攻击叠加熵标记，2 层减速；满层引爆，造成目标已损失生命值 30% 的真实伤害并扩散。\n\n§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}
