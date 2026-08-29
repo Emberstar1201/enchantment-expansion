@@ -11,6 +11,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import com.github.emberstar1201.enchantmentex.util.AllyFilter;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
@@ -163,9 +164,9 @@ public class DawnHandler {
             List<LivingEntity> nearby = victim.level().getEntitiesOfClass(
                     LivingEntity.class, splashBox,
                     e -> e != victim
-                            && e != player
-                            && !(e instanceof Player)
-                            && e.isAlive());
+                            && e.isAlive()
+                            // 统一友伤过滤：不波及玩家、村民、驯服生物、女仆等友方
+                            && !AllyFilter.isFriendly(e));
             for (LivingEntity entity : nearby) {
                 entity.hurt(victim.damageSources().magic(), splashDamage);
             }

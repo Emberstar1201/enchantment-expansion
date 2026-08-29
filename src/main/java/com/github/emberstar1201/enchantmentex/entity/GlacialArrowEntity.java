@@ -14,6 +14,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import com.github.emberstar1201.enchantmentex.util.AllyFilter;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -216,8 +217,10 @@ public class GlacialArrowEntity extends AbstractArrow {
         AABB aabb = new AABB(center.x - radius, center.y - radius, center.z - radius,
                 center.x + radius, center.y + radius, center.z + radius);
         List<Entity> entities = this.level().getEntities(this, aabb,
-                entity -> entity instanceof LivingEntity && entity.isAlive()
-                        && entity != this.getOwner()); // 不伤害发射者自己
+                entity -> entity instanceof LivingEntity living && living.isAlive()
+                        && living != this.getOwner() // 不伤害发射者自己
+                        // 统一友伤过滤：不波及玩家、村民、驯服生物、女仆等友方
+                        && !AllyFilter.isFriendly(living));
 
         DamageSource damageSource = this.damageSources().arrow(this, this.getOwner());
 
@@ -311,8 +314,10 @@ public class GlacialArrowEntity extends AbstractArrow {
         AABB aabb = new AABB(hitLocation.x - pullRange, hitLocation.y - pullRange, hitLocation.z - pullRange,
                 hitLocation.x + pullRange, hitLocation.y + pullRange, hitLocation.z + pullRange);
         List<Entity> entities = this.level().getEntities(this, aabb,
-                entity -> entity instanceof LivingEntity && entity.isAlive()
-                        && entity != this.getOwner()); // 不拉发射者
+                entity -> entity instanceof LivingEntity living && living.isAlive()
+                        && living != this.getOwner() // 不拉发射者
+                        // 统一友伤过滤：不牵引玩家、村民、驯服生物、女仆等友方
+                        && !AllyFilter.isFriendly(living));
 
         for (Entity entity : entities) {
             Vec3 entityPos = entity.position();

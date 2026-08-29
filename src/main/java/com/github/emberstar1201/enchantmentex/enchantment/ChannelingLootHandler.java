@@ -97,7 +97,14 @@ public class ChannelingLootHandler {
     //   1. 通过 ForgeRegistries 获取附魔的注册 ID
     //   2. 手动构建附魔书的 NBT（StoredEnchantments 列表）
     //   3. 使用 SetNbtFunction 将 NBT 应用到附魔书上
-    //   4. 通过 setWeight 控制生成概率
+    //   4. 通过 setRolls 的小数部分控制生成概率
+    //
+    // 【概率实现原理】
+    //   LootPool 的 rolls 决定尝试 roll 的次数：
+    //     - rolls = 1.0 → 每次 roll 1 次（必出）
+    //     - rolls = 0.08 → 8% 概率 roll 1 次（整数部分为 0，小数部分为概率）
+    //   pool 内只有 1 个 entry 时，setWeight 不影响概率（必然选中），
+    //   因此概率控制必须通过 setRolls 的小数部分实现。
     //
     // 注：不使用 SetEnchantmentsFunction 是因为 1.20.1 中
     //   其 setEnchantments(Map) 静态方法无法被正确解析
@@ -127,10 +134,9 @@ public class ChannelingLootHandler {
 
         return LootPool.lootPool()
                 .name(poolName)
-                .setRolls(ConstantValue.exactly(1.0F))
+                .setRolls(ConstantValue.exactly(chance))  // 小数 rolls 实现概率控制
                 .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .apply(SetNbtFunction.setTag(tag))  // 通过 NBT 设置附魔
-                        .setWeight((int) (chance * 100))    // 将浮点概率转换为权重
                 )
                 .build();
     }

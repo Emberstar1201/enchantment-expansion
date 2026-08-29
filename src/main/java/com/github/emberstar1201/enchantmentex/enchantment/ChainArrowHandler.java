@@ -13,6 +13,7 @@ import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import com.github.emberstar1201.enchantmentex.util.AllyFilter;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -137,13 +138,13 @@ public class ChainArrowHandler {
 
     // ========================================================================
     // 工具：在搜索半径内寻找距离当前目标最近的下一个可弹射目标
-    // 排除：当前目标自身、射手、以及其他玩家（避免 PvP 误伤友军）
+    // 排除：当前目标自身、射手，以及玩家/村民/驯服生物/女仆等友方（统一友伤过滤）
     // ========================================================================
     private static LivingEntity findNextTarget(Level level, LivingEntity current, Entity owner) {
         AABB aabb = current.getBoundingBox().inflate(ChainArrowConfig.searchRange);
         List<LivingEntity> candidates = level.getEntitiesOfClass(LivingEntity.class, aabb,
                 e -> e.isAlive() && e != current && e != owner
-                        && e.getType() != net.minecraft.world.entity.EntityType.PLAYER);
+                        && !AllyFilter.isFriendly(e));
         // 取距离最近的一个
         return candidates.stream()
                 .min(Comparator.comparingDouble(e -> e.distanceToSqr(current)))

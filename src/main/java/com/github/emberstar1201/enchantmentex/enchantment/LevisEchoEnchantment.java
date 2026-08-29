@@ -1,8 +1,10 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraftforge.registries.ForgeRegistries;
 
 // ========================================================================
 // "兵长的回声"附魔 - 武器通用
@@ -78,5 +80,25 @@ public class LevisEchoEnchantment extends Enchantment {
     // ========================================================================
     public static int getMaxLevelStatic() {
         return MAX_LEVEL;
+    }
+
+    // ========================================================================
+    // 【平衡性冲突】与"熵增"、"星火不灭"互斥
+    // 三者同属"基于目标生命百分比造成伤害"的附魔，叠加会导致
+    // 伤害随 Boss 血量无限成长（百分比真伤三件套），故两两互斥。
+    // 使用 ResourceLocation 比较，避免 mappings 版本差异问题。
+    // ========================================================================
+    private static final ResourceLocation ENTROPY_RL =
+            new ResourceLocation("enchantment_expansion", "entropy");
+    private static final ResourceLocation ETERNAL_SPARK_RL =
+            new ResourceLocation("enchantment_expansion", "eternal_spark");
+
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        ResourceLocation otherRL = ForgeRegistries.ENCHANTMENTS.getKey(other);
+        if (ENTROPY_RL.equals(otherRL) || ETERNAL_SPARK_RL.equals(otherRL)) {
+            return false;  // 与熵增、星火不灭互斥
+        }
+        return super.checkCompatibility(other);
     }
 }

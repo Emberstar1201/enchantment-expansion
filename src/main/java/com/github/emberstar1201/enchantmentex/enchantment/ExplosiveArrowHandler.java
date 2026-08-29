@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import com.github.emberstar1201.enchantmentex.util.AllyFilter;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -121,7 +122,9 @@ public class ExplosiveArrowHandler {
         AABB aabb = new AABB(hitPos.x - radius, hitPos.y - radius, hitPos.z - radius,
                 hitPos.x + radius, hitPos.y + radius, hitPos.z + radius);
         List<LivingEntity> nearby = level.getEntitiesOfClass(LivingEntity.class, aabb,
-                e -> e.isAlive() && e != owner && e != finalDirectTarget);
+                e -> e.isAlive() && e != owner && e != finalDirectTarget
+                        // 统一友伤过滤：不波及玩家、村民、驯服生物、女仆等友方
+                        && !AllyFilter.isFriendly(e));
         for (LivingEntity entity : nearby) {
             double dist = Math.sqrt(entity.distanceToSqr(hitPos));
             if (dist > radius) continue;

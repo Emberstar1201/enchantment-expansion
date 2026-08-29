@@ -2,6 +2,7 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.OceanStarConfig;
 import com.github.emberstar1201.enchantmentex.data.OceanStarData;
+import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
@@ -9,6 +10,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -19,8 +21,12 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -44,8 +50,10 @@ import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -303,7 +311,8 @@ public class OceanStarHandler {
     }
 
     // ========================================================================
-    // 放置宝箱：神殿顶部中央，宝箱中 100% 直接含海洋之星 + 持久化去重
+    // 放置宝箱：优先海绵房附近，找不到则神殿顶部中央
+    // 宝箱内容：海洋之星（slot 0） + 杂物 + 极小概率模组附魔书
     // ========================================================================
     private static void placeMonumentChest(ServerLevel level, StructureStart start) {
         // 神殿实例唯一标识：结构起始区块坐标
@@ -314,12 +323,20 @@ public class OceanStarHandler {
         OceanStarData data = OceanStarData.get(level);
         if (data.isHandled(key)) return;
 
-        // 宝箱位置：结构包围盒顶部中央（神殿屋顶正上方一格）
         BoundingBox bb = start.getBoundingBox();
-        BlockPos chestPos = new BlockPos(
-                bb.minX() + bb.getXSpan() / 2,
-                bb.maxY() + 1,
-                bb.minZ() + bb.getZSpan() / 2);
+
+        // ================================================================
+        // 【位置选择】优先神殿门口（四个方向底面外缘，向上找空气/水方块）
+        // 找不到合适位置则 fallback 到神殿屋顶正上方一格
+        // ================================================================
+        BlockPos chestPos = findMonumentEntranceSpot(level, bb);
+        if (chestPos == null) {
+            // fallback：神殿屋顶正上方一格
+            chestPos = new BlockPos(
+                    bb.minX() + bb.getXSpan() / 2,
+                    bb.maxY() + 1,
+                    bb.minZ() + bb.getZSpan() / 2);
+        }
 
         // 确保宝箱所在区块已完整生成/加载（未生成则跳过，等待后续区块事件重试）
         if (level.getChunk(chestPos.getX() >> 4, chestPos.getZ() >> 4,
@@ -328,13 +345,161 @@ public class OceanStarHandler {
         // 强制放置宝箱
         level.setBlock(chestPos, Blocks.CHEST.defaultBlockState(), 3);
 
-        // 宝箱中 100% 直接生成海洋之星（放入第一格）
+        // ================================================================
+        // 【宝箱填充】海洋之星 + 杂物 + 极小概率模组附魔书
+        // ================================================================
         if (level.getBlockEntity(chestPos) instanceof Container container) {
+            // 第 0 格：海洋之星（保底）
             container.setItem(0, new ItemStack(ModItems.OCEAN_STAR.get(), 1));
+
+            // 其余格：杂物 + 极小概率附魔书
+            fillMonumentChestLoot(container);
         }
 
         // 记录该神殿已处理（含宝箱与海洋之星均只生成一次）
         data.markHandled(key);
+    }
+
+    // ========================================================================
+    // 定位海洋神殿门口位置
+    //
+    // 海洋神殿入口通常位于建筑某一面底面中央。本方法扫描神殿四个方向
+    // （北/南/东/西）的底面外缘，向上寻找第一个空气或水方块作为宝箱放置位置。
+    //
+    // 选择门口而非海绵房的理由：
+    //   - 门口位置更直观，玩家接近神殿时即可看到宝箱
+    //   - 不依赖海绵房是否生成（某些神殿可能没有海绵房）
+    //   - 避免深入神殿内部寻找，降低探索门槛
+    // ========================================================================
+    private static BlockPos findMonumentEntranceSpot(ServerLevel level, BoundingBox bb) {
+        int centerX = bb.minX() + bb.getXSpan() / 2;
+        int centerZ = bb.minZ() + bb.getZSpan() / 2;
+        int baseY = bb.minY() + 1;
+
+        // 四个方向的门口候选位置（底面中央向外偏移 1 格）
+        BlockPos[] candidates = {
+                new BlockPos(centerX, baseY, bb.minZ() - 1),  // 北面
+                new BlockPos(centerX, baseY, bb.maxZ() + 1),  // 南面
+                new BlockPos(bb.minX() - 1, baseY, centerZ),  // 西面
+                new BlockPos(bb.maxX() + 1, baseY, centerZ)   // 东面
+        };
+
+        // 对每个候选位置，向上扫描找可放置位置（空气或水）
+        for (BlockPos base : candidates) {
+            BlockPos pos = base;
+            while (pos.getY() <= bb.maxY() + 2) {
+                if (level.getBlockState(pos).isAir()
+                        || level.getFluidState(pos).is(FluidTags.WATER)) {
+                    return pos;
+                }
+                pos = pos.above();
+            }
+        }
+        return null;  // 四个方向均未找到合适位置
+    }
+
+    // ========================================================================
+    // 填充海洋神殿宝箱的杂物与附魔书
+    //
+    // 杂物清单（与海洋主题契合）：
+    //   - 铁锭 1-3  | 铁粒 2-5  | 海绵 1-3
+    //   - 海晶石 1-2 | 海晶碎片 1-3 | 海晶灯 1-2
+    //   - 金锭 1-2  | 名称标签 1 | 鹦鹉螺壳 1-2
+    //
+    // 附魔书：5% 概率刷一本等级 1 的模组附魔书
+    //   （仅限非宝藏级、非合成获取、非特定途径的常规附魔）
+    // ========================================================================
+    private static void fillMonumentChestLoot(Container container) {
+        RandomSource random = RandomSource.create();
+
+        // 杂物候选清单（每项都是新堆栈，不会共享引用）
+        ItemStack[] junks = {
+                new ItemStack(Items.IRON_INGOT, 1 + random.nextInt(3)),         // 1-3
+                new ItemStack(Items.IRON_NUGGET, 2 + random.nextInt(4)),       // 2-5
+                new ItemStack(Items.SPONGE, 1 + random.nextInt(3)),            // 1-3
+                new ItemStack(Items.PRISMARINE, 1 + random.nextInt(2)),        // 1-2
+                new ItemStack(Items.PRISMARINE_CRYSTALS, 1 + random.nextInt(3)),// 1-3
+                new ItemStack(Items.SEA_LANTERN, 1 + random.nextInt(2)),       // 1-2
+                new ItemStack(Items.GOLD_INGOT, 1 + random.nextInt(2)),        // 1-2
+                new ItemStack(Items.NAME_TAG, 1),                               // 1
+                new ItemStack(Items.NAUTILUS_SHELL, 1 + random.nextInt(2))     // 1-2
+        };
+
+        // 随机选 3-5 件杂物放入剩余格子（避开 slot 0，那里是海洋之星）
+        int junkCount = 3 + random.nextInt(3);  // 3-5
+        int containerSize = container.getContainerSize();  // 普通宝箱 27 格
+        int slot = 1;
+        for (int i = 0; i < junkCount && slot < containerSize; i++) {
+            ItemStack junk = junks[random.nextInt(junks.length)].copy();
+            // 跳过非空格子
+            while (slot < containerSize && !container.getItem(slot).isEmpty()) slot++;
+            if (slot >= containerSize) break;
+            container.setItem(slot, junk);
+            slot++;
+        }
+
+        // 极小概率（5%）刷模组附魔书
+        if (random.nextFloat() < 0.05f) {
+            ItemStack book = createRandomModEnchantedBook();
+            if (book != null) {
+                while (slot < containerSize && !container.getItem(slot).isEmpty()) slot++;
+                if (slot < containerSize) {
+                    container.setItem(slot, book);
+                }
+            }
+        }
+    }
+
+    // ========================================================================
+    // 可放入海洋神殿宝箱的模组附魔清单
+    //   仅包含：可从附魔台/常规宝箱/村民交易获取的普通附魔
+    //   排除：宝藏级、合成获取、特定途径（钓鱼/要塞图书馆/沙漠神殿）的附魔
+    //         end_approaches、ancient_yunlai、ancient_yunlai_swordmanship、
+    //         plunder、eternal_spark、dawn、channeling_iii、snatch
+    // ========================================================================
+    private static final List<RegistryObject<? extends Enchantment>> CHEST_ENCHANTMENTS =
+            Arrays.asList(
+                    ModEnchantments.ACCUMULATE,
+                    ModEnchantments.AUTO_SMELT,
+                    ModEnchantments.ARTISAN_LEGACY,
+                    ModEnchantments.FLYWHEEL_EFFECT,
+                    ModEnchantments.ENDER_ARROW,
+                    ModEnchantments.ILLUSORY_FEAST,
+                    ModEnchantments.SPRING_HARVEST,
+                    ModEnchantments.ALL_NATURE_REVIVE,
+                    ModEnchantments.FERTILE_BOUNTY,
+                    ModEnchantments.FALL_CUSHION,
+                    ModEnchantments.BLOODTHIRST,
+                    ModEnchantments.LEVIS_ECHO,
+                    ModEnchantments.ENTROPY,
+                    ModEnchantments.TEMPERATURE_CONSTANT,
+                    ModEnchantments.DIFFICULTY_GIFT,
+                    ModEnchantments.EXPLOSIVE_ARROW,
+                    ModEnchantments.CHAIN_ARROW,
+                    ModEnchantments.SWIFT_CROSSBOW,
+                    ModEnchantments.CHANNELING_II,
+                    ModEnchantments.EX_NIHILO,
+                    ModEnchantments.SMOKELESS_DASH,
+                    ModEnchantments.CHAIN_BREAKER,
+                    ModEnchantments.QIANPO_QINGMING_SWORD,
+                    ModEnchantments.ELEGANT_CATWALK,
+                    ModEnchantments.DARK_WALKER
+            );
+
+    // ========================================================================
+    // 随机生成一本等级 1 的模组附魔书
+    // 使用 EnchantedBookItem.createForEnchantment 避免手动构造 NBT
+    // ========================================================================
+    private static ItemStack createRandomModEnchantedBook() {
+        RandomSource rng = RandomSource.create();
+        RegistryObject<? extends Enchantment> ro =
+                CHEST_ENCHANTMENTS.get(rng.nextInt(CHEST_ENCHANTMENTS.size()));
+        Enchantment enchantment = ro.get();
+        if (enchantment == null) return null;
+        // 等级设为 1（普适、安全，玩家可用铁砧往上合并）
+        int level = 1;
+        return EnchantedBookItem.createForEnchantment(
+                new EnchantmentInstance(enchantment, level));
     }
 
     // ========================================================================

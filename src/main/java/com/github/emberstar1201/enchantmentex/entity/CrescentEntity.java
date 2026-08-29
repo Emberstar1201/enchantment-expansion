@@ -13,6 +13,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
+import com.github.emberstar1201.enchantmentex.util.AllyFilter;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -163,10 +164,12 @@ public class CrescentEntity extends Projectile {
             // 当前帧的碰撞箱膨胀检测
             AABB aabb = this.getBoundingBox().inflate(0.3);
             List<Entity> targets = this.level().getEntities(this, aabb,
-                    e -> e instanceof LivingEntity
-                            && e.isAlive()
-                            && e != this.getOwner()
-                            && !e.isSpectator());
+                    e -> e instanceof LivingEntity living
+                            && living.isAlive()
+                            && living != this.getOwner()
+                            && !living.isSpectator()
+                            // 统一友伤过滤：剑气不穿透玩家、村民、驯服生物、女仆等友方
+                            && !AllyFilter.isFriendly(living));
 
             for (Entity target : targets) {
                 if (target instanceof LivingEntity living) {

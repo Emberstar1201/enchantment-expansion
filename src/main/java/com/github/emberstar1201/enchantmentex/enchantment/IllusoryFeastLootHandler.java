@@ -42,6 +42,16 @@ public class IllusoryFeastLootHandler {
         }
     }
 
+    // ========================================================================
+    // 构建画饼充饥附魔书 LootPool
+    //
+    // 【概率实现原理】
+    //   LootPool 的 rolls 决定尝试 roll 的次数：
+    //     - rolls = 1.0 → 每次 roll 1 次（必出）
+    //     - rolls = 0.05 → 5% 概率 roll 1 次（整数部分为 0，小数部分为概率）
+    //   pool 内只有 1 个 entry 时，setWeight 不影响概率（必然选中），
+    //   因此概率控制必须通过 setRolls 的小数部分实现。
+    // ========================================================================
     private static LootPool buildEnchantedBookPool() {
         Enchantment enchantment = ModEnchantments.ILLUSORY_FEAST.get();
         ResourceLocation enchantmentId = ForgeRegistries.ENCHANTMENTS.getKey(enchantment);
@@ -60,10 +70,10 @@ public class IllusoryFeastLootHandler {
 
         return LootPool.lootPool()
                 .name("illusory_feast_enchanted_book")
-                .setRolls(ConstantValue.exactly(1.0F))
+                .setRolls(ConstantValue.exactly(0.05F))  // 5% 概率生成
                 .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .apply(SetNbtFunction.setTag(tag))
-                        .setWeight(5))
+                )
                 .build();
     }
 }

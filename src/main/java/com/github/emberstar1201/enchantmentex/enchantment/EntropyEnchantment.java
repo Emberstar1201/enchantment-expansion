@@ -1,8 +1,10 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraftforge.registries.ForgeRegistries;
 
 // ========================================================================
 // 【熵增】附魔
@@ -42,5 +44,25 @@ public class EntropyEnchantment extends Enchantment {
     @Override
     public int getMaxLevel() {
         return 3;
+    }
+
+    // ========================================================================
+    // 【平衡性冲突】与"星火不灭"、"兵长的回声"互斥
+    // 三者同属"基于目标生命百分比造成伤害"的附魔，叠加会导致
+    // 伤害随 Boss 血量无限成长（百分比真伤三件套），故两两互斥。
+    // 使用 ResourceLocation 比较，避免 mappings 版本差异问题。
+    // ========================================================================
+    private static final ResourceLocation ETERNAL_SPARK_RL =
+            new ResourceLocation("enchantment_expansion", "eternal_spark");
+    private static final ResourceLocation LEVIS_ECHO_RL =
+            new ResourceLocation("enchantment_expansion", "levis_echo");
+
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        ResourceLocation otherRL = ForgeRegistries.ENCHANTMENTS.getKey(other);
+        if (ETERNAL_SPARK_RL.equals(otherRL) || LEVIS_ECHO_RL.equals(otherRL)) {
+            return false;  // 与星火不灭、兵长的回声互斥
+        }
+        return super.checkCompatibility(other);
     }
 }
