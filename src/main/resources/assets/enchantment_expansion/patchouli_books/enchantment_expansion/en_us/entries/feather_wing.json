@@ -1,0 +1,13 @@
+{
+  "name": "Feather Wing",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 39,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Feather Wing",
+      "text": "§lMax Level: §r I$(br2)§lApplicable to: §r Elytra only$(br2)§lEffect: §r Immune to crash damage while flying with Elytra. Vanilla elytra crashes at high speed can deal heavy damage or even death — Feather Wing nullifies that damage entirely.$(br2)§lNo conflicts: §r Does not conflict with any enchantment. Can coexist with Smokeless Dash and other elytra enchantments.$(br2)§lObtaining: §r Only found in End Ship / End City loot chests (20% chance). Treasure enchantment — not available via enchanting table or villager trades."
+    }
+  ]
+}

@@ -97,6 +97,7 @@ public class WindRippleEnchantment extends Enchantment {
         if (other == Enchantments.SOUL_SPEED) return false;
         if (other == Enchantments.SWIFT_SNEAK) return false;
         if (other == ModEnchantments.FLYWHEEL_EFFECT.get()) return false;
+        if (other == ModEnchantments.DEEP_SEA_RIPPLE.get()) return false;
         // 其他附魔：沿用原版默认逻辑（同类附魔互斥，其余兼容）
         return super.checkCompatibility(other);
     }

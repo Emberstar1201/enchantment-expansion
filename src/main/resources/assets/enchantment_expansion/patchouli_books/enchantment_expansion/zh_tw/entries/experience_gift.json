@@ -1,0 +1,13 @@
+{
+  "name": "經驗饋贈",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 27,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "經驗饋贈",
+      "text": "§l最高等級：§r I$(br2)§l適用物品：§r 劍、斧、三叉戟、弓、弩（武器類）$(br2)§l效果：§r 以本武器擊殺怪物後，額外掉落該怪物經驗值 50% 的經驗（向下取整，保底 +1），可疊加原版附魔加成。$(br2)§l獲取方式：§r 附魔台、寶箱、釣魚、村民交易（非寶藏附魔）"
+    }
+  ]
+}

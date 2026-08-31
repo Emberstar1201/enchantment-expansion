@@ -1,0 +1,13 @@
+{
+  "name": "Auto Repair",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 37,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Auto Repair",
+      "text": "§lMax Level: §r III$(br2)§lApplicable to: §r Any damageable item (weapons, tools, armor)$(br2)§lEffect: §r While held or worn, slowly restores 1 durability on a timer. $(br)Tier I: 1 point every 5 seconds (100 ticks). $(br)Tier II: 1 point every 4 seconds (80 ticks). $(br)Tier III: 1 point every 3 seconds (60 ticks). $(br2)§lObtaining: §r Treasure-only enchantment. Found exclusively in structure loot chests (Abandoned Mineshaft, Desert Pyramid, Jungle Temple, Stronghold Library, Nether Fortress, End City, Ancient City). Not available at the Enchanting Table or villager trades"
+    }
+  ]
+}

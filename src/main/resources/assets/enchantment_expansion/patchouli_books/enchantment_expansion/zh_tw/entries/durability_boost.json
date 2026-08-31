@@ -1,0 +1,13 @@
+{
+  "name": "耐久強化",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 17,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "耐久強化",
+      "text": "§l最高等級：§r III$(br2)§l適用物品：§r 一切具有耐久度的物品（武器、盔甲、工具）$(br2)§l等級效果：§r 提升該裝備的最大耐久上限，每級 +50%；$(br)· I 級：最大耐久 ×1.5；$(br)· II 級：最大耐久 ×2；$(br)· III 級：最大耐久 ×2.5。$(br)開啟 F3+H 時，物品懸浮窗顯示的最大耐久會按新上限更新；關閉時則以新耐久條比例顯示。$(br2)§l互斥：§r 與原版「耐久 Unbreaking」附魔互斥。$(br2)§l獲取方式：§r 附魔台、遺跡寶箱、村民交易"
+    }
+  ]
+}

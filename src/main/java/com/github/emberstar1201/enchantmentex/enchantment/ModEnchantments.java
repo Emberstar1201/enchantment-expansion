@@ -73,18 +73,15 @@ public class ModEnchantments {
             ENCHANTMENTS.register("ex_nihilo", ExNihiloEnchantment::new);
 
     // ================================================================
-    // 引雷 II（Channeling II）
-    // 适用物品：三叉戟（TRIDENT） | 最高等级：1 | 获取：钓鱼/沙漠神殿/废弃矿洞
+    // 雷电之戟（Lightning Spear）
+    // 统一引雷 II/III 为两等级附魔。
+    // 适用物品：三叉戟（TRIDENT） | 最高等级：II
+    //  - I 级：雨天（无需雷暴）击中召唤闪电。
+    //  - II 级：任意天气与维度（下界、末地）击中召唤闪电。
+    // 获取方式：钓鱼 / 沙漠神殿 / 废弃矿洞（II 级钓鱼更稀有）。
     // ================================================================
-    public static final RegistryObject<ChannelingIIEnchantment> CHANNELING_II =
-            ENCHANTMENTS.register("channeling_ii", ChannelingIIEnchantment::new);
-
-    // ================================================================
-    // 引雷 III（Channeling III）
-    // 适用物品：三叉戟（TRIDENT） | 最高等级：1 | 获取：仅限钓鱼
-    // ================================================================
-    public static final RegistryObject<ChannelingIIIEnchantment> CHANNELING_III =
-            ENCHANTMENTS.register("channeling_iii", ChannelingIIIEnchantment::new);
+    public static final RegistryObject<LightningSpearEnchantment> LIGHTNING_SPEAR =
+            ENCHANTMENTS.register("lightning_spear", LightningSpearEnchantment::new);
 
     // ================================================================
     // 云来剑法 & 古·云来剑法
@@ -212,6 +209,56 @@ public class ModEnchantments {
     // 画饼充饥（Illusory Feast）：武器命中生物时恢复饥饿值和饱食度。
     public static final RegistryObject<IllusoryFeastEnchantment> ILLUSORY_FEAST =
             ENCHANTMENTS.register("illusory_feast", IllusoryFeastEnchantment::new);
+
+    // 自动修复（Auto Repair）：宝藏附魔，每隔一段时间自动恢复武器/工具/盔甲耐久。
+    // I级: 100 ticks, II级: 80 ticks, III级: 60 ticks
+    public static final RegistryObject<AutoRepairEnchantment> AUTO_REPAIR =
+            ENCHANTMENTS.register("auto_repair", AutoRepairEnchantment::new);
+
+    // ================================================================
+    // 深海的涟漪（Deep Sea Ripple）
+    // 适用物品：靴子（ARMOR_FEET） | 最高等级：I | 获取：附魔台/宝箱/村民
+    // 效果：Shift + 鼠标滚轮调节水中游泳速度倍率（默认上限 3.0，可配置）
+    // ================================================================
+    public static final RegistryObject<DeepSeaRippleEnchantment> DEEP_SEA_RIPPLE =
+            ENCHANTMENTS.register("deep_sea_ripple", DeepSeaRippleEnchantment::new);
+
+    // ================================================================
+    // 经验馈赠（Experience Gift）
+    // 适用物品：剑/斧/三叉戟/弓/弩（WEAPON） | 最高等级：I
+    // 效果：击杀怪物后额外掉落 50% 经验值
+    // 获取：附魔台/宝箱/钓鱼/村民交易
+    // ================================================================
+    public static final RegistryObject<ExperienceGiftEnchantment> EXPERIENCE_GIFT =
+            ENCHANTMENTS.register("experience_gift", ExperienceGiftEnchantment::new);
+
+    // ================================================================
+    // 耐久强化（Durability Boost）
+    // 适用物品：所有可损耗耐久物品（BREAKABLE） | 最高等级：III
+    // 效果：I级 50%/II级 66%/III级 75% 概率不消耗耐久（等效耐久 ×2/×3/×4）
+    // 获取：附魔台/宝箱/村民交易 | 与原版耐久互斥
+    // ================================================================
+    public static final RegistryObject<DurabilityBoostEnchantment> DURABILITY_BOOST =
+            ENCHANTMENTS.register("durability_boost", DurabilityBoostEnchantment::new);
+
+    // ================================================================
+    // 羽翼（Feather Wing）
+    // 适用物品：鞘翅（ARMOR_CHEST） | 最高等级：I
+    // 效果：鞘翅飞行时免疫撞墙伤害
+    // 获取：仅末地船/末地城宝箱（20% 概率），宝藏附魔
+    // 冲突：无（不与任何鞘翅附魔冲突）
+    // ================================================================
+    public static final RegistryObject<FeatherWingEnchantment> FEATHER_WING =
+            ENCHANTMENTS.register("feather_wing", FeatherWingEnchantment::new);
+
+    // ================================================================
+    // 狙击（Sniper）
+    // 适用物品：弓/弩（BOW） | 最高等级：I
+    // 效果：箭矢每飞行 10 格伤害 +20%，上限 +100%（50 格满额）
+    // 获取：附魔台/村民交易/钓鱼（非宝藏）
+    // ================================================================
+    public static final RegistryObject<SniperEnchantment> SNIPER =
+            ENCHANTMENTS.register("sniper", SniperEnchantment::new);
 
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {

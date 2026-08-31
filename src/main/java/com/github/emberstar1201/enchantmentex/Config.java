@@ -656,6 +656,14 @@ public class Config {
             .comment("无烟冲击：基础加速常数（每 tick 沿视线方向的加速度，值越大加速越猛，推荐 0.12）")
             .defineInRange("smokelessDash.baseBoost", 0.12, 0.001, 1.0);
 
+    // ================================================================
+    // 伤害/治疗浮动数字
+    // ================================================================
+    private static final ForgeConfigSpec.BooleanValue ENABLE_DAMAGE_POPUP = BUILDER
+            .comment("伤害/治疗浮动数字：生物受伤显示红色数字（-N）、受治疗显示绿色数字（+N），仅 64 格内可见",
+                    "默认 true")
+            .define("damagePopup.enabled", true);
+
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // 加载时缓存到静态字段
@@ -744,6 +752,9 @@ public class Config {
     public static double dawnExecuteDamageMultiplier;
     public static boolean dawnLifestealEnabled;
     public static double dawnLifestealPercent;
+    // 伤害/治疗浮动数字
+    public static boolean enableDamagePopup;
+
     public static boolean dawnSplashEnabled;
     public static double dawnSplashRadius;
     public static double dawnSplashDamagePercent;
@@ -996,5 +1007,8 @@ public class Config {
         smokelessDashMaxMultiplier = SMOKELESS_DASH_MAX_MULTIPLIER.get();
         smokelessDashScrollSensitivity = SMOKELESS_DASH_SCROLL_SENSITIVITY.get();
         smokelessDashBaseBoost = SMOKELESS_DASH_BASE_BOOST.get();
+
+        // 伤害/治疗浮动数字
+        enableDamagePopup = ENABLE_DAMAGE_POPUP.get();
     }
 }

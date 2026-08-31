@@ -6,10 +6,17 @@ import com.github.emberstar1201.enchantmentex.enchantment.ChainBreakerHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.DifficultyGiftHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.AncientYunLaiHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ArtisanLegacyHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.AutoRepairHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.AutoRepairLootHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.AutoSmeltHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.BloodthirstHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ChainArrowHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.DarkWalkerHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.DeepSeaRippleHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.ExperienceGiftHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.FeatherWingHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.FeatherWingLootHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.SniperHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.EternalSparkHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ExplosiveArrowHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.EnderArrowHandler;
@@ -17,6 +24,10 @@ import com.github.emberstar1201.enchantmentex.enchantment.FallCushionHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.IllusoryFeastHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.IllusoryFeastLootHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.TemperatureConstantHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.TouhouMaidEnchantmentCompat;
+import com.github.emberstar1201.enchantmentex.enchantment.TouhouMaidEnchantmentCompat2;
+import com.github.emberstar1201.enchantmentex.enchantment.TouhouMaidEnchantmentCompat3;
+import com.github.emberstar1201.enchantmentex.enchantment.TouhouMaidEnchantmentCompat4;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingEventHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingLootHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.CreationFromNothingHandler;
@@ -39,6 +50,7 @@ import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHand
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.item.handler.OceanStarHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.ProtectedItemHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.SwordOfTheFreeWillHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.TerminalBookHandler;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
@@ -116,6 +128,12 @@ public class EnchantmentExpansion {
         // 画饼充饥附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
         context.registerConfig(ModConfig.Type.COMMON, IllusoryFeastConfig.SPEC,
                 "enchantment_expansion-illusory_feast.toml");
+        // 自动修复附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, AutoRepairConfig.SPEC,
+                "enchantment_expansion-auto_repair.toml");
+        // 深海的涟漪附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, DeepSeaRippleConfig.SPEC,
+                "enchantment_expansion-deep_sea_ripple.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
@@ -152,6 +170,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(OceanStarHandler.class);
         MinecraftForge.EVENT_BUS.register(SwordOfTheFreeWillHandler.class);
         MinecraftForge.EVENT_BUS.register(TerminalBookHandler.class);
+        MinecraftForge.EVENT_BUS.register(ProtectedItemHandler.class);
         MinecraftForge.EVENT_BUS.register(SwiftCrossbowHandler.class);
         MinecraftForge.EVENT_BUS.register(AgricultureHandler.class);
         MinecraftForge.EVENT_BUS.register(SmokelessDashHandler.class);
@@ -166,6 +185,17 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(AccumulateHandler.class);
         MinecraftForge.EVENT_BUS.register(IllusoryFeastHandler.class);
         MinecraftForge.EVENT_BUS.register(IllusoryFeastLootHandler.class);
+        MinecraftForge.EVENT_BUS.register(AutoRepairHandler.class);
+        MinecraftForge.EVENT_BUS.register(AutoRepairLootHandler.class);
+        MinecraftForge.EVENT_BUS.register(DeepSeaRippleHandler.class);
+        MinecraftForge.EVENT_BUS.register(ExperienceGiftHandler.class);
+        MinecraftForge.EVENT_BUS.register(FeatherWingHandler.class);
+        MinecraftForge.EVENT_BUS.register(FeatherWingLootHandler.class);
+        MinecraftForge.EVENT_BUS.register(SniperHandler.class);
+        MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat.class);
+        MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat2.class);
+        MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat3.class);
+        MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat4.class);
 
         // ================================================================
         // 注册网络通道（飞轮效应等 C2S 数据包）

@@ -85,5 +85,29 @@ public class NetworkHandler {
                 AccumulateChargePacket::new,
                 AccumulateChargePacket::handle
         );
+
+        // ================================================================
+        // 伤害/治疗浮动数字包（S2C：受伤/治疗事件广播）
+        // 服务端监听 LivingHurt/LivingHeal 事件，广播给 64 格内玩家，
+        // 客户端在实体头顶渲染浮动数字（红=伤害，绿=治疗）
+        // ================================================================
+        CHANNEL.registerMessage(
+                packetId++,
+                DamagePopupPacket.class,
+                DamagePopupPacket::encode,
+                DamagePopupPacket::new,
+                DamagePopupPacket::handle
+        );
+
+        // ================================================================
+        // 深海的涟漪数据包（C2S：Shift + 滚轮调节水中游泳速度）
+        // ================================================================
+        CHANNEL.registerMessage(
+                packetId++,
+                DeepSeaRippleScrollPacket.class,
+                DeepSeaRippleScrollPacket::encode,
+                DeepSeaRippleScrollPacket::new,
+                DeepSeaRippleScrollPacket::handle
+        );
     }
 }

@@ -56,6 +56,7 @@ public class FlywheelEffectEnchantment extends Enchantment {
     @Override
     protected boolean checkCompatibility(Enchantment other) {
         if (other == ModEnchantments.WIND_RIPPLE.get()) return false;
+        if (other == ModEnchantments.DEEP_SEA_RIPPLE.get()) return false;
         return super.checkCompatibility(other);
     }
 }

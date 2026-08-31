@@ -81,6 +81,10 @@ public class GlacialArrowEnchantment extends Enchantment {
         if (other instanceof YunLaiArcheryEnchantment) return false;
         // 与古·云来弓法互斥
         if (other instanceof AncientYunLaiEnchantment) return false;
+        // 与爆破箭矢/贯穿链条/末影箭互斥（命中时多个 Handler 争夺箭矢事件）
+        if (other == ModEnchantments.EXPLOSIVE_ARROW.get()) return false;
+        if (other == ModEnchantments.CHAIN_ARROW.get()) return false;
+        if (other == ModEnchantments.ENDER_ARROW.get()) return false;
         // 其余沿用父类逻辑（力量等 BOW 附魔可共存）
         return super.checkCompatibility(other);
     }

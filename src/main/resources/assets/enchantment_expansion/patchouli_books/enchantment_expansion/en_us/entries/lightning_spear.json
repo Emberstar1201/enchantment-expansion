@@ -1,0 +1,13 @@
+{
+  "name": "Lightning Spear",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 32,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Lightning Spear",
+      "text": "$(bold)Max Level:$(r) II$(br2)$(bold)Applicable:$(r) Trident$(br2)$(bold)Effects by Tier:$(r)$(br)· I: Summons lightning on a trident hit when raining (thunder not required).$(br)· II: Summons lightning on a trident hit in any weather and any dimension (including Nether and End).$(br2)$(bold)Obtainment:$(r)$(br)· I: Fishing (8%), Desert Pyramid chest (12%), Abandoned Mineshaft chest (10%);$(br)· II: Fishing (4%)"
+    }
+  ]
+}

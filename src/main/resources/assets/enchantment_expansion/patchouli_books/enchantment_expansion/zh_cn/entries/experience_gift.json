@@ -1,0 +1,13 @@
+{
+  "name": "经验馈赠",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 27,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "经验馈赠",
+      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 剑、斧、三叉戟、弓、弩（武器类）$(br2)§l效果：§r 用本武器击杀怪物后，额外掉落该怪物经验值 50% 的经验（向下取整，保底 +1），可叠加原版附魔加成。$(br2)§l获取方式：§r 附魔台、宝箱、钓鱼、村民交易（非宝藏附魔）"
+    }
+  ]
+}

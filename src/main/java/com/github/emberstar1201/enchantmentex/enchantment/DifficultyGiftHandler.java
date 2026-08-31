@@ -44,6 +44,16 @@ public class DifficultyGiftHandler {
             UUID.fromString("6f2b6a10-6c3d-4a91-9f1e-6f00000a");
     private static final UUID TOUGHNESS_UUID =
             UUID.fromString("6f2b6a10-6c3d-4a91-9f1e-6f00000c");
+    // 4 个盔甲槽独立 UUID：实现"每件难度馈赠盔甲单独提供加成"
+    //   HEAD : 困难满套贡献 7.5 HP 等
+    private static final UUID HEALTH_HEAD_UUID =
+            UUID.fromString("d6e5d5a1-1000-4d00-8888-100000000001");
+    private static final UUID HEALTH_CHEST_UUID =
+            UUID.fromString("d6e5d5a1-1000-4d00-8888-100000000002");
+    private static final UUID HEALTH_LEGS_UUID =
+            UUID.fromString("d6e5d5a1-1000-4d00-8888-100000000003");
+    private static final UUID HEALTH_FEET_UUID =
+            UUID.fromString("d6e5d5a1-1000-4d00-8888-100000000004");
 
     // ========================================================================
     // 事件 A：武器伤害加成
@@ -112,6 +122,32 @@ public class DifficultyGiftHandler {
                 "difficulty_gift_armor", armorBonus, hasArmor && armorBonus > 0);
         manageModifier(player, Attributes.ARMOR_TOUGHNESS, TOUGHNESS_UUID,
                 "difficulty_gift_toughness", toughnessBonus, hasArmor && toughnessBonus > 0);
+
+        // ----------------------------------------------------------------
+        // 3. 最大生命值加成：每件难度馈赠盔甲按"单件数值"独立加成。
+        //    装备难度变化或附魔变化后，modifier 自动增删并裁剪当前血量避免溢出。
+        // ----------------------------------------------------------------
+        double healthPerArmor = peaceful ? 0.0
+                : DifficultyGiftConfig.getMaxHealthBonusPerArmor(difficulty);
+        boolean needClamp = applyOrRemoveHealthModifier(player,
+                EquipmentSlot.HEAD, HEALTH_HEAD_UUID, "difficulty_gift_health_head",
+                healthPerArmor);
+        needClamp |= applyOrRemoveHealthModifier(player,
+                EquipmentSlot.CHEST, HEALTH_CHEST_UUID, "difficulty_gift_health_chest",
+                healthPerArmor);
+        needClamp |= applyOrRemoveHealthModifier(player,
+                EquipmentSlot.LEGS, HEALTH_LEGS_UUID, "difficulty_gift_health_legs",
+                healthPerArmor);
+        needClamp |= applyOrRemoveHealthModifier(player,
+                EquipmentSlot.FEET, HEALTH_FEET_UUID, "difficulty_gift_health_feet",
+                healthPerArmor);
+        if (needClamp) {
+            // 脱装备或难度下降时，避免角色"当前血量 > 新上限"不掉血。
+            float max = player.getMaxHealth();
+            if (player.getHealth() > max) {
+                player.setHealth(max);
+            }
+        }
     }
 
     /** 检查玩家任意盔甲部位是否带「难度馈赠」 */
@@ -157,5 +193,42 @@ public class DifficultyGiftHandler {
                 instance.removeModifier(modifierUuid);
             }
         }
+    }
+
+    /**
+     * 单件难度馈赠盔甲的生命值加成。
+     * 返回值 true 表示 modifier 发生变化（需调用者进行血量上限裁剪）。
+     */
+    private static boolean applyOrRemoveHealthModifier(Player player,
+                                                        EquipmentSlot slot,
+                                                        UUID uuid, String name,
+                                                        double healthPerArmor) {
+        if (slot.getType() != EquipmentSlot.Type.ARMOR) return false;
+        AttributeInstance attr = player.getAttribute(Attributes.MAX_HEALTH);
+        if (attr == null) return false;
+        ItemStack stack = player.getItemBySlot(slot);
+        int ench = EnchantmentHelper.getItemEnchantmentLevel(
+                ModEnchantments.DIFFICULTY_GIFT.get(), stack);
+        double value = (ench > 0 && healthPerArmor > 0) ? healthPerArmor : 0.0;
+        AttributeModifier existing = attr.getModifier(uuid);
+        boolean changed = false;
+        if (value > 0) {
+            if (existing == null) {
+                attr.addTransientModifier(new AttributeModifier(
+                        uuid, name, value, AttributeModifier.Operation.ADDITION));
+                changed = true;
+            } else if (existing.getAmount() != value) {
+                attr.removeModifier(uuid);
+                attr.addTransientModifier(new AttributeModifier(
+                        uuid, name, value, AttributeModifier.Operation.ADDITION));
+                changed = true;
+            }
+        } else {
+            if (existing != null) {
+                attr.removeModifier(uuid);
+                changed = true;
+            }
+        }
+        return changed;
     }
 }

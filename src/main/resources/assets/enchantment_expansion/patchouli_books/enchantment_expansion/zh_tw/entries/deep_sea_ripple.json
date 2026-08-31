@@ -1,0 +1,13 @@
+{
+  "name": "深海的漣漪",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 38,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "深海的漣漪",
+      "text": "§l最高等級：§r I$(br2)§l適用物品：§r 靴子（所有靴子類護甲）$(br2)§l效果：§r 在水中按住 §6Shift（潛行鍵）§r 配合滑鼠滾輪調節游泳速度倍率：$(br)· 向上滾輪：倍率增加（0.25/格，可設定）$(br)· 向下滾輪：倍率減少$(br)· 倍率範圍：1.0（原版）~ 3.0（上限可設定）$(br2)§l交互回饋：§r 水中會產生氣泡粒子；每 0.75 秒螢幕提示當前倍率（如 §b深海的漣漪 x2.00§r）$(br2)§l取得方式：§r 附魔台、村民圖書管理員交易、各種遺跡寶箱均可取得（非寶藏附魔）。$(br)與風踏漣漪、深海探索者、冰霜行者、靈魂疾行、迅捷潛行、飛輪效應互斥"
+    }
+  ]
+}

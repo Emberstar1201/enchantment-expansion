@@ -90,6 +90,7 @@ public class ElegantCatwalkEnchantment extends Enchantment {
     @Override
     protected boolean checkCompatibility(Enchantment other) {
         if (other == Enchantments.DEPTH_STRIDER) return false;
+        if (other == ModEnchantments.FALL_CUSHION.get()) return false;
         // 其他附魔：沿用原版默认逻辑（同类附魔互斥，其余兼容）
         return super.checkCompatibility(other);
     }

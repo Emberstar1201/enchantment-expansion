@@ -455,7 +455,8 @@ public class OceanStarHandler {
     //   仅包含：可从附魔台/常规宝箱/村民交易获取的普通附魔
     //   排除：宝藏级、合成获取、特定途径（钓鱼/要塞图书馆/沙漠神殿）的附魔
     //         end_approaches、ancient_yunlai、ancient_yunlai_swordmanship、
-    //         plunder、eternal_spark、dawn、channeling_iii、snatch
+    //         plunder、eternal_spark、dawn、lightning_spear II、snatch
+    //   注意：「雷电之戟 lightning_spear」I 级为普通附魔，保留在宝箱中（I 级）。
     // ========================================================================
     private static final List<RegistryObject<? extends Enchantment>> CHEST_ENCHANTMENTS =
             Arrays.asList(
@@ -477,7 +478,7 @@ public class OceanStarHandler {
                     ModEnchantments.EXPLOSIVE_ARROW,
                     ModEnchantments.CHAIN_ARROW,
                     ModEnchantments.SWIFT_CROSSBOW,
-                    ModEnchantments.CHANNELING_II,
+                    ModEnchantments.LIGHTNING_SPEAR,
                     ModEnchantments.EX_NIHILO,
                     ModEnchantments.SMOKELESS_DASH,
                     ModEnchantments.CHAIN_BREAKER,

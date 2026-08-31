@@ -6,6 +6,7 @@
   "refmap": "enchantment_expansion.refmap.json",
   "mixins": [
     "CrossbowChargeDurationMixin",
+    "ItemStackMaxDamageMixin",
     "ServerLevelGameEventMixin",
     "WardenCanTargetMixin"
   ],

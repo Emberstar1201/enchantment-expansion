@@ -51,6 +51,11 @@ public class DifficultyGiftConfig {
             .comment("难度馈赠：和平难度 - 韧性加成（默认 0）")
             .defineInRange("difficultyGift.peaceful.toughnessBonus", 0.0, 0.0, 20.0);
 
+    private static final ForgeConfigSpec.DoubleValue PEACEFUL_HEALTH = BUILDER
+            .comment("难度馈赠：和平难度 - 单件难度馈赠盔甲的最大生命值加成（默认 0）。",
+                    "4 件满套时叠加；和平难度下通常不叠加。")
+            .defineInRange("difficultyGift.peaceful.maxHealthBonusPerArmor", 0.0, 0.0, 40.0);
+
     // ================================================================
     // 二、简单难度
     // ================================================================
@@ -69,6 +74,11 @@ public class DifficultyGiftConfig {
     private static final ForgeConfigSpec.DoubleValue EASY_TOUGH = BUILDER
             .comment("难度馈赠：简单难度 - 韧性加成（默认 0.5）")
             .defineInRange("difficultyGift.easy.toughnessBonus", 0.5, 0.0, 20.0);
+
+    private static final ForgeConfigSpec.DoubleValue EASY_HEALTH = BUILDER
+            .comment("难度馈赠：简单难度 - 单件难度馈赠盔甲的最大生命值加成（默认 1）。",
+                    "满套 4 件合计 +4 HP（基础 20 → 24）。")
+            .defineInRange("difficultyGift.easy.maxHealthBonusPerArmor", 1.0, 0.0, 40.0);
 
     // ================================================================
     // 三、普通难度
@@ -89,6 +99,11 @@ public class DifficultyGiftConfig {
             .comment("难度馈赠：普通难度 - 韧性加成（默认 1.0）")
             .defineInRange("difficultyGift.normal.toughnessBonus", 1.0, 0.0, 20.0);
 
+    private static final ForgeConfigSpec.DoubleValue NORMAL_HEALTH = BUILDER
+            .comment("难度馈赠：普通难度 - 单件难度馈赠盔甲的最大生命值加成（默认 2）。",
+                    "满套 4 件合计 +8 HP（基础 20 → 28）。")
+            .defineInRange("difficultyGift.normal.maxHealthBonusPerArmor", 2.0, 0.0, 40.0);
+
     // ================================================================
     // 四、困难难度
     // ================================================================
@@ -108,6 +123,11 @@ public class DifficultyGiftConfig {
             .comment("难度馈赠：困难难度 - 韧性加成（默认 1.5）")
             .defineInRange("difficultyGift.hard.toughnessBonus", 1.5, 0.0, 20.0);
 
+    private static final ForgeConfigSpec.DoubleValue HARD_HEALTH = BUILDER
+            .comment("难度馈赠：困难难度 - 单件难度馈赠盔甲的最大生命值加成（默认 7.5）。",
+                    "满套 4 件合计 +30 HP（基础 20 → 困难满套=50，符合设计目标）。")
+            .defineInRange("difficultyGift.hard.maxHealthBonusPerArmor", 7.5, 0.0, 40.0);
+
     // 配置 SPEC 实例
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -116,9 +136,13 @@ public class DifficultyGiftConfig {
     // ================================================================
     public static boolean difficultyGiftEnabled;
     public static double peacefulDamage, peacefulSpeed, peacefulArmor, peacefulToughness;
+    public static double peacefulHealth;
     public static double easyDamage, easySpeed, easyArmor, easyToughness;
+    public static double easyHealth;
     public static double normalDamage, normalSpeed, normalArmor, normalToughness;
+    public static double normalHealth;
     public static double hardDamage, hardSpeed, hardArmor, hardToughness;
+    public static double hardHealth;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -132,18 +156,22 @@ public class DifficultyGiftConfig {
         peacefulSpeed = PEACEFUL_SPEED.get();
         peacefulArmor = PEACEFUL_ARMOR.get();
         peacefulToughness = PEACEFUL_TOUGH.get();
+        peacefulHealth = PEACEFUL_HEALTH.get();
         easyDamage = EASY_DAMAGE.get();
         easySpeed = EASY_SPEED.get();
         easyArmor = EASY_ARMOR.get();
         easyToughness = EASY_TOUGH.get();
+        easyHealth = EASY_HEALTH.get();
         normalDamage = NORMAL_DAMAGE.get();
         normalSpeed = NORMAL_SPEED.get();
         normalArmor = NORMAL_ARMOR.get();
         normalToughness = NORMAL_TOUGH.get();
+        normalHealth = NORMAL_HEALTH.get();
         hardDamage = HARD_DAMAGE.get();
         hardSpeed = HARD_SPEED.get();
         hardArmor = HARD_ARMOR.get();
         hardToughness = HARD_TOUGH.get();
+        hardHealth = HARD_HEALTH.get();
     }
 
     // ================================================================
@@ -192,6 +220,19 @@ public class DifficultyGiftConfig {
             case EASY -> easyToughness;
             case NORMAL -> normalToughness;
             case HARD -> hardToughness;
+        };
+    }
+
+    /**
+     * 根据难度返回【单件难度馈赠盔甲】的最大生命值加成（数值来自配置）。
+     * 满套 4 件：返回值 × 4，困难默认 7.5×4=+30 HP，玩家/女仆基础 20 → 困难满套=50。
+     */
+    public static double getMaxHealthBonusPerArmor(Difficulty difficulty) {
+        return switch (difficulty) {
+            case PEACEFUL -> peacefulHealth;
+            case EASY -> easyHealth;
+            case NORMAL -> normalHealth;
+            case HARD -> hardHealth;
         };
     }
 }

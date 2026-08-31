@@ -1,0 +1,13 @@
+{
+  "name": "Deep Sea Ripple",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 38,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Deep Sea Ripple",
+      "text": "§lMax Level: §r I$(br2)§lApplicable to: §r Boots (any feet-slot armor)$(br2)§lEffect: §r While underwater, hold §6Shift (Sneak)§r and scroll the mouse wheel to adjust your swim speed multiplier:$(br)· Scroll up: increase multiplier (0.25 per notch, configurable)$(br)· Scroll down: decrease multiplier$(br)· Range: 1.0 (vanilla) to 3.0 (configurable cap)$(br2)§lFeedback: §r Bubble particles spawn around you while boosting. The action bar shows the current multiplier every 0.75 seconds (e.g. §bDeep Sea Ripple x2.00§r).$(br2)§lObtaining: §r Available at the Enchanting Table, via Librarian trades, and in loot chests (not a treasure enchantment).$(br)Conflicts with Wind Ripple, Depth Strider, Frost Walker, Soul Speed, Swift Sneak, and Flywheel Effect"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Experience Gift",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 27,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Experience Gift",
+      "text": "$(bold)Max Level:$(r) I$(br2)$(bold)Applicable:$(r) Swords, Axes, Tridents, Bows, Crossbows$(br2)$(bold)Effect:$(r) Killing a mob with this weapon drops 50% extra experience on top of the base amount (floored, minimum +1). Stacks with vanilla bonuses.$(br2)$(bold)Obtainment:$(r) Enchanting Table, Loot Chests, Fishing, Villager Trades (not treasure-only)."
+    }
+  ]
+}

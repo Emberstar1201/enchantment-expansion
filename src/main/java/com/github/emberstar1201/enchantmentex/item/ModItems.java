@@ -48,6 +48,7 @@ public class ModItems {
             () -> new EndStarItem(new Item.Properties()
                     .stacksTo(64)
                     .rarity(Rarity.EPIC)
+                    .fireResistant()   // 防 火 + 防 岩浆（防止掉落物被岩浆/火焰销毁）
             )
     );
 

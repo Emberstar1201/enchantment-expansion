@@ -1,0 +1,13 @@
+{
+  "name": "狙击",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "狙击",
+      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 弓 / 弩$(br2)§l效果：§r 箭矢飞行距离越远，伤害越高。每飞行 10 格伤害 +20%，上限 +100%（50 格满额）。$(br2)§l公式：§r 倍率 = 1.0 + min(飞行距离 / 10 × 0.2, 1.0)$(br2)§l示例：§r 10 格 ×1.2 / 20 格 ×1.4 / 30 格 ×1.6 / 40 格 ×1.8 / 50 格+ ×2.0$(br2)§l获取方式：§r 附魔台、村民交易、钓鱼均可获取（非宝藏附魔）。"
+    }
+  ]
+}

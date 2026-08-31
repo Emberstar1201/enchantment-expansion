@@ -1,0 +1,13 @@
+{
+  "name": "自動修復",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 37,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "自動修復",
+      "text": "§l最高等級：§r III$(br2)§l適用物品：§r 所有可損耗耐久的物品（武器、工具、盔甲）$(br2)§l效果：§r 持有或穿戴時按等級自動恢復 1 點耐久。$(br)I 級每 5 秒（100 tick）恢復 1 點。$(br)II 級每 4 秒（80 tick）恢復 1 點。$(br)III 級每 3 秒（60 tick）恢復 1 點。$(br2)§l取得方式：§r 寶藏附魔，僅透過遺跡寶箱獲得（廢棄礦坑、沙漠神殿、叢林神廟、要塞圖書館、下界要塞、終界城、古代城市），附魔台與村民交易無法取得"
+    }
+  ]
+}

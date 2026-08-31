@@ -1,0 +1,13 @@
+{
+  "name": "羽翼",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 39,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "羽翼",
+      "text": "§l最高等級：§r I$(br2)§l適用物品：§r 鞘翅（僅限）$(br2)§l效果：§r 使用鞘翅飛行時免疫撞牆傷害。原版鞘翅高速撞牆會造成高額傷害甚至死亡，羽翼附魔完全免疫該傷害。$(br2)§l不衝突：§r 不與任何附魔衝突，可與無煙衝擊等鞘翅附魔共存。$(br2)§l取得方式：§r 僅末地船 / 末地城寶箱（20% 機率刷出）。寶藏附魔，不可透過附魔台、村民交易取得。"
+    }
+  ]
+}

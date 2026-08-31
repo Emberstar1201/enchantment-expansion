@@ -157,6 +157,10 @@ public class AncientYunLaiEnchantment extends Enchantment {
         if (other instanceof YunLaiArcheryEnchantment) return false;
         // 与琉璃冰魄箭互斥
         if (other instanceof GlacialArrowEnchantment) return false;
+        // 与爆破箭矢/贯穿链条/末影箭互斥（剑气与命中效果争夺箭矢事件）
+        if (other == ModEnchantments.EXPLOSIVE_ARROW.get()) return false;
+        if (other == ModEnchantments.CHAIN_ARROW.get()) return false;
+        if (other == ModEnchantments.ENDER_ARROW.get()) return false;
         // 其余沿用父类逻辑（力量等 BOW 附魔可共存）
         return super.checkCompatibility(other);
     }

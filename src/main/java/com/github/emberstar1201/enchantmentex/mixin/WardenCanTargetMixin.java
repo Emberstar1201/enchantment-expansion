@@ -1,9 +1,12 @@
 package com.github.emberstar1201.enchantmentex.mixin;
 
 import com.github.emberstar1201.enchantmentex.enchantment.DarkWalkerHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.TouhouMaidEnchantmentCompat4;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,6 +37,10 @@ import javax.annotation.Nullable;
 //   监守者就彻底无法检测到该玩家——
 //   "即使玩家在它面前走动、奔跑、挖掘，甚至贴脸"，监守者也会当
 //   玩家不存在。
+//
+//   对车万女仆（Touhou Little Maid）生物：通过注册表命名空间判断并
+//   通过 TouhouMaidEnchantmentCompat4.isMaidDarkWalker(uuid) 查询是否
+//   处于庇护态，从而对女仆也实现"监守者完全无视"。
 // ========================================================================
 @Mixin(Warden.class)
 public class WardenCanTargetMixin {
@@ -45,6 +52,15 @@ public class WardenCanTargetMixin {
         if (target instanceof Player player && DarkWalkerHandler.isProtected(player)) {
             // 幽匿行者庇护：监守者无法将玩家视为可攻击/可检测目标
             cir.setReturnValue(false);
+            return;
+        }
+        if (target instanceof LivingEntity living) {
+            var key = ForgeRegistries.ENTITY_TYPES.getKey(living.getType());
+            if (key != null && "touhou_little_maid".equals(key.getNamespace())) {
+                if (TouhouMaidEnchantmentCompat4.isMaidDarkWalker(living.getUUID())) {
+                    cir.setReturnValue(false);
+                }
+            }
         }
     }
 }

@@ -1,0 +1,13 @@
+{
+  "name": "雷電之戟",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 32,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "雷電之戟",
+      "text": "§l最高等級：§r II$(br2)§l適用物品：§r 三叉戟$(br2)§l等級效果：§r$(br)· I 級：投擲三叉戟擊中實體召喚閃電，雨天即可觸發（無需雷暴）；$(br)· II 級：任意天氣、任意維度（包括地獄和終界）擊中實體召喚閃電。$(br2)§l獲取方式：§r$(br)· I 級：釣魚（8%）、沙漠神殿寶箱（12%）、廢棄礦洞寶箱（10%）；$(br)· II 級：釣魚（4%）"
+    }
+  ]
+}

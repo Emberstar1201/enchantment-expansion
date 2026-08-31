@@ -1,0 +1,13 @@
+{
+  "name": "Durability Boost",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 17,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Durability Boost",
+      "text": "$(bold)Max Level:$(r) III$(br2)$(bold)Applicable:$(r) Any damageable item (weapons, armor, tools).$(br2)$(bold)Effect per Tier:$(r) Increases the item's max durability by +50% per level.$(br)· I: max durability ×1.5$(br)· II: max durability ×2.0$(br)· III: max durability ×2.5$(br)With F3+H the item tooltip shows the new max durability directly; the durability bar ratio updates automatically.$(br2)$(bold)Conflicts:$(r) Mutually exclusive with vanilla Unbreaking.$(br2)$(bold)Obtainment:$(r) Enchanting Table, Structure Chests, Villager Trades."
+    }
+  ]
+}
