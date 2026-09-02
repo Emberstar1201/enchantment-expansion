@@ -1,0 +1,117 @@
+注: SpongePowered MIXIN Annotation Processor Version=0.8.5 (MixinGradle Version=0.7.38)
+注: Supported obfuscation types: ObfuscationServiceMCP supports [notch] ObfuscationServiceFG3 supports [searge]
+注: Loading searge mappings from F:\MinecraftMods\enchantment-expansion\build\createMcpToSrg\output.tsrg
+注: Writing refmap to F:\MinecraftMods\enchantment-expansion\build\tmp\compileJava\compileJava-refmap.json
+注: Writing refmap to F:\MinecraftMods\enchantment-expansion\build\tmp\compileJava\compileJava-refmap.json
+注: Writing searge composite mappings to F:\MinecraftMods\enchantment-expansion\build\tmp\compileJava\compileJava-mappings.tsrg
+注: Writing refmap to F:\MinecraftMods\enchantment-expansion\build\tmp\compileJava\compileJava-refmap.json
+注: Writing refmap to F:\MinecraftMods\enchantment-expansion\build\tmp\compileJava\compileJava-refmap.json
+注: Writing searge composite mappings to F:\MinecraftMods\enchantment-expansion\build\tmp\compileJava\compileJava-mappings.tsrg
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChainArrowHandler.java:136: 警告: [removal] ProjectileImpactEvent 中的 setCanceled(boolean) 已过时, 且标记为待删除
+        event.setCanceled(true);
+             ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:29: 警告: [removal] ResourceLocation 中的 of(String,char) 已过时, 且标记为待删除
+    private static final ResourceLocation FISHING = ResourceLocation.of("minecraft:gameplay/fishing", ':');
+                                                                    ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:30: 警告: [removal] ResourceLocation 中的 of(String,char) 已过时, 且标记为待删除
+    private static final ResourceLocation DESERT_PYRAMID = ResourceLocation.of("minecraft:chests/desert_pyramid", ':');
+                                                                           ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ChannelingLootHandler.java:31: 警告: [removal] ResourceLocation 中的 of(String,char) 已过时, 且标记为待删除
+    private static final ResourceLocation ABANDONED_MINESHAFT = ResourceLocation.of("minecraft:chests/abandoned_mineshaft", ':');
+                                                                                ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\EntropyEnchantment.java:56: 警告: [removal] ResourceLocation 中的 ResourceLocation(String,String) 已过时, 且标记为待删除
+            new ResourceLocation("enchantment_expansion", "eternal_spark");
+            ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\EntropyEnchantment.java:58: 警告: [removal] ResourceLocation 中的 ResourceLocation(String,String) 已过时, 且标记为待删除
+            new ResourceLocation("enchantment_expansion", "levis_echo");
+            ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\EternalSparkEnchantment.java:91: 警告: [removal] ResourceLocation 中的 ResourceLocation(String,String) 已过时, 且标记为待删除
+            new ResourceLocation("enchantment_expansion", "entropy");
+            ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\EternalSparkEnchantment.java:93: 警告: [removal] ResourceLocation 中的 ResourceLocation(String,String) 已过时, 且标记为待删除
+            new ResourceLocation("enchantment_expansion", "levis_echo");
+            ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\ExplosiveArrowHandler.java:147: 警告: [removal] ProjectileImpactEvent 中的 setCanceled(boolean) 已过时, 且标记为待删除
+        event.setCanceled(true);
+             ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\LevisEchoEnchantment.java:92: 警告: [removal] ResourceLocation 中的 ResourceLocation(String,String) 已过时, 且标记为待删除
+            new ResourceLocation("enchantment_expansion", "entropy");
+            ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\LevisEchoEnchantment.java:94: 警告: [removal] ResourceLocation 中的 ResourceLocation(String,String) 已过时, 且标记为待删除
+            new ResourceLocation("enchantment_expansion", "eternal_spark");
+            ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\TouhouMaidEnchantmentCompat4.java:338: 警告: [removal] ProjectileImpactEvent 中的 setCanceled(boolean) 已过时, 且标记为待删除
+        event.setCanceled(true);
+             ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\enchantment\TouhouMaidEnchantmentCompat4.java:375: 警告: [removal] ProjectileImpactEvent 中的 setCanceled(boolean) 已过时, 且标记为待删除
+        event.setCanceled(true);
+             ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\client\CrescentRenderer.java:23: 警告: [removal] ResourceLocation 中的 of(String,char) 已过时, 且标记为待删除
+        return ResourceLocation.of("minecraft:textures/particle/note.png", ':');
+                               ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\client\GlacialArrowRenderer.java:18: 警告: [removal] ResourceLocation 中的 of(String,char) 已过时, 且标记为待删除
+            ResourceLocation.of("minecraft:textures/entity/projectiles/arrow.png", ':');
+                            ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\client\SpearRenderer.java:73: 错误: level 在 Entity 中是 private 访问控制
+                entity.level, null, entity.getId());
+                      ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\client\SpearRenderer.java:77: 错误: 不兼容的类型: boolean无法转换为int
+                false,
+                ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\client\SpearRenderer.java:92: 警告: [removal] ResourceLocation 中的 ResourceLocation(String,String) 已过时, 且标记为待删除
+        return new ResourceLocation("minecraft", "textures/item/trident.png");
+               ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\SpearProjectileEntity.java:186: 错误: level 在 Entity 中是 private 访问控制
+        if (this.level.isClientSide) return;
+                ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\SpearProjectileEntity.java:212: 错误: level 在 Entity 中是 private 访问控制
+            if (this.isCrit && !this.level.isClientSide) {
+                                    ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\SpearProjectileEntity.java:213: 错误: level 在 Entity 中是 private 访问控制
+                ((net.minecraft.server.level.ServerLevel) this.level).sendParticles(
+                                                              ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\SpearProjectileEntity.java:228: 错误: 方法不会覆盖或实现超类型的方法
+    @Override
+    ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\SpearProjectileEntity.java:230: 错误: 不兼容的类型: HitResult无法转换为BlockHitResult
+        super.onHitBlock(result);
+                         ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\SpearProjectileEntity.java:231: 错误: level 在 Entity 中是 private 访问控制
+        if (this.level.isClientSide) return;
+                ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\SpearProjectileEntity.java:275: 错误: level 在 Entity 中是 private 访问控制
+        if (this.level.isClientSide) return;
+                ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\entity\SpearProjectileEntity.java:286: 错误: level 在 Entity 中是 private 访问控制
+        if (this.level.isClientSide) return false;
+                ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\item\handler\TerminalBookHandler.java:39: 警告: [removal] ResourceLocation 中的 ResourceLocation(String,String) 已过时, 且标记为待删除
+        Item guideBook = ForgeRegistries.ITEMS.getValue(new ResourceLocation(PATCHOULI_MOD_ID, "guide_book"));
+                                                        ^
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\item\SpearItem.java:156: 错误: 找不到符号
+        boolean isCrit = (chargePct >= 1.0f) && !player.isOnGround();
+                                                       ^
+  符号:   方法 isOnGround()
+  位置: 类型为Player的变量 player
+F:\MinecraftMods\enchantment-expansion\src\main\java\com\github\emberstar1201\enchantmentex\network\NetworkHandler.java:20: 警告: [removal] ResourceLocation 中的 of(String,char) 已过时, 且标记为待删除
+            ResourceLocation.of(EnchantmentExpansion.MODID + ":main", ':'),
+                            ^
+注: 某些输入文件使用或覆盖了已过时的 API。
+注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+注: 某些消息已经过简化; 请使用 -Xdiags:verbose 重新编译以获得完整输出
+11 个错误
+18 个警告
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler output below.
+  注: SpongePowered MIXIN Annotation Processor Version=0.8.5 (MixinGradle Version=0.7.38)
+  11 个错误
+  18 个警告
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 22s

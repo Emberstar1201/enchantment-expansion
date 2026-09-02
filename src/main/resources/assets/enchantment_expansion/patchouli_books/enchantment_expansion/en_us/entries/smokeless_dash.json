@@ -1,13 +1,13 @@
 {
-  "name": "无烟冲击",
+  "name": "Soaring",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 34,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "无烟冲击",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 鞘翅$(br2)§l效果：§r 鞘翅飞行时无需烟花火箭，可使用滚轮调节速度。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Soaring",
+      "text": "§lMax Level:§r I$(br2)§lApplies to:§r Elytra$(br2)§lEffect:§r Fly with elytra without fireworks. Use scroll wheel to adjust speed, soar freely through the sky.$(br2)§lObtained via:§r Enchanting Table, Chests, Villager Trading"
     }
   ]
 }

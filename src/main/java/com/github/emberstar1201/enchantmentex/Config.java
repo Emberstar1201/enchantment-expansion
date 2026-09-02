@@ -234,6 +234,32 @@ public class Config {
             .defineInRange("artisanLegacy.maxExtraDropThreshold", 50, 1, 1000);
 
     // ================================================================
+    // 中国制造（Made in China）配置
+    // 恶搞附魔：耐久强化 + 匠心传承 + 原版耐久 三者混合体
+    // 将耐用、耐操、经济实惠于一身；附魔台/村民交易/宝箱均可获得，最高等级 I
+    // ================================================================
+    private static final ForgeConfigSpec.IntValue MADE_IN_CHINA_MAX_DURABILITY_PERCENT = BUILDER
+            .comment("中国制造：最大耐久倍率（百分比，默认 200 = ×2.0，对应耐久强化 II 级强度）",
+                    "例：200 表示最大耐久变为原来的 200%（即 +100%）",
+                    "通过 Mixin ItemStack#getMaxDamage() 生效，F3+H 与耐久条均反映新上限")
+            .defineInRange("madeInChina.maxDurabilityPercent", 200, 100, 1000);
+
+    private static final ForgeConfigSpec.DoubleValue MADE_IN_CHINA_IGNORE_DURABILITY_CHANCE = BUILDER
+            .comment("中国制造：概率不消耗耐久（原版耐久 Unbreaking 机制，默认 0.60 = 60%）",
+                    "原版耐久 III 为 40%，耐久强化 I 级为 50%，本附魔取两者之上体现\"三合一\"强度",
+                    "通过 Mixin ItemStack#hurt() 忽略耐久损耗实现，与最大耐久提升叠加计算等效续航")
+            .defineInRange("madeInChina.ignoreDurabilityChance", 0.60, 0.0, 1.0);
+
+    private static final ForgeConfigSpec.IntValue MADE_IN_CHINA_AUTO_REPAIR_INTERVAL_TICKS = BUILDER
+            .comment("中国制造：自动修复间隔（tick，默认 60 = 3 秒/1点耐久）",
+                    "三者合一：最大耐久提升（×2）+ 60% 概率不消耗耐久 + 每 3 秒回 1 点，等效续航极强")
+            .defineInRange("madeInChina.autoRepairIntervalTicks", 60, 1, 72000);
+
+    private static final ForgeConfigSpec.IntValue MADE_IN_CHINA_AUTO_REPAIR_AMOUNT = BUILDER
+            .comment("中国制造：每次修复恢复的耐久值（默认 1）")
+            .defineInRange("madeInChina.autoRepairAmount", 1, 1, 100);
+
+    // ================================================================
     // 兵长的回声 配置
     // ================================================================
     private static final ForgeConfigSpec.DoubleValue LEVIS_ECHO_DAMAGE_BASE_PERCENT = BUILDER
@@ -725,6 +751,12 @@ public class Config {
     public static double artisanLegacyExtraDropChance;
     public static int artisanLegacyMaxExtraDropThreshold;
 
+    // 中国制造
+    public static int madeInChinaMaxDurabilityPercent;
+    public static double madeInChinaIgnoreDurabilityChance;
+    public static int madeInChinaAutoRepairIntervalTicks;
+    public static int madeInChinaAutoRepairAmount;
+
     // 兵长的回声
     public static double levisEchoDamageBasePercent;
     public static double levisEchoDamagePerLevelPercent;
@@ -899,6 +931,12 @@ public class Config {
         }
         artisanLegacyExtraDropChance = ARTISAN_LEGACY_EXTRA_DROP_CHANCE.get();
         artisanLegacyMaxExtraDropThreshold = ARTISAN_LEGACY_MAX_EXTRA_DROP_THRESHOLD.get();
+
+        // 中国制造
+        madeInChinaMaxDurabilityPercent = MADE_IN_CHINA_MAX_DURABILITY_PERCENT.get();
+        madeInChinaIgnoreDurabilityChance = MADE_IN_CHINA_IGNORE_DURABILITY_CHANCE.get();
+        madeInChinaAutoRepairIntervalTicks = MADE_IN_CHINA_AUTO_REPAIR_INTERVAL_TICKS.get();
+        madeInChinaAutoRepairAmount = MADE_IN_CHINA_AUTO_REPAIR_AMOUNT.get();
 
         // 兵长的回声
         levisEchoDamageBasePercent = LEVIS_ECHO_DAMAGE_BASE_PERCENT.get();

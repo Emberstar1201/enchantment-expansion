@@ -10,23 +10,21 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 //
 // 适用：全部可损耗耐久的物品（工具/武器/盔甲）
 // 最高等级：III
-// 效果：
-//   I 级：耐久度 +50%
-//   II 级：耐久度 +100%
-//   III 级：耐久度 +150%
-// 线性提升：每级 +50%
-// 获取：附魔台 + 宝箱 + 村民交易
 //
-// 实现方式：通过 Forge 的 ItemAttributeModifierEvent 不适用，
-// 因为耐久度不是属性。正确做法是重写 modifyDurability 或者
-// 在物品创建时直接增加 maxDamage。但附魔无法修改物品本身 maxDamage。
+// 【双机制叠加】
+// 机制一：最大耐久提升（Mixin ItemStack#getMaxDamage）
+//   I 级：最大耐久 ×1.5（+50%）
+//   II 级：最大耐久 ×2.0（+100%）
+//   III 级：最大耐久 ×2.5（+150%）
+//   F3+H 悬浮窗显示的 Max Damage、耐久条比例均按新上限更新。
 //
-// 真正可行的方案：监听 LivingEntity 使用物品的 tick 事件，
-// 以概率减少耐久消耗（类似原版 Unbreaking 但更强）。
-//   - I 级：50% 概率不消耗耐久
-//   - II 级：66% 概率不消耗耐久
-//   - III 级：75% 概率不消耗耐久
-// 等效于耐久度提升至 2x / 3x / 4x（线性增长）。
+// 机制二：概率不消耗耐久（Mixin ItemStack#hurt）
+//   I 级：50% 概率跳过耐久损耗
+//   II 级：66% 概率跳过耐久损耗
+//   III 级：75% 概率跳过耐久损耗
+//
+// 获取：附魔台 + 宝箱 + 村民交易（非宝藏附魔）
+// 互斥：与原版耐久 Unbreaking、中国制造、匠心传承 三者互斥
 // ========================================================================
 public class DurabilityBoostEnchantment extends Enchantment {
 
@@ -70,13 +68,21 @@ public class DurabilityBoostEnchantment extends Enchantment {
     }
 
     // ========================================================================
-    // 与原版耐久（Unbreaking）互斥
-    // 原版耐久 I/II/III 的不消耗概率为 20%/33%/40%，
-    // 本附魔 I/II/III 为 50%/66%/75%，效果更强且功能重叠。
+    // 互斥：与原版耐久 Unbreaking / 中国制造 / 匠心传承 三者互斥
+    //   - 原版耐久 I/II/III：20%/33%/40% 不耗耐久，本附魔更强且功能重叠
+    //   - 中国制造：已包含更大的耐久强化 + Unbreaking 机制，互斥防叠加
+    //   - 匠心传承：独立的镐/斧/锹效果，但用户需求"中国制造=三者合一"，
+    //     故匠心传承附魔本身也不能与耐久强化共存（避免双份匠心传承）
     // ========================================================================
     @Override
     protected boolean checkCompatibility(Enchantment other) {
         if (other == net.minecraft.world.item.enchantment.Enchantments.UNBREAKING) {
+            return false;
+        }
+        if (other == ModEnchantments.MADE_IN_CHINA.get()) {
+            return false;
+        }
+        if (other == ModEnchantments.ARTISAN_LEGACY.get()) {
             return false;
         }
         return super.checkCompatibility(other);

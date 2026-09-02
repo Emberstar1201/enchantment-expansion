@@ -91,6 +91,31 @@ public class ModItems {
     );
 
     // ========================================================================
+    // 【强化卷轴】（Enhancement Scroll）
+    //   一次性消耗品，仅能从遗迹宝箱中以 10% 概率获得。
+    //
+    //   在铁砧中与附魔装备 / 附魔书一同放入时：
+    //     1. 随机选一个已有附魔提升一级
+    //     2. 若该附魔已满级（如拂晓 maxLevel=1），则额外添加一个随机附魔
+    //
+    // Item.Properties 配置：
+    //   .stacksTo(16)           ：可堆叠至 16 个（一次性消耗品，铁砧每次消耗 1 个）
+    //   .rarity(Rarity.RARE)    ：稀有度（金色名）
+    //   .fireResistant()        ：不会被火焰/岩浆销毁
+    //
+    // 自定义 EnhancementScrollItem 重写 isFoil() → 附魔光效
+    // 铁砧逻辑与战利品注入见 EnhancementScrollHandler
+    // 注册ID：enhancement_scroll
+    // ========================================================================
+    public static final RegistryObject<EnhancementScrollItem> ENHANCEMENT_SCROLL =
+            ITEMS.register("enhancement_scroll", () -> new EnhancementScrollItem(new Item.Properties()
+                    .stacksTo(16)
+                    .rarity(Rarity.RARE)
+                    .fireResistant()
+            )
+    );
+
+    // ========================================================================
     // 注册方法：在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     // ========================================================================
     public static void register(IEventBus eventBus) {
@@ -117,6 +142,7 @@ public class ModItems {
             if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
                 event.accept(END_STAR);
                 event.accept(OCEAN_STAR);
+                event.accept(ENHANCEMENT_SCROLL);
             }
         }
     }

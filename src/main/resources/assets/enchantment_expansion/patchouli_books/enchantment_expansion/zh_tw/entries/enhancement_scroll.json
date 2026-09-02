@@ -1,0 +1,14 @@
+{
+  "name": "強化卷軸",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:enhancement_scroll",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:enhancement_scroll",
+      "title": "強化卷軸",
+      "text": "§l取得方式：§r 僅能從遺跡寶箱中獲得，每個遺跡寶箱有 10% 機率生成一張強化卷軸。$(br2)§l效果：§r$(br)一次性消耗品。在鐵砧中將附魔裝備或附魔書與強化卷軸一同放入（不區分左右槽位），消耗 3 級經驗與 1 張卷軸：$(br)隨機選擇物品上的一個已有附魔提升一級；若該附魔已達到最大等級（如拂曉），則改為額外添加一個隨機附魔。新增的附魔會經過適用性與相容性過濾，不會添加詛咒附魔或與現有附魔衝突的附魔。"
+    }
+  ]
+}

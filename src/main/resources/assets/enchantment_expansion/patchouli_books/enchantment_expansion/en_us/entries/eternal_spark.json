@@ -1,13 +1,18 @@
 {
-  "name": "星火不灭",
+  "name": "Eternal Spark",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 13,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "星火不灭",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 剑、斧、三叉戟$(br2)§l效果：§r 攻击叠加最多 3 层星火标记，每层造成最大生命值百分比真实伤害；目标死亡时向周围敌人扩散。$(br2)§l获取方式：§r 合成配方（下界之星×1+烈焰棒×4+书×4）"
+      "title": "Eternal Spark",
+      "text": "§lMax Level:§r I$(br2)§lApplies to:§r Sword, Axe, Trident$(br2)§lEffect:§r Attacks stack up to 3 spark marks, each dealing max-health-percentage true damage; on target death, spreads to nearby enemies.$(br2)§lObtained via:§r Crafting recipe (see next page)"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Crafting Recipe",
+      "recipe": "enchantment_expansion:eternal_spark_book"
     }
   ]
 }

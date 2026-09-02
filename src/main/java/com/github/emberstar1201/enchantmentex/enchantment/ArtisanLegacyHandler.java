@@ -3,6 +3,7 @@ package com.github.emberstar1201.enchantmentex.enchantment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -51,6 +52,15 @@ public class ArtisanLegacyHandler {
         // 检查是否有匠心传承附魔
         int enchantLevel = EnchantmentHelper.getItemEnchantmentLevel(
                 ModEnchantments.ARTISAN_LEGACY.get(), tool);
+
+        // ★ 兼容：如果"中国制造"附魔在工具（镐/斧/锹）上，也触发匠心传承效果
+        // 实现"中国制造"融合匠心传承的能力（仅 DIGGER 类工具才触发）
+        if (enchantLevel <= 0
+                && tool.getItem() instanceof DiggerItem
+                && EnchantmentHelper.getItemEnchantmentLevel(
+                        ModEnchantments.MADE_IN_CHINA.get(), tool) > 0) {
+            enchantLevel = 1;
+        }
         if (enchantLevel <= 0) return;
 
         BlockPos pos = event.getPos();
@@ -101,6 +111,14 @@ public class ArtisanLegacyHandler {
         // 检查附魔
         int level = EnchantmentHelper.getItemEnchantmentLevel(
                 ModEnchantments.ARTISAN_LEGACY.get(), tool);
+
+        // ★ 兼容：如果"中国制造"附魔在工具（镐/斧/锹）上，也触发匠心传承效果
+        if (level <= 0
+                && tool.getItem() instanceof DiggerItem
+                && EnchantmentHelper.getItemEnchantmentLevel(
+                        ModEnchantments.MADE_IN_CHINA.get(), tool) > 0) {
+            level = 1;
+        }
         if (level <= 0) return;
 
         // 获取正在挖掘的方块

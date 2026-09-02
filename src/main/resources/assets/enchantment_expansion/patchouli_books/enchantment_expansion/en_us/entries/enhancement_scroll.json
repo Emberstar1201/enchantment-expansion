@@ -1,0 +1,14 @@
+{
+  "name": "强化卷轴",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:enhancement_scroll",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:enhancement_scroll",
+      "title": "强化卷轴",
+      "text": "§l获取方式：§r 仅能从遗迹宝箱中获得，每个遗迹宝箱有 10% 概率生成一张强化卷轴。$(br2)§l效果：§r$(br)一次性消耗品。在铁砧中将附魔装备或附魔书与强化卷轴一同放入（不区分左右槽位），消耗 3 级经验与 1 张卷轴：$(br)随机选择物品上的一个已有附魔提升一级；若该附魔已达到最大等级（如拂晓），则改为额外添加一个随机附魔。新增的附魔会经过适用性与兼容性过滤，不会添加诅咒附魔或与现有附魔冲突的附魔。"
+    }
+  ]
+}

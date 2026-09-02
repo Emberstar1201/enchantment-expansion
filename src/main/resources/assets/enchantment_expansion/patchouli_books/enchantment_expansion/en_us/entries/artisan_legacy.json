@@ -1,13 +1,13 @@
 {
-  "name": "匠心传承",
+  "name": "Artisan Legacy",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 16,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "匠心传承",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 镐、斧、锹$(br2)§l效果：§r 工具记住挖掘过的方块，同类方块越挖越快，并有几率额外掉落。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Artisan Legacy",
+      "text": "$(bold)Max Level:$(r) I$(br2)$(bold)Applicable:$(r) Pickaxes, Axes, Shovels$(br2)$(bold)Effect:$(r) The tool $(italic)remembers$() mined block types (up to 5 types), mines same-type blocks faster (up to 2× speed), and has a chance for an extra drop (up to ~20%). Data persists in the tool NBT through dropping / storing.$(br2)$(bold)Mutually Exclusive:$(r) Unbreaking, Durability Boost, Made in China.$(br2)$(bold)Obtainment:$(r) Structure Chests, Villager Trades (treasure enchantment — unavailable from the enchanting table)."
     }
   ]
 }

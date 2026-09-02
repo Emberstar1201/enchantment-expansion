@@ -76,6 +76,26 @@ public class ArtisanLegacyEnchantment extends Enchantment {
     }
 
     // ========================================================================
+    // 互斥：与原版耐久 Unbreaking / 耐久强化 / 中国制造 三者互斥
+    //   - 中国制造已内置匠心传承效果（镐/斧/锹触发匠心传承），为避免重复触发互斥；
+    //   - 耐久强化 / 原版耐久 与 中国制造三者间已互斥，这里补齐匠心传承的互斥，
+    //     确保"耐久三件套"与"独立匠心传承"不会同时出现在同一工具上。
+    // ========================================================================
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        if (other == net.minecraft.world.item.enchantment.Enchantments.UNBREAKING) {
+            return false;
+        }
+        if (other == ModEnchantments.DURABILITY_BOOST.get()) {
+            return false;
+        }
+        if (other == ModEnchantments.MADE_IN_CHINA.get()) {
+            return false;
+        }
+        return super.checkCompatibility(other);
+    }
+
+    // ========================================================================
     // 对外 API
     // ========================================================================
     public static int getMaxLevelStatic() {

@@ -233,13 +233,25 @@ public class ModEnchantments {
             ENCHANTMENTS.register("experience_gift", ExperienceGiftEnchantment::new);
 
     // ================================================================
-    // 耐久强化（Durability Boost）
+    // 耐久强化（Durability boost）
     // 适用物品：所有可损耗耐久物品（BREAKABLE） | 最高等级：III
     // 效果：I级 50%/II级 66%/III级 75% 概率不消耗耐久（等效耐久 ×2/×3/×4）
     // 获取：附魔台/宝箱/村民交易 | 与原版耐久互斥
     // ================================================================
     public static final RegistryObject<DurabilityBoostEnchantment> DURABILITY_BOOST =
             ENCHANTMENTS.register("durability_boost", DurabilityBoostEnchantment::new);
+
+    // ================================================================
+    // 中国制造（Made in China）
+    // 恶搞附魔：耐久强化 + 匠心传承 + 原版耐久 三者混合体（耐用、耐操、经济实惠于一身）
+    // 适用物品：所有可损耗耐久物品（BREAKABLE） | 最高等级：I
+    // 效果：每 3 秒自动恢复 1 点耐久（融合原版耐久/耐久强化/自动修复概念）
+    //       镐/斧/锹额外触发"匠心传承"效果（记忆方块、加速、额外掉落）
+    // 获取：附魔台 + 村民交易 + 遗迹宝箱（非宝藏附魔，三种途径均可获得）
+    // 互斥：与原版耐久 Unbreaking / 耐久强化 / 匠心传承 三者互斥
+    // ================================================================
+    public static final RegistryObject<MadeInChinaEnchantment> MADE_IN_CHINA =
+            ENCHANTMENTS.register("made_in_china", MadeInChinaEnchantment::new);
 
     // ================================================================
     // 羽翼（Feather Wing）

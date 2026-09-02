@@ -1,0 +1,13 @@
+{
+  "name": "Made in China",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 33,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Made in China",
+      "text": "$(bold)Max Level:$(r) I$(br2)$(bold)Applicable:$(r) Any damageable item (weapons, armor, tools)$(br2)$(bold)Effect:$(r) §6§lDurable, tough, and budget-friendly — all in one!§r Combines Durability Boost + Unbreaking + Artisan Legacy, with 4 stacked mechanics:$(br)· $(bold)Mech 1 · Max Durability ×2$() (equal to Durability Boost II). F3+H tooltip and bar ratio both show the new cap;$(br)· $(bold)Mech 2 · 60% Chance to Ignore Durability Loss$() (Unbreaking-style, stronger than vanilla Unbreaking III at 40%);$(br)· $(bold)Mech 3 · Auto-Repair$(): restores 1 durability every 3s;$(br)· $(bold)Mech 4 · Artisan Legacy$(): when on a pickaxe/axe/shovel, the tool $(italic)remembers$() mined blocks (up to 5 types), mines same-type faster (up to 2×), with extra drop chance.$(br2)$(bold)Mutually Exclusive:$(r) Unbreaking, Durability Boost, Artisan Legacy.$(br2)$(bold)Obtainment:$(r) Enchanting Table, Villager Trades, Loot Chests."
+    }
+  ]
+}

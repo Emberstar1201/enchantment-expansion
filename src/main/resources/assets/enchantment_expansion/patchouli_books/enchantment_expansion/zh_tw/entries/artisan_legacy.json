@@ -1,13 +1,13 @@
 {
-  "name": "匠心传承",
+  "name": "匠心傳承",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 16,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "匠心传承",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 镐、斧、锹$(br2)§l效果：§r 工具记住挖掘过的方块，同类方块越挖越快，并有几率额外掉落。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "匠心傳承",
+      "text": "§l最高等級：§r I$(br2)§l適用物品：§r 鎬、斧、鍬$(br2)§l效果：§r 工具會「記憶」挖掘過的方塊類型（最多 5 種），同類方塊越挖越快（最高 2 倍速），並有機率額外掉落一份（最高約 20%）。數據存儲在工具 NBT 中，丟出/存放不丟失。$(br2)§l互斥：§r 與原版「耐久 Unbreaking」、「耐久強化」、「中國製造」三者互斥。$(br2)§l取得方式：§r 遺跡寶箱、村民交易（寶藏附魔，附魔台不可取得）"
     }
   ]
 }

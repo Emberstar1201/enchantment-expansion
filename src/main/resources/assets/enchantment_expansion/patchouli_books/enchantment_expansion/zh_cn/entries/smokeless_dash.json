@@ -1,13 +1,13 @@
 {
-  "name": "无烟冲击",
+  "name": "翱翔",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 34,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "无烟冲击",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 鞘翅$(br2)§l效果：§r 鞘翅飞行时无需烟花火箭，可使用滚轮调节速度。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "翱翔",
+      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 鞘翅$(br2)§l效果：§r 鞘翅飞行时无需烟花火箭，可使用滚轮调节速度，自由翱翔于天际。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
     }
   ]
 }
