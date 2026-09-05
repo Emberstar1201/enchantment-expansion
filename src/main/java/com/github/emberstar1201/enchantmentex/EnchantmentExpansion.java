@@ -55,6 +55,7 @@ import com.github.emberstar1201.enchantmentex.item.handler.OceanStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.ProtectedItemHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.SwordOfTheFreeWillHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.TerminalBookHandler;
+import com.github.emberstar1201.enchantmentex.client.handler.EnchantmentBookLookupHandler;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
@@ -200,6 +201,8 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat2.class);
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat3.class);
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat4.class);
+        // 附魔书快捷查找：修正帕秋莉 quick lookup 因忽略 NBT 而误跳星火不灭的问题
+        MinecraftForge.EVENT_BUS.register(EnchantmentBookLookupHandler.class);
 
         // ================================================================
         // 注册网络通道（飞轮效应等 C2S 数据包）
