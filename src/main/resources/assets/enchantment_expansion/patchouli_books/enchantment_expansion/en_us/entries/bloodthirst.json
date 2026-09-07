@@ -1,13 +1,13 @@
 {
-  "name": "嗜血",
+  "name": "Bloodthirst",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 10,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "嗜血",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 近战武器$(br2)§l效果：§r 命中怪物回复自身最大生命值的 10%，冷却 5 秒。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Bloodthirst",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Melee Weapons$(br2)§lEffect: §r Hitting mobs restores 10% of your max health, with a 5-second cooldown.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades$(br2)§lConflicts: §r Mutually exclusive with other melee damage/growth-type enchantments; only one may be applied to a weapon."
     }
   ]
 }

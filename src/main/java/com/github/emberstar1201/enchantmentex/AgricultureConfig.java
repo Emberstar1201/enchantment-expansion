@@ -58,6 +58,12 @@ public class AgricultureConfig {
             .comment("万物回春：II级每个未成熟作物的催熟概率（默认 0.85 = 85%）")
             .defineInRange("allNatureRevive.chanceLevel2", 0.85, 0.0, 1.0);
 
+    private static final ForgeConfigSpec.BooleanValue REVIVE_CONSUME_BONEMEAL = BUILDER
+            .comment("万物回春：催熟是否消耗骨粉（默认 true）",
+                    "为 true 时，背包无骨粉则不催熟，且每催熟一块作物消耗一个骨粉，",
+                    "防止免费无限催熟养成刷作物")
+            .define("allNatureRevive.consumeBoneMeal", true);
+
     // ================================================================
     // 三、丰饶之息（Fertile Bounty）
     // ================================================================
@@ -95,6 +101,7 @@ public class AgricultureConfig {
     public static int allNatureReviveRadiusLevel2;
     public static double allNatureReviveChanceLevel1;
     public static double allNatureReviveChanceLevel2;
+    public static boolean allNatureReviveConsumeBoneMeal;
     public static int fertileBountyAuraRadius;
     public static int fertileBountyGrowthIntervalTicks;
     public static double fertileBountyGrowthChanceLevel1;
@@ -117,6 +124,7 @@ public class AgricultureConfig {
         allNatureReviveRadiusLevel2 = REVIVE_RADIUS_L2.get();
         allNatureReviveChanceLevel1 = REVIVE_CHANCE_L1.get();
         allNatureReviveChanceLevel2 = REVIVE_CHANCE_L2.get();
+        allNatureReviveConsumeBoneMeal = REVIVE_CONSUME_BONEMEAL.get();
         fertileBountyAuraRadius = BOUNTY_AURA_RADIUS.get();
         fertileBountyGrowthIntervalTicks = BOUNTY_GROWTH_INTERVAL_TICKS.get();
         fertileBountyGrowthChanceLevel1 = BOUNTY_GROWTH_CHANCE_L1.get();
@@ -153,6 +161,11 @@ public class AgricultureConfig {
             case 2 -> allNatureReviveChanceLevel2;
             default -> level > 2 ? allNatureReviveChanceLevel2 : 0.0;
         };
+    }
+
+    /** 万物回春：催熟是否消耗骨粉 */
+    public static boolean isReviveConsumeBoneMeal() {
+        return allNatureReviveConsumeBoneMeal;
     }
 
     /** 丰饶之息：给定等级返回光环催熟概率 */

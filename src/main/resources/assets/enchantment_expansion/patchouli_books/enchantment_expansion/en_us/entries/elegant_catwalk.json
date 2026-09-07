@@ -1,13 +1,13 @@
 {
-  "name": "优雅猫步",
+  "name": "Elegant Catwalk",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 25,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "优雅猫步",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 靴子$(br2)§l效果：§r 如猫般迅捷，如猫般轻盈。与坠落缓冲冲突。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Elegant Catwalk",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Boots$(br2)§lEffect: §r Swift as a cat, light as a cat. Conflicts with Fall Cushion.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

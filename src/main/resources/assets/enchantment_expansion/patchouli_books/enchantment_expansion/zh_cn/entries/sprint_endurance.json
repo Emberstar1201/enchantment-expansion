@@ -1,0 +1,13 @@
+{
+  "name": "疾跑节能",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 41,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "疾跑节能",
+      "text": "§l最高等级：§r II$(br2)§l适用物品：§r 护腿$(br2)§l效果：§r 疾跑时抵消疾跑带来的额外疲劳值，从而减少饥饿消耗。I 级疾跑额外饥饿消耗减半，II 级完全抵消（疾跑体力消耗≈走路水平）。抵消量可在配置中调整。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+    }
+  ]
+}

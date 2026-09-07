@@ -1,5 +1,5 @@
 {
-  "name": "人权剑",
+  "name": "Sword of the Free Will",
   "category": "enchantment_expansion:weapons",
   "icon": "enchantment_expansion:sword_of_the_free_will",
   "sortnum": 0,
@@ -7,8 +7,8 @@
     {
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:sword_of_the_free_will",
-      "title": "人权剑",
-      "text": "§l获取方式：§r 击败凋灵后掉落，无法合成。$(br2)§l被动效果：§r$(br)护甲 +10、伤害减免 25%，内置锋利 X、亡灵杀手 X、击退 II、拂晓 I。$(br2)§l主动技能「人的意志」：§r$(br)右键激活，10 分钟内伤害 +150%，每次攻击有 90% 概率降下闪电；消耗 25% 生命值，冷却 15 分钟。"
+      "title": "Sword of the Free Will",
+      "text": "§lAcquisition: §r Drops after defeating the Wither; cannot be crafted.$(br2)§lPassive Effects: §r$(br)Armor +10, 25% damage reduction, with built-in Sharpness X, Smite X, Knockback II, and Dawn I.$(br2)§lActive Ability - Will of Man: §r$(br)Right-click to activate: for 10 minutes, Damage +150%, with every attack having a 90% chance to strike lightning; consumes 25% of health, with a 15-minute cooldown."
     }
   ]
 }

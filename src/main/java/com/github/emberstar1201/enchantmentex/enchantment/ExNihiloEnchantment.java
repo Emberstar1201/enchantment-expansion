@@ -96,12 +96,15 @@ public class ExNihiloEnchantment extends Enchantment {
     }
 
     // ========================================================================
-    // 【冲突设置】与精准采集互斥
-    // 精准采集会改变方块掉落，干扰石质方块的识别和额外掉落机制
+    // 【冲突设置】与精准采集 + 连锁挖掘互斥
+    // - 精准采集：会改变方块掉落，干扰石质方块的识别和额外掉落机制
+    // - 连锁挖掘：一次连锁破坏大量石质方块会无限触发无中生有的额外掉落，
+    //   造成矿物指数刷取，故两者互斥，保证开采有明确上限
     // ========================================================================
     @Override
     protected boolean checkCompatibility(Enchantment other) {
         if (other == Enchantments.SILK_TOUCH) return false;
+        if (other == ModEnchantments.CHAIN_BREAKER.get()) return false;
         return super.checkCompatibility(other);
     }
 }

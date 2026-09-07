@@ -1,0 +1,13 @@
+{
+  "name": "Sprint Endurance",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:enchanted_book",
+  "sortnum": 41,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Sprint Endurance",
+      "text": "$(l)Max Level:$() II$(br2)$(l)Applies to:$() Leggings$(br2)$(l)Effect:$() While sprinting, offsets the extra exhaustion sprinting causes, reducing hunger drain. Tier I halves sprint hunger drain; Tier II fully offsets it (sprint cost ~ walking). Offset amount is configurable.$(br2)$(l)Acquisition:$() Enchanting Table, loot chests, villager trades"
+    }
+  ]
+}

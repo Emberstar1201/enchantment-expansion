@@ -50,11 +50,14 @@ public class YunLaiSwordmanshipEnchantment extends Enchantment {
         return true; // 战利品表可获得
     }
 
-    // 与古·云来剑法互斥
+    // 与古·云来剑法及其他近战伤害/AOE/成长系附魔互斥
     @Override
     protected boolean checkCompatibility(Enchantment other) {
         if (other instanceof AncientYunLaiSwordmanshipEnchantment) {
             return false;
+        }
+        if (DamageEnchantmentExclusion.isExcluded(other)) {
+            return false;  // 与拂晓、熵增、星火不灭、兵长的回声、蓄积、千破青溟剑、嗜血互斥
         }
         return super.checkCompatibility(other);
     }

@@ -84,4 +84,15 @@ public class ChainBreakerEnchantment extends Enchantment {
     public boolean canApplyAtEnchantingTable(ItemStack stack) {
         return canEnchant(stack);
     }
+
+    // ========================================================================
+    // 【冲突设置】与无中生有互斥
+    // 连锁挖掘一次破坏大量石质方块，若再叠加无中生有会无限触发额外掉落，
+    // 造成矿物指数刷取。两者互斥，保证开采有明确上限（双向声明，见 ExNihiloEnchantment）
+    // ========================================================================
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        if (other == ModEnchantments.EX_NIHILO.get()) return false;
+        return super.checkCompatibility(other);
+    }
 }

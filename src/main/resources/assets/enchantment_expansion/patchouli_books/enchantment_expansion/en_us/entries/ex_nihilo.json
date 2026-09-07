@@ -1,13 +1,13 @@
 {
-  "name": "无中生有·重制",
+  "name": "Ex Nihilo",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 18,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "无中生有·重制",
-      "text": "§l最高等级：§r III$(br2)§l适用物品：§r 镐、剪刀$(br2)§l效果：§r 挖掘石质方块有概率获得矿物，等级越高概率越高。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Ex Nihilo",
+      "text": "§lMax Level: §r III$(br2)§lApplicable Items: §r Pickaxes, Shears$(br2)§lEffect: §r Mining stone blocks has a chance to yield ores; higher levels give a higher chance.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades$(br2)§lConflicts: §r Mutually exclusive with Chain Breaker"
     }
   ]
 }

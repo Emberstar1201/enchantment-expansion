@@ -72,4 +72,16 @@ public class BloodthirstEnchantment extends Enchantment {
     public static int getMaxLevelStatic() {
         return MAX_LEVEL;
     }
+
+    // ========================================================================
+    // 【冲突设置】与其他近战伤害/AOE/成长系附魔互斥
+    // 嗜血是命中吸血附魔，叠加其他伤害系附魔会形成无限续航+高伤的强组合，全部互斥。
+    // ========================================================================
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        if (DamageEnchantmentExclusion.isExcluded(other)) {
+            return false;
+        }
+        return super.checkCompatibility(other);
+    }
 }

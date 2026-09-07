@@ -1,0 +1,19 @@
+{
+  "name": "Enchantment Expansion Book",
+  "category": "enchantment_expansion:items",
+  "icon": "patchouli:guide_book",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "patchouli:guide_book",
+      "title": "Guide Book",
+      "text": "§lObtained via:§r Crafting (see recipe on the next page); requires the Patchouli mod.$(br2)§lUsage:§r$(br)The in-game guidebook for Enchantment Expansion, documenting every enchantment and special item with their effects, obtaining methods, and conflict rules. Right-click while holding it to open."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Crafting Recipe",
+      "recipe": "enchantment_expansion:enchantment_expansion_book"
+    }
+  ]
+}

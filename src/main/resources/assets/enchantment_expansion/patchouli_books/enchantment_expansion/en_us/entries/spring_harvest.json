@@ -1,13 +1,13 @@
 {
-  "name": "春华秋实",
+  "name": "Spring Harvest",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 21,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "春华秋实",
-      "text": "§l最高等级：§r II$(br2)§l适用物品：§r 锄$(br2)§l效果：§r 右键一键开垦 3×3 或 5×5；也可一键收获成熟作物并原地补种，收获物直接进入背包。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Spring Harvest",
+      "text": "§lMax Level: §r II$(br2)§lApplicable Items: §r Hoes$(br2)§lEffect: §r Right-click to till a 3×3 or 5×5 area with one click; can also harvest all mature crops with one click and replant them in place, with harvests going straight into the inventory.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

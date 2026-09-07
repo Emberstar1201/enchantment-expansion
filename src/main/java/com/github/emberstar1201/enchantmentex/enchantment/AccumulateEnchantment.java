@@ -91,4 +91,16 @@ public class AccumulateEnchantment extends Enchantment {
     public boolean canApplyAtEnchantingTable(ItemStack stack) {
         return canEnchant(stack);
     }
+
+    // ========================================================================
+    // 【冲突设置】与其他近战伤害/AOE/成长系附魔互斥
+    // 蓄积本身是蓄力倍伤，叠加其他伤害系附魔会造成伤害大幅超模，全部互斥。
+    // ========================================================================
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        if (DamageEnchantmentExclusion.isExcluded(other)) {
+            return false;
+        }
+        return super.checkCompatibility(other);
+    }
 }

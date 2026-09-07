@@ -34,8 +34,8 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //   拦截默认掉落流程，手动计算掉落物并将粗矿替换为冶炼成品。
 //
 //   在 Forge 1.20.1 中没有 BlockDropItemEvent，因此采用
-//   "取消 BreakEvent → 手动获取掉落 → 替换为成品 → 生成掉落"的模式。
-//   此模式已在 CreationFromNothingHandler 中得到验证。
+// "取消 BreakEvent → 手动获取掉落 → 替换为成品 → 生成掉落"的模式。
+//   此模式已在无中生有（ExNihiloHandler）中得到验证。
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class AutoSmeltHandler {

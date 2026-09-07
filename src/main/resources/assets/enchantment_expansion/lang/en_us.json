@@ -33,8 +33,6 @@
   "enchantment.enchantment_expansion.yunlai_archery.desc": "Increases bow draw speed",
   "enchantment.enchantment_expansion.wind_ripple": "Wind Ripple",
   "enchantment.enchantment_expansion.wind_ripple.desc": "Faster on land, walk on water",
-  "enchantment.enchantment_expansion.creation_from_nothing": "Creation from Nothing",
-  "enchantment.enchantment_expansion.creation_from_nothing.desc": "Breaking blocks has a chance to drop rare treasures",
   "enchantment.enchantment_expansion.yunlai_swordmanship": "YunLai Swordmanship",
   "enchantment.enchantment_expansion.yunlai_swordmanship.desc": "While held: Attack Speed +2.5, Attack Reach +2.5 blocks, Damage x1.10; melee hits have 60% chance to launch a light-blue sword-qi crescent (Damage x0.5, 6-block range) that pierces enemies in a line",
   "enchantment.enchantment_expansion.ancient_yunlai_swordmanship": "Ancient YunLai Swordmanship",
@@ -89,6 +87,8 @@
   "enchantment.enchantment_expansion.fertile_bounty.desc": "While held, crops within 10 blocks grow faster; doubles Spring Harvest yields",
   "enchantment.enchantment_expansion.dark_walker": "Dark Walker",
   "enchantment.enchantment_expansion.dark_walker.desc": "Fully concealed: never triggers sculk sensors/shriekers, produces no vibrations, and even a face-to-face Warden cannot detect you (active everywhere; can be biome-limited via config)",
+  "enchantment.enchantment_expansion.sprint_endurance": "Sprint Endurance",
+  "enchantment.enchantment_expansion.sprint_endurance.desc": "Leggings only; while sprinting, offsets the extra exhaustion sprinting causes, reducing hunger drain. Tier I halves sprint hunger drain, Tier II fully offsets it (sprint cost ~ walking). Offset amount is configurable",
   
   "key.enchantment_expansion.dash_speed_up": "Soaring Speed Up",
   "key.enchantment_expansion.dash_speed_down": "Soaring Slow Down",

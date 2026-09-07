@@ -18,10 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
 
-import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 
 // ========================================================================
 // 【无中生有·重制】附魔事件处理器
@@ -44,7 +42,6 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //     我们只需要在 LOW 优先级（晚于大多数处理器）检查事件未被取消，
 //     然后 popResource 添加额外掉落，剩余工作交给原版流程。
 // ========================================================================
-@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ExNihiloHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -87,7 +84,7 @@ public class ExNihiloHandler {
         // 镐模式：挖掘石质方块时额外爆出矿物
         // ================================================================
 
-        // 检查"无中生有·重制"附魔等级
+        // 检查主手镐是否带有新版『无中生有』附魔
         int enchantLevel = EnchantmentHelper.getItemEnchantmentLevel(
                 ModEnchantments.EX_NIHILO.get(), tool);
         if (enchantLevel <= 0) return;

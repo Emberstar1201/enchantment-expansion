@@ -98,6 +98,10 @@ public class EternalSparkEnchantment extends Enchantment {
         if (ENTROPY_RL.equals(otherRL) || LEVIS_ECHO_RL.equals(otherRL)) {
             return false;  // 与熵增、兵长的回声互斥
         }
+        // 近战伤害/AOE/成长系附魔两两互斥（拂晓、蓄积、千破青溟剑、嗜血、云来剑法系等）
+        if (DamageEnchantmentExclusion.isExcluded(other)) {
+            return false;
+        }
         return super.checkCompatibility(other);
     }
 }

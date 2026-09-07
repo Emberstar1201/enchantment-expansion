@@ -1,0 +1,19 @@
+{
+  "name": "终界之书",
+  "category": "enchantment_expansion:items",
+  "icon": "patchouli:guide_book",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "patchouli:guide_book",
+      "title": "终界之书",
+      "text": "§l获取方式：§r 通过合成获得（配方见下一页），需要安装 Patchouli 模组。$(br2)§l用途：§r$(br)附魔拓展的内置指南书，记录全部附魔与特殊物品的效果、获取方式与冲突规则；手持右键即可打开翻阅。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "合成配方",
+      "recipe": "enchantment_expansion:enchantment_expansion_book"
+    }
+  ]
+}

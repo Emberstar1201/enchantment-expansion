@@ -1,13 +1,13 @@
 {
-  "name": "贯穿链条",
+  "name": "Chain Arrow",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 29,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "贯穿链条",
-      "text": "§l最高等级：§r III$(br2)§l适用物品：§r 弓、弩$(br2)§l效果：§r 箭矢命中后继续弹射附近敌人，等级越高弹射次数越多。与爆破箭矢冲突。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Chain Arrow",
+      "text": "§lMax Level: §r III$(br2)§lApplicable Items: §r Bows, Crossbows$(br2)§lEffect: §r Arrows bounce to nearby enemies after hitting; higher levels increase the bounce count. Conflicts with Explosive Arrow.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

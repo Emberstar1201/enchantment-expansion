@@ -30,7 +30,7 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //
 // 在 Forge 1.20.1 中没有 BlockDropItemEvent，
 // 因此额外掉落使用 BlockEvent.BreakEvent 配合 Block.popResource 实现。
-// 此模式已在 CreationFromNothingHandler 中得到验证。
+// 此模式已在无中生有（ExNihiloHandler）中得到验证。
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID)
 public class ArtisanLegacyHandler {

@@ -70,4 +70,17 @@ public class DawnEnchantment extends Enchantment {
     public boolean isAllowedOnBooks() {
         return true;
     }
+
+    // ========================================================================
+    // 【冲突设置】与其他近战伤害/AOE/成长系附魔互斥
+    // 拂晓是击杀成长型伤害附魔，与其他伤害系附魔叠加会形成多乘区超模，
+    // 故与云来剑法系、熵增、星火不灭、兵长的回声、蓄积、千破青溟剑、嗜血全部互斥。
+    // ========================================================================
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        if (DamageEnchantmentExclusion.isExcluded(other)) {
+            return false;
+        }
+        return super.checkCompatibility(other);
+    }
 }

@@ -22,9 +22,6 @@ public class ModEnchantments {
     public static final RegistryObject<WindRippleEnchantment> WIND_RIPPLE =
             ENCHANTMENTS.register("wind_ripple", WindRippleEnchantment::new);
 
-    public static final RegistryObject<CreationFromNothingEnchantment> CREATION_FROM_NOTHING =
-            ENCHANTMENTS.register("creation_from_nothing", CreationFromNothingEnchantment::new);
-
     public static final RegistryObject<ElegantCatwalkEnchantment> ELEGANT_CATWALK =
             ENCHANTMENTS.register("elegant_catwalk", ElegantCatwalkEnchantment::new);
 
@@ -271,6 +268,14 @@ public class ModEnchantments {
     // ================================================================
     public static final RegistryObject<SniperEnchantment> SNIPER =
             ENCHANTMENTS.register("sniper", SniperEnchantment::new);
+
+    // ================================================================
+    // 疾跑节能（Sprint Endurance）
+    // 适用物品：护腿（ARMOR_LEGS） | 最高等级：II | 获取：附魔台/宝箱/村民
+    // 效果：I级 疾跑额外饥饿消耗减半；II级 完全抵消（疾跑能耗≈走路）
+    // ================================================================
+    public static final RegistryObject<SprintEnduranceEnchantment> SPRINT_ENDURANCE =
+            ENCHANTMENTS.register("sprint_endurance", SprintEnduranceEnchantment::new);
 
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {

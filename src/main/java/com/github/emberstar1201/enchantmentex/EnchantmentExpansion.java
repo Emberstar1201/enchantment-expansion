@@ -31,7 +31,6 @@ import com.github.emberstar1201.enchantmentex.enchantment.TouhouMaidEnchantmentC
 import com.github.emberstar1201.enchantmentex.enchantment.TouhouMaidEnchantmentCompat4;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingEventHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ChannelingLootHandler;
-import com.github.emberstar1201.enchantmentex.enchantment.CreationFromNothingHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.DawnHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ElegantCatwalkHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.EndApproachesHandler;
@@ -44,6 +43,7 @@ import com.github.emberstar1201.enchantmentex.enchantment.PlunderHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.QianpoQingMingSwordHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.SnatchHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.SmokelessDashHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.SprintEnduranceHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.SwiftCrossbowHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.WindRippleHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiArcheryHandler;
@@ -137,6 +137,9 @@ public class EnchantmentExpansion {
         // 深海的涟漪附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
         context.registerConfig(ModConfig.Type.COMMON, DeepSeaRippleConfig.SPEC,
                 "enchantment_expansion-deep_sea_ripple.toml");
+        // 疾跑节能附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
+        context.registerConfig(ModConfig.Type.COMMON, SprintEnduranceConfig.SPEC,
+                "enchantment_expansion-sprint_endurance.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
@@ -155,7 +158,6 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(BloodthirstHandler.class);
         MinecraftForge.EVENT_BUS.register(ChannelingEventHandler.class);
         MinecraftForge.EVENT_BUS.register(ChannelingLootHandler.class);
-        MinecraftForge.EVENT_BUS.register(CreationFromNothingHandler.class);
         MinecraftForge.EVENT_BUS.register(DawnHandler.class);
         MinecraftForge.EVENT_BUS.register(ElegantCatwalkHandler.class);
         MinecraftForge.EVENT_BUS.register(EndApproachesHandler.class);
@@ -192,6 +194,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(AutoRepairHandler.class);
         MinecraftForge.EVENT_BUS.register(AutoRepairLootHandler.class);
         MinecraftForge.EVENT_BUS.register(DeepSeaRippleHandler.class);
+        MinecraftForge.EVENT_BUS.register(SprintEnduranceHandler.class);
         MinecraftForge.EVENT_BUS.register(ExperienceGiftHandler.class);
         MinecraftForge.EVENT_BUS.register(FeatherWingHandler.class);
         MinecraftForge.EVENT_BUS.register(FeatherWingLootHandler.class);

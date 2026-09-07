@@ -12,9 +12,12 @@ import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
+import com.mojang.logging.LogUtils;
 import vazkii.patchouli.api.PatchouliAPI;
 
 import java.util.Map;
+
+import org.slf4j.Logger;
 
 /**
  * 附魔书快捷查找（精确跳转修正）
@@ -35,6 +38,9 @@ import java.util.Map;
  * 软前置：仅当帕秋莉已加载时才生效（ModList 守卫），未安装帕秋莉时静默返回。
  */
 public final class EnchantmentBookLookupHandler {
+    // 本处理器自己的日志器（主类 LOGGER 为 private，无法跨类直接使用）
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     // 终界之书的完整 ID（帕秋莉书籍）
     private static final ResourceLocation BOOK_ID =
             ResourceLocation.fromNamespaceAndPath(EnchantmentExpansion.MODID, "enchantment_expansion");
@@ -86,8 +92,22 @@ public final class EnchantmentBookLookupHandler {
         if (lookupTime >= LOOKUP_THRESHOLD_SECONDS) {
             resetTimer();
             // 附魔注册名 == 条目 id，直接作为条目定位
-            PatchouliAPI.get().openBookEntry(BOOK_ID,
-                    ResourceLocation.fromNamespaceAndPath(EnchantmentExpansion.MODID, enchant.getPath()), 0);
+            ResourceLocation entryId =
+                    ResourceLocation.fromNamespaceAndPath(EnchantmentExpansion.MODID, enchant.getPath());
+            // ★ 防御性处理：并非所有附魔都有对应的帕秋莉条目。
+            //   若条目缺失，openBookEntry 内部会因 entry==null 抛 NPE 砸崩渲染线程，
+            //   因此用 try/catch 兜底，缺失时静默跳过而不是崩溃。
+            //   注意：这里只依赖帕秋莉官方公开 API（PatchouliAPI），不引用其内部类，
+            //   以免开发/发行两种 classpath 下编译行为不一致。
+            try {
+                PatchouliAPI.get().openBookEntry(BOOK_ID, entryId, 0);
+            } catch (RuntimeException ex) {
+                // 条目不存在等情形：忽略，保持游戏稳定运行
+                // （开发期打日志便于排查，运行期不打扰玩家）
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("无法打开附魔条目: {}", entryId);
+                }
+            }
         }
     }
 

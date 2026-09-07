@@ -1,13 +1,13 @@
 {
-  "name": "温度恒定",
+  "name": "Temperature Constant",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 37,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "温度恒定",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 护甲任意部位$(br2)§l效果：§r 免疫冰冻（细雪）与高温（火焰/岩浆/灼热地面）伤害。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Temperature Constant",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Any Armor Piece$(br2)§lEffect: §r Immune to freezing (powdered snow) and high-heat (fire/lava/hot ground) damage.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

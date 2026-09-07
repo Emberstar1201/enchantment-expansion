@@ -1,13 +1,13 @@
 {
-  "name": "古·云来弓法",
+  "name": "Ancient YunLai Archery",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 1,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "古·云来弓法",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 弓$(br2)§l效果：§r 大幅提升拉弓速度与箭矢飞行速度，蓄力约 0.5 秒、箭速 3.5 倍。$(br2)§l获取方式：§r 仅宝箱、村民交易（宝藏级）"
+      "title": "Ancient YunLai Archery",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Bows$(br2)§lEffect: §r Greatly increases bow draw speed and arrow flight velocity; a charge takes about 0.5 seconds and arrow speed is 3.5×.$(br2)§lAcquisition: §r Loot Chests and Villager Trades only (Treasure)"
     }
   ]
 }

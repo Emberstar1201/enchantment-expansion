@@ -1,13 +1,13 @@
 {
-  "name": "蓄积",
+  "name": "Accumulate",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 14,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "蓄积",
-      "text": "§l最高等级：§r III$(br2)§l适用物品：§r 剑、斧、三叉戟$(br2)§l效果：§r 长按右键蓄力，每 5 秒完成一阶，蓄满后下一次攻击造成阶级倍数伤害并击退；切换武器、受伤或 10 秒未攻击会中断蓄力。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Accumulate",
+      "text": "§lMax Level: §r III$(br2)§lApplicable Items: §r Swords, Axes, Tridents$(br2)§lEffect: §r Hold right-click to charge; each stage takes 5 seconds. After a full charge, the next attack deals stage-multiplied damage with knockback. Switching weapons, taking damage, or going 10 seconds without attacking interrupts the charge.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades$(br2)§lConflicts: §r Mutually exclusive with other melee damage/growth-type enchantments; only one may be applied to a weapon."
     }
   ]
 }

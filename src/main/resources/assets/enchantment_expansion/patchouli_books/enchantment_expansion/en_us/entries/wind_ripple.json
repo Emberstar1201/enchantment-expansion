@@ -1,13 +1,13 @@
 {
-  "name": "风踏涟漪",
+  "name": "Wind Ripple",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 24,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "风踏涟漪",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 靴子$(br2)§l效果：§r 陆上疾行，水面如履平地。与深海探索者、冰霜行者、灵魂疾行、轻灵潜行冲突。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Wind Ripple",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Boots$(br2)§lEffect: §r Faster on land, and walk on water as if on flat ground. Conflicts with Depth Strider, Frost Walker, Soul Speed, and Swift Sneak.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

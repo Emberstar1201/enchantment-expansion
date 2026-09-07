@@ -312,12 +312,23 @@ public class AgricultureHandler {
         if (radius <= 0 || chance <= 0) return false;
         if (!(level instanceof ServerLevel serverLevel)) return false;
 
+        // 骨粉消耗检查：配置开启时，背包无骨粉则本次催熟完全不生效（免费防刷作物）
+        boolean consumeBoneMeal = AgricultureConfig.isReviveConsumeBoneMeal();
+        if (consumeBoneMeal && !hasBoneMeal(player)) {
+            return false;
+        }
+
         boolean any = false;
         for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, 0, -radius),
                 center.offset(radius, 0, radius))) {
             BlockState state = level.getBlockState(pos);
             if (!(state.getBlock() instanceof CropBlock crop) || crop.isMaxAge(state)) continue;
             if (level.random.nextDouble() >= chance) continue;
+
+            // 骨粉消耗检查：每催熟一块作物，从背包扣一个骨粉；不足则停止后续催熟
+            if (consumeBoneMeal && !consumeOneBoneMeal(player)) {
+                break;
+            }
 
             crop.growCrops(serverLevel, pos, state); // 原版骨粉跳阶段逻辑
             serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,
@@ -330,6 +341,29 @@ public class AgricultureHandler {
             serverLevel.playSound(null, center, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, 1.0F, 1.2F);
         }
         return any;
+    }
+
+    // ========================================================================
+    // 工具：背包骨粉相关（用于万物回春/丰饶之息的骨粉消耗检查）
+    // ========================================================================
+
+    /** 检查玩家背包（含快捷栏）是否有骨粉 */
+    private static boolean hasBoneMeal(Player player) {
+        return player.getInventory().countItem(Items.BONE_MEAL) > 0;
+    }
+
+    /** 从玩家背包消耗一个骨粉，成功返回 true */
+    private static boolean consumeOneBoneMeal(Player player) {
+        // 遍历 36 个主背包+快捷栏槽位，找到骨粉则扣一个
+        var inventory = player.getInventory();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack slot = inventory.getItem(i);
+            if (slot.is(Items.BONE_MEAL) && !slot.isEmpty()) {
+                slot.shrink(1);
+                return true;
+            }
+        }
+        return false;
     }
 
     // ========================================================================

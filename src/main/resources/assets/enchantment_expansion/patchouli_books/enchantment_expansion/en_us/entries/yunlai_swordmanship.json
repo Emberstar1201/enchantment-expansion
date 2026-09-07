@@ -1,13 +1,13 @@
 {
-  "name": "云来剑法",
+  "name": "YunLai Swordmanship",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 3,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "云来剑法",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 剑$(br2)§l效果：§r 攻击速度 +2.5、攻击距离 +2.5 格、伤害 ×1.10；命中有 60% 概率发射淡蓝剑气，伤害 ×0.5、射程 6 格。$(br2)§l获取方式：§r 附魔台"
+      "title": "YunLai Swordmanship",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Swords$(br2)§lEffect: §r Attack Speed +2.5, Attack Reach +2.5 blocks, Damage ×1.10; hits have a 60% chance to launch a light-blue sword-qi, with Damage ×0.5 and a 6-block range.$(br2)§lAcquisition: §r Enchanting Table$(br2)§lConflicts: §r Mutually exclusive with Ancient YunLai Swordmanship and other melee damage/growth-type enchantments; only one may be applied to a weapon."
     }
   ]
 }

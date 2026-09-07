@@ -1,13 +1,13 @@
 {
-  "name": "千破·青溟剑",
+  "name": "Qianpo Qingming Sword",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 5,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "千破·青溟剑",
-      "text": "§l最高等级：§r V$(br2)§l适用物品：§r 剑$(br2)§l效果：§r 攻击附加无视护甲的魔法伤害，I-V 级分别为 12/24/36/48/60。$(br2)§l获取方式：§r 附魔台（概率较低）"
+      "title": "Qianpo Qingming Sword",
+      "text": "§lMax Level: §r V$(br2)§lApplicable Items: §r Swords$(br2)§lEffect: §r Attacks add magic damage that ignores armor; levels I-V deal 12/24/36/48/60.$(br2)§lAcquisition: §r Enchanting Table (low chance)$(br2)§lConflicts: §r Mutually exclusive with other melee damage/growth-type enchantments; only one may be applied to a weapon."
     }
   ]
 }

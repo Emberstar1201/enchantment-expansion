@@ -1,13 +1,13 @@
 {
-  "name": "末影箭",
+  "name": "Ender Arrow",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 30,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "末影箭",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 弓、弩$(br2)§l效果：§r 箭矢命中方块或实体时将射手传送至命中位置；命中实体默认传送至其正前方一格，冷却 3 秒。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Ender Arrow",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Bows, Crossbows$(br2)§lEffect: §r When an arrow hits a block or entity, teleports the shooter to the impact point; entity hits teleport one block in front of the target by default, with a 3-second cooldown.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

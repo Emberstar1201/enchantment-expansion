@@ -1,13 +1,13 @@
 {
-  "name": "飞轮效应",
+  "name": "Flywheel Effect",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 35,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "飞轮效应",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 鞘翅$(br2)§l效果：§r 按 R 朝准心冲刺，期间无敌并可穿透实体，撞墙停止并退还耐久。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Flywheel Effect",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Elytra$(br2)§lEffect: §r Press R to dash toward the crosshair; invincible during the dash and able to pass through entities. Stops at walls with durability refunded.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

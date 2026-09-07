@@ -1,13 +1,13 @@
 {
-  "name": "自动冶炼",
+  "name": "Auto Smelt",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 15,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "自动冶炼",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 镐$(br2)§l效果：§r 挖掘矿石直接掉落成品，等级越高额外掉落概率越高。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Auto Smelt",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Pickaxes$(br2)§lEffect: §r Mined ores drop smelted products directly; higher levels give more chance for extra drops.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "name": "终界之星",
+  "name": "End Star",
   "category": "enchantment_expansion:items",
   "icon": "enchantment_expansion:end_star",
   "sortnum": 0,
@@ -7,8 +7,8 @@
     {
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:end_star",
-      "title": "终界之星",
-      "text": "§l获取方式：§r 击败末影龙后，在末地返回传送门上方出现。$(br2)§l效果：§r$(br)手持时生效：创造模式飞行；80% 伤害减免，单次伤害先限至 10 点；每 10 级经验等级使伤害 +100%，最多 +1000%；免疫挖掘惩罚与移动减速。手持或掉落时环绕紫色附魔粒子。"
+      "title": "End Star",
+      "text": "§lAcquisition: §r Appears above the return portal in The End after defeating the Ender Dragon.$(br2)§lEffect: §r$(br)Active while held: creative flight; 80% damage reduction, with any single hit first capped at 10 damage; every 10 experience levels adds +100% damage, up to +1000%; immune to the mining penalty and movement slowdown. Surrounded by purple enchantment particles while held or dropped."
     }
   ]
 }

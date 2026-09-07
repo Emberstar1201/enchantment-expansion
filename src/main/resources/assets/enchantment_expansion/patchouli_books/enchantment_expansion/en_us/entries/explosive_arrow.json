@@ -1,13 +1,13 @@
 {
-  "name": "爆破箭矢",
+  "name": "Explosive Arrow",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 28,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "爆破箭矢",
-      "text": "§l最高等级：§r III$(br2)§l适用物品：§r 弓、弩$(br2)§l效果：§r 箭矢命中后引发不破坏地形的小型爆炸，等级越高半径与伤害越高。与贯穿链条冲突。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Explosive Arrow",
+      "text": "§lMax Level: §r III$(br2)§lApplicable Items: §r Bows, Crossbows$(br2)§lEffect: §r Arrows trigger a small explosion on hit that does not destroy terrain; higher levels increase blast radius and damage. Conflicts with Chain Arrow.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

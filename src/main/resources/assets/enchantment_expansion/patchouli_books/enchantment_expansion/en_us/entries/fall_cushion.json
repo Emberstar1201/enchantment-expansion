@@ -1,13 +1,13 @@
 {
-  "name": "坠落缓冲",
+  "name": "Fall Cushion",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 26,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "坠落缓冲",
-      "text": "§l最高等级：§r II$(br2)§l适用物品：§r 靴子$(br2)§l效果：§r 高坠落地减伤 + 冲击波击退周围敌人。与优雅猫步冲突。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Fall Cushion",
+      "text": "§lMax Level: §r II$(br2)§lApplicable Items: §r Boots$(br2)§lEffect: §r Reduces damage from high falls and knocks back nearby enemies with a shockwave on hard landings. Conflicts with Elegant Catwalk.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades"
     }
   ]
 }

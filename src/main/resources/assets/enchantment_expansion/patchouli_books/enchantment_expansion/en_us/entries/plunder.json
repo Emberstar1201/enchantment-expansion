@@ -1,13 +1,13 @@
 {
-  "name": "强夺",
+  "name": "Plunder",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 9,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "强夺",
-      "text": "§l最高等级：§r III$(br2)§l适用物品：§r 剑$(br2)§l效果：§r 稀有战利品保底掉落，等级越高数量越多（+1/+2/+3）；击杀爬行者必定掉落唱片。$(br2)§l获取方式：§r 仅宝箱（宝藏级）"
+      "title": "Plunder",
+      "text": "§lMax Level: §r III$(br2)§lApplicable Items: §r Swords$(br2)§lEffect: §r Guarantees rare loot drops; higher levels yield more (+1/+2/+3); killing creepers always drops a music disc.$(br2)§lAcquisition: §r Loot Chests only (Treasure)"
     }
   ]
 }

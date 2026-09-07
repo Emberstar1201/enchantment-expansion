@@ -1,13 +1,13 @@
 {
-  "name": "幽匿行者",
+  "name": "Dark Walker",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 27,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "幽匿行者",
-      "text": "§l最高等级：§r I$(br2)§l适用物品：§r 靴子$(br2)§l效果：§r 不触发幽匿感测体与尖啸体，不产生振动，监守者无法察觉。与迅捷潜行冲突。$(br2)§l获取方式：§r 附魔台、遗迹宝箱"
+      "title": "Dark Walker",
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Boots$(br2)§lEffect: §r Does not trigger sculk sensors or shriekers, produces no vibrations, and cannot be detected by Wardens. Conflicts with Swift Sneak.$(br2)§lAcquisition: §r Enchanting Table, Structure Loot Chests"
     }
   ]
 }

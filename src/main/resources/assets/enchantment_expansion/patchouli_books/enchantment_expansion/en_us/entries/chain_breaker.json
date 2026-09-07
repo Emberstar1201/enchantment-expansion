@@ -1,13 +1,13 @@
 {
-  "name": "连锁挖掘",
+  "name": "Chain Breaker",
   "category": "enchantment_expansion:expansion_enchantments",
   "icon": "minecraft:enchanted_book",
   "sortnum": 19,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "连锁挖掘",
-      "text": "§l最高等级：§r III$(br2)§l适用物品：§r 镐、斧、锹$(br2)§l效果：§r 按住 ~ 键挖掘时连锁破坏同类方块；I/II/III 级范围为 3×3×3、5×5×5、9×9×9。额外方块消耗 0.5 耐久，单次最多消耗 10 点。$(br2)§l获取方式：§r 附魔台、宝箱、村民交易"
+      "title": "Chain Breaker",
+      "text": "§lMax Level: §r III$(br2)§lApplicable Items: §r Pickaxes, Axes, Shovels$(br2)§lEffect: §r While holding the ~ key, mining breaks surrounding blocks of the same type in a chain; I/II/III levels cover 3×3×3, 5×5×5, and 9×9×9 areas. Each extra block costs 0.5 durability, up to 10 per swing.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades$(br2)§lConflicts: §r Mutually exclusive with Ex Nihilo"
     }
   ]
 }
