@@ -78,6 +78,27 @@ public class SandevistanClientHandler {
         return mc.player != null && ACTIVE.containsKey(mc.player.getUUID());
     }
 
+    /**
+     * 客户端侧：该弹射物是否应被暂停（由 SandevistanHandler.shouldStallProjectile 调用）。
+     * 玩家自己射的箭在客户端有本地预测轨迹，仅服务端取消 tick 不够，
+     * 客户端也需要暂停，否则箭/三叉戟仍会照常前飞（肉眼"不停"）。
+     * 判定：客户端 Level 基类没有 getEntity(UUID)（与 ServerLevel 不同），
+     * 但单机场景激活者即是本地玩家，直接用 Minecraft.player 的坐标判断弹射物
+     * 是否落在其区块范围（X/Z 半宽）内，并同相位错开放行 1 tick。
+     */
+    public static boolean shouldStallOnClient(net.minecraft.world.entity.projectile.Projectile projectile) {
+        if (!isLocalActivating()) return false;          // 本地无激活，无需暂停
+        double halfX = com.github.emberstar1201.enchantmentex.SandevistanConfig.radiusChunksX * 16.0;
+        double halfZ = com.github.emberstar1201.enchantmentex.SandevistanConfig.radiusChunksZ * 16.0;
+        Player activator = Minecraft.getInstance().player;
+        if (activator == null) return false;
+        double dx = Math.abs(activator.getX() - projectile.getX());
+        double dz = Math.abs(activator.getZ() - projectile.getZ());
+        if (dx > halfX || dz > halfZ) return false;      // 不在激活者区块范围内
+        // ★ 完全静止：范围内直接取消整帧，不做相位放行，完全定在空中
+        return true;
+    }
+
     // ========================================================================
     // 注册按键映射（Mod 事件总线）
     // ========================================================================

@@ -8,6 +8,8 @@
     "CrossbowChargeDurationMixin",
     "ItemStackHurtDurabilityMixin",
     "SandevistanAIStallMixin",
+    "SandevistanProjectileStallMixin",
+    "SandevistanProjectileStallMixin$AbstractArrowInject",
     "ItemStackMaxDamageMixin",
     "ServerLevelGameEventMixin",
     "WardenCanTargetMixin"

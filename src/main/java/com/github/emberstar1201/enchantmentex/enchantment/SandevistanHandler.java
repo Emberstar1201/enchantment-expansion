@@ -256,10 +256,13 @@ public class SandevistanHandler {
             SLOWED_PLAYERS.clear();
         }
 
-        // 3. 各维度弹射物 / 掉落物减速
-        boolean slowProjectiles = SandevistanConfig.affectProjectiles;
+        // 3. 各维度掉落物（物品 / 经验球）减速
+        // ★ 弹射物不再在这里用 setDeltaMovement 倍减速：那会让箭/投掷物的
+        //   Projectile.tick() 每帧自行加重力并重算朝向，即使速度向量被压扁，
+        //   姿态仍会向下掉。弹射物改由 Mixin(SandevistanProjectileStallMixin)
+        //   在时停期间取消其 tick（不加重力、不旋转），保持原姿态缓慢飘浮。
         boolean slowItems = SandevistanConfig.affectItems;
-        if (ACTIVE.isEmpty() || (!slowProjectiles && !slowItems)) return;
+        if (ACTIVE.isEmpty() || !slowItems) return;
 
         for (ServerLevel level : server.getAllLevels()) {
             // 合并本维度所有激活者的影响范围
@@ -277,19 +280,6 @@ public class SandevistanHandler {
                 box = (box == null) ? a : box.minmax(a);
             }
             if (box == null) continue;
-
-            if (slowProjectiles) {
-                for (Projectile proj : level.getEntitiesOfClass(Projectile.class, box)) {
-                    ActiveInstance inst = getStrongest(proj);
-                    if (inst == null) continue;
-                    // 激活者自己发射的弹射物：默认保持原速（强化「只有我快」手感）；
-                    // 配置 affectSelfProjectiles=true 时同样慢动作（电影感）。
-                    Entity owner = proj.getOwner();
-                    if (!SandevistanConfig.affectSelfProjectiles
-                            && owner != null && ACTIVE.containsKey(owner.getUUID())) continue;
-                    proj.setDeltaMovement(proj.getDeltaMovement().scale(inst.scale));
-                }
-            }
 
             if (slowItems) {
                 for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, box)) {
@@ -360,6 +350,36 @@ public class SandevistanHandler {
         // 同一相位错开判定：分母内放行 1 tick
         long gameTime = entity.level().getGameTime();
         return (gameTime + entity.getId()) % inst.denominator != 0;
+    }
+
+    // ========================================================================
+    // 工具：该弹射物在此 tick 是否应被"冻结/慢放"。
+    // 被 Mixin(SandevistanProjectileStallMixin) 在 Projectile#tick 头部调用。
+    // 返回 true = 取消这一 tick：弹射物不位移、不加速、不重力、不重算朝向，
+    //   因此箭/投掷物保持原飞行姿态缓慢飘浮，时停结束后沿原方向继续。
+    // 与 shouldStallAI 相同的分母 + 相位错开 → 与生物移动/AI 步调一致。
+    // ========================================================================
+    public static boolean shouldStallProjectile(Projectile projectile) {
+        if (!SandevistanConfig.affectProjectiles) return false; // 配置关闭弹射物时缓
+        if (projectile.level().isClientSide()) {
+            // 客户端侧：玩家自己射的箭在客户端有本地预测轨迹，
+            // 若只在服务端取消 tick，客户端侧箭仍会照常前飞（肉眼"不停"），
+            // 所以客户端也必须暂停。这里没有服务端 ACTIVE 表，改用客户端缓存表
+            // SandevistanClientHandler.ACTIVE（由 S2C 状态包维护）。
+            return SandevistanClientHandler.shouldStallOnClient(projectile);
+        }
+        // 服务端权威逻辑
+        if (ACTIVE.isEmpty()) return false;               // 时缓未激活
+        ActiveInstance inst = getStrongest(projectile);
+        if (inst == null) return false;                   // 不在时缓场内
+        // 激活者自己发射的弹射物：默认(affectSelfProjectiles=false)放行保持原速，
+        // 给「只有我快」手感；配置=true 时同样慢放（电影感）。
+        Entity owner = projectile.getOwner();
+        if (!SandevistanConfig.affectSelfProjectiles
+                && owner != null && ACTIVE.containsKey(owner.getUUID())) return false;
+        // ★ 完全静止：只要在时缓场内就直接取消整帧 tick，不做相位放行，
+        //   弹射物完全定在空中（符合"完全静止"需求）。
+        return true;
     }
 
     // ========================================================================
