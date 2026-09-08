@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Ancient YunLai Swordmanship",
-      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Swords$(br2)§lEffect: §r Attack Speed +5.0, Attack Reach +5.0 blocks, Damage ×1.50; hits have a 75% chance to launch a golden sword-qi, with Damage ×0.75 and a 10-block range.$(br2)§lAcquisition: §r Loot Chests and Villager Trades only (Treasure)$(br2)§lConflicts: §r Mutually exclusive with YunLai Swordmanship and other melee damage/growth-type enchantments; only one may be applied to a weapon."
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Swords$(br2)§lEffect: §r Greatly boosts attack speed, reach, and damage; hits have a high chance to launch a powerful golden sword-qi projectile.$(br2)§lAcquisition: §r Treasure-only: Loot Chests and Villager Trades$(br2)§lConflicts: §r Mutually exclusive with YunLai Swordmanship and other melee damage/growth enchantments."
     }
   ]
 }

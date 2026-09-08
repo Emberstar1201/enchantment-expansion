@@ -1,0 +1,13 @@
+{
+  "name": "斯安维斯坦",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:clock",
+  "sortnum": 50,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "斯安维斯坦",
+      "text": "§l最高等级：§r III$(br2)§l适用物品：§r 胸甲（鞘翅不可附上）$(br2)§l效果：§r 按激活键（默认 X，可在按键设置更改）启动子弹时间：持续期间周围世界减缓——怪物慢放、弹射物悬停，其他玩家也会被减速（可在配置关闭）；自身移速与攻速大幅提升。结束后进入冷却，并消耗少量饥饿值。$(br2)§l获取方式：§r I 级：附魔台、村民、宝箱；II/III 级仅遗迹宝箱"
+    }
+  ]
+}

@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Durability Boost",
-      "text": "$(bold)Max Level:$(r) III$(br2)$(bold)Applicable:$(r) Any damageable item (weapons, armor, tools)$(br2)$(bold)Per-Level Effects:$(r) Two stacked mechanics for massive durability.$(br)· $(bold)Mech 1 · Max Durability Increase$(): I ×1.5; II ×2; III ×2.5. With F3+H the tooltip max damage updates; without F3+H the durability bar ratio reflects the new cap.$(br)· $(bold)Mech 2 · Durability-Ignore Chance$() (rolled per durability loss): I 50%; II 66%; III 75%.$(br2)$(bold)Mutually Exclusive:$(r) Unbreaking, Made in China, Artisan Legacy.$(br2)$(bold)Obtainment:$(r) Enchanting Table, Structure Chests, Villager Trades."
+      "text": "$(bold)Max Level:$(r) III$(br2)$(bold)Applicable:$(r) Any damageable item$(br2)$(bold)Effect:$(r) Increases max durability and reduces the chance of losing durability on use. Higher levels provide stronger bonuses.$(br2)$(bold)Conflicts:$(r) Unbreaking, Made in China, Artisan Legacy$(br2)$(bold)Obtainment:$(r) Enchanting Table, Structure Chests, Villager Trades."
     }
   ]
 }

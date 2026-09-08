@@ -1,18 +1,44 @@
-# Enchant-expansion-（附魔拓展-）
-用AI和朋友手搓
-**可以在哔哩哔哩的我的个人主页投稿：https://b23.tv/6agWJVH**
-**|爱发电赞助接:https://www.ifdian.net/a/Emberstar|
-|爱发电主页：https://www.ifdian.net/a/Emberstar|
-|内测人员感谢：Shixiangye,Shasnow,andan_,鸿銞
-赞助者感谢:andan_ 20元 鸿銞 5元 。乄夜幽魂。☆ 5元 丝羽珍 14.5元|
-|反馈人员感谢：Shasnow,andan_,鸿銞**|
-|**ai中转站宣传https://rcolaapi.top/|
-|目前中转站运营者Zch，中转站群：272395232|**
+# Enchant-expansion（附魔拓展）
 
-**制作参与人员：Shasnow**
+> 由 AI 和朋友一起手搓的 Minecraft 附魔扩展模组。
 
-🙏 致谢
-感谢内测群友的反馈与支持，以及朋友们的脑洞投稿
+---
+
+## ✨ 与我互动
+
+- 📺 **哔哩哔哩投稿**：可以投稿到我的个人主页：<https://b23.tv/6agWJVH>
+- 💖 **爱发电赞助**（若对你有帮助，欢迎支持一下）：
+  - 赞助链接：<https://www.ifdian.net/a/Emberstar>
+  - 爱发电主页：<https://www.ifdian.net/a/Emberstar>
+
+---
+
+## 🙏 致谢
+
+**制作参与**：Shasnow
+
+**内测人员**：Shixiangye、Shasnow、andan_、鸿銞
+
+**赞助者**（排名不分先后）：
+
+| 赞助者 | 金额 |
+|--------|------|
+| andan_ | 20 元 |
+| 鸿銞 | 5 元 |
+| 。乄夜幽魂。☆ | 5 元 |
+| 丝羽珍 | 14.5 元 |
+
+**反馈人员**：Shasnow、andan_、鸿銞
+
+感谢内测群友的反馈与支持，以及朋友们的脑洞投稿。
+
+---
+
+## 🤖 AI 中转站宣传
+
+- AI 中转站官网：<https://rcolaapi.top/>
+- 运营者：Zch
+- 中转站群：**272395232**
 
 ---
 

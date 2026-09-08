@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Difficulty Gift",
-      "text": "$(bold)Max Level:$(r) I$(br2)$(bold)Applicable:$(r) Weapons, Armor$(br2)$(bold)Fixed bonuses by difficulty:$(r)$(br)· Peaceful: none;$(br)· Easy: dmg +1 / atk spd +0.2 / armor +1 / tough +0.5;$(br)· Normal: dmg +2 / atk spd +0.4 / armor +2 / tough +1.0;$(br)· Hard: dmg +4 / atk spd +0.6 / armor +3 / tough +1.5.$(br)Weapons grant dmg + atk spd; Armor grants armor + toughness.$(br2)$(bold)Armor-only bonuses: Max HP bonus per Difficulty-Gift armor piece (stacks for a full set):$(r)$(br)· Peaceful: +0 HP;$(br)· Easy: +1 HP per piece (+4 full set);$(br)· Normal: +2 HP per piece (+8 full set);$(br)· Hard: +7.5 HP per piece (full set +30 HP, base 20 → hard full set = 50 HP).$(br2)$(bold)Obtainment:$(r) Enchanting Table, Structure Chests, Villager Trades."
+      "text": "$(bold)Max Level:$(r) I$(br2)$(bold)Applicable:$(r) Weapons, Armor$(br2)$(bold)Effect:$(r) Stronger bonuses on higher difficulty: weapons gain damage and attack speed; armor gains armor, toughness, and max HP.$(br2)$(bold)Obtainment:$(r) Enchanting Table, Structure Chests, Villager Trades."
     }
   ]
 }

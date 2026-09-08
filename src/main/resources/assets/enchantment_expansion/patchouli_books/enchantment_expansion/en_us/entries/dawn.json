@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Dawn",
-      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Swords, Axes, Tridents$(br2)§lEffect: §r Killing mobs permanently grows damage, critical hit rate, and critical damage, with Attack Reach +2.5 blocks; targets below 15% health always take a critical hit with Damage ×2. Kills grant lifesteal and splash damage to surrounding enemies; a triple-kill combo or health below 40% can activate the Pierce the Night state.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades$(br2)§lConflicts: §r Mutually exclusive with other melee damage/growth-type enchantments; only one may be applied to a weapon."
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Swords, Axes, Tridents$(br2)§lEffect: §r Killing mobs permanently grows your damage and crit stats. Low-health targets always take a critical hit; kills grant lifesteal and splash damage.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades$(br2)§lConflicts: §r Mutually exclusive with other melee damage/growth enchantments."
     }
   ]
 }

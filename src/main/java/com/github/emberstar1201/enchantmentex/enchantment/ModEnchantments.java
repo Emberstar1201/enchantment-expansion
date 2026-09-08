@@ -277,6 +277,15 @@ public class ModEnchantments {
     public static final RegistryObject<SprintEnduranceEnchantment> SPRINT_ENDURANCE =
             ENCHANTMENTS.register("sprint_endurance", SprintEnduranceEnchantment::new);
 
+    // ================================================================
+    // 斯安维斯坦（Sandevistan）
+    // 适用物品：胸甲（ARMOR_CHEST，鞘翅不可附上） | 最高等级：III
+    // 效果：按键（默认 X）激活子弹时间——范围内世界减缓、自身加速
+    // 获取：I 级附魔台/村民/宝箱；II/III 级仅遗迹宝箱
+    // ================================================================
+    public static final RegistryObject<SandevistanEnchantment> SANDEVISTAN =
+            ENCHANTMENTS.register("sandevistan", SandevistanEnchantment::new);
+
     // 在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);

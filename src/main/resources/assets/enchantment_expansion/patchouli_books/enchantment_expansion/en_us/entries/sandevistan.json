@@ -1,0 +1,13 @@
+{
+  "name": "Sandevistan",
+  "category": "enchantment_expansion:expansion_enchantments",
+  "icon": "minecraft:clock",
+  "sortnum": 50,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Sandevistan",
+      "text": "§lMax Level:§r III$(br2)§lApplies to:§r Chestplates (not elytra)$(br2)§lEffect:§r Press the activation key (default X, rebindable in Controls) to trigger bullet time: while active, the world around you slows down — mobs move in slow motion, projectiles hang in the air, and other players are slowed as well (toggleable in the config), while you gain a large movement and attack speed boost. A cooldown and a small hunger cost apply afterwards.$(br2)§lObtaining:§r Tier I: enchanting table, villagers, chests; Tiers II-III: structure chests only"
+    }
+  ]
+}

@@ -530,33 +530,33 @@ public class DawnHandler {
         double critRate = DawnData.getCritRatePercent(kills);
         double critDmg = DawnData.getCritDamagePercent(kills);
 
-        tooltip.add(Component.literal("杀敌数: " + (int) kills)
+        tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.kills", (int) kills)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("伤害加成: +" + String.format("%.1f", dmgBonus) + "%")
+        tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.damage_bonus", String.format("%.1f", dmgBonus))
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("暴击率: +" + String.format("%.1f", critRate) + "%")
+        tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.crit_rate", String.format("%.1f", critRate))
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("暴击伤害: +" + String.format("%.1f", critDmg) + "%")
+        tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.crit_damage", String.format("%.1f", critDmg))
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("攻击距离: +" + String.format("%.1f", Config.dawnAttackRange) + "格")
+        tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.attack_range", String.format("%.1f", Config.dawnAttackRange))
                 .withStyle(ChatFormatting.GRAY));
 
         // ========================================================================
         // 拂晓重制：新机制数值（处决 / 吸血 / 溅射，随配置显示）
         // ========================================================================
-        tooltip.add(Component.literal("低血处决: 目标血量 ≤ "
-                + String.format("%.0f", Config.dawnExecuteThreshold * 100) + "% 时必定暴击 ×"
-                + String.format("%.1f", Config.dawnExecuteDamageMultiplier))
+        tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.execute",
+                        String.format("%.0f", Config.dawnExecuteThreshold * 100),
+                        String.format("%.1f", Config.dawnExecuteDamageMultiplier))
                 .withStyle(ChatFormatting.GOLD));
         if (Config.dawnLifestealEnabled) {
-            tooltip.add(Component.literal("击杀吸血: 回复目标最大生命 "
-                    + String.format("%.0f", Config.dawnLifestealPercent * 100) + "%")
+            tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.lifesteal",
+                            String.format("%.0f", Config.dawnLifestealPercent * 100))
                     .withStyle(ChatFormatting.RED));
         }
         if (Config.dawnSplashEnabled) {
-            tooltip.add(Component.literal("击杀溅射: 对周围 "
-                    + String.format("%.1f", Config.dawnSplashRadius) + " 格敌人造成 "
-                    + String.format("%.0f", Config.dawnSplashDamagePercent * 100) + "% 目标最大生命魔法伤害")
+            tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.splash",
+                            String.format("%.1f", Config.dawnSplashRadius),
+                            String.format("%.0f", Config.dawnSplashDamagePercent * 100))
                     .withStyle(ChatFormatting.RED));
         }
 
@@ -564,20 +564,20 @@ public class DawnHandler {
         // 刺破长夜：展示触发与效果数值（随配置动态显示）
         // ========================================================================
         if (Config.dawnPierceEnabled) {
-            tooltip.add(Component.literal("刺破长夜: 连击 "
-                    + Config.dawnPierceComboThreshold + " 或生命 ≤ "
-                    + String.format("%.0f", Config.dawnPierceLowHpThreshold * 100) + "% 激活，持续 "
-                    + String.format("%.0f", Config.dawnPierceDurationSeconds) + " 秒，冷却 "
-                    + String.format("%.0f", Config.dawnPierceCooldownSeconds) + " 秒")
+            tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.pierce",
+                            Config.dawnPierceComboThreshold,
+                            String.format("%.0f", Config.dawnPierceLowHpThreshold * 100),
+                            String.format("%.0f", Config.dawnPierceDurationSeconds),
+                            String.format("%.0f", Config.dawnPierceCooldownSeconds))
                     .withStyle(ChatFormatting.LIGHT_PURPLE));
-            tooltip.add(Component.literal("  连击爆发: 伤害 ×"
-                    + String.format("%.1f", Config.dawnPierceComboDamageMultiplier)
-                    + " 移速+" + String.format("%.0f", Config.dawnPierceComboMoveSpeedPercent) + "%"
-                    + " 攻距+" + String.format("%.1f", Config.dawnPierceComboReachBonus) + "格")
+            tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.combo_burst",
+                            String.format("%.1f", Config.dawnPierceComboDamageMultiplier),
+                            String.format("%.0f", Config.dawnPierceComboMoveSpeedPercent),
+                            String.format("%.1f", Config.dawnPierceComboReachBonus))
                     .withStyle(ChatFormatting.GRAY));
-            tooltip.add(Component.literal("  低血狂暴: 伤害 ×"
-                    + String.format("%.1f", Config.dawnPierceLowHpDamageMultiplier)
-                    + " 吸血" + String.format("%.0f", Config.dawnPierceLowHpLifestealPercent) + "%")
+            tooltip.add(Component.translatable("tooltip.enchantment_expansion.dawn.low_hp_rage",
+                            String.format("%.1f", Config.dawnPierceLowHpDamageMultiplier),
+                            String.format("%.0f", Config.dawnPierceLowHpLifestealPercent))
                     .withStyle(ChatFormatting.GRAY));
         }
     }

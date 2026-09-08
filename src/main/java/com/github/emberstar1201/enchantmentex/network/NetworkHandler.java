@@ -109,5 +109,25 @@ public class NetworkHandler {
                 DeepSeaRippleScrollPacket::new,
                 DeepSeaRippleScrollPacket::handle
         );
+
+        // ================================================================
+        // 斯安维斯坦数据包
+        //   C2S 激活请求：按键触发，服务端校验后启动时缓
+        //   S2C 状态同步：激活/结束广播给附近客户端，驱动 FOV/色调/粒子
+        // ================================================================
+        CHANNEL.registerMessage(
+                packetId++,
+                SandevistanActivatePacket.class,
+                SandevistanActivatePacket::encode,
+                SandevistanActivatePacket::new,
+                SandevistanActivatePacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                SandevistanStatePacket.class,
+                SandevistanStatePacket::encode,
+                SandevistanStatePacket::new,
+                SandevistanStatePacket::handle
+        );
     }
 }

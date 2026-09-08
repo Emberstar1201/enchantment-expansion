@@ -18,6 +18,8 @@ import com.github.emberstar1201.enchantmentex.enchantment.ExperienceGiftHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.FeatherWingHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.FeatherWingLootHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.SniperHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.SandevistanHandler;
+import com.github.emberstar1201.enchantmentex.enchantment.SandevistanLootHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.EternalSparkHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.ExplosiveArrowHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.EnderArrowHandler;
@@ -140,6 +142,9 @@ public class EnchantmentExpansion {
         // 疾跑节能附魔独立配置（显式指定文件名，避免与主配置默认命名冲突）
         context.registerConfig(ModConfig.Type.COMMON, SprintEnduranceConfig.SPEC,
                 "enchantment_expansion-sprint_endurance.toml");
+        // 斯安维斯坦附魔独立配置（时缓半径/作用对象开关/三级数值）
+        context.registerConfig(ModConfig.Type.COMMON, SandevistanConfig.SPEC,
+                "enchantment_expansion-sandevistan.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
@@ -198,14 +203,20 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(ExperienceGiftHandler.class);
         MinecraftForge.EVENT_BUS.register(FeatherWingHandler.class);
         MinecraftForge.EVENT_BUS.register(FeatherWingLootHandler.class);
+        // 斯安维斯坦：时缓核心逻辑 + 遗迹宝箱附魔书注入
+        MinecraftForge.EVENT_BUS.register(SandevistanHandler.class);
+        MinecraftForge.EVENT_BUS.register(SandevistanLootHandler.class);
         MinecraftForge.EVENT_BUS.register(SniperHandler.class);
         MinecraftForge.EVENT_BUS.register(MadeInChinaHandler.class);
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat.class);
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat2.class);
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat3.class);
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat4.class);
-        // 附魔书快捷查找：修正帕秋莉 quick lookup 因忽略 NBT 而误跳星火不灭的问题
-        MinecraftForge.EVENT_BUS.register(EnchantmentBookLookupHandler.class);
+        // 附魔书快捷查找（EnchantmentBookLookupHandler）：
+        //   不再在这里显式注册。它是纯客户端处理器（引用 RenderTooltipEvent / GuiGraphics），
+        //   已加 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Bus.FORGE)，
+        //   由 FML 只在客户端分发时自动注册到 FORGE 总线；若在此无条件注册，
+        //   DEDICATED_SERVER 启动会加载该类并触发 "invalid dist" 崩溃。
 
         // ================================================================
         // 注册网络通道（飞轮效应等 C2S 数据包）

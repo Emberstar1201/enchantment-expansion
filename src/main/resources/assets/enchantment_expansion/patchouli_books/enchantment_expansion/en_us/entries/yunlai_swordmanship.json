@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "YunLai Swordmanship",
-      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Swords$(br2)§lEffect: §r Attack Speed +2.5, Attack Reach +2.5 blocks, Damage ×1.10; hits have a 60% chance to launch a light-blue sword-qi, with Damage ×0.5 and a 6-block range.$(br2)§lAcquisition: §r Enchanting Table$(br2)§lConflicts: §r Mutually exclusive with Ancient YunLai Swordmanship and other melee damage/growth-type enchantments; only one may be applied to a weapon."
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Swords$(br2)§lEffect: §r Boosts attack speed, reach, and damage; hits have a chance to launch a ranged sword-qi projectile.$(br2)§lAcquisition: §r Enchanting Table$(br2)§lConflicts: §r Mutually exclusive with Ancient YunLai Swordmanship and other melee damage/growth enchantments."
     }
   ]
 }

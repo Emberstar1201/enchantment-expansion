@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Accumulate",
-      "text": "§lMax Level: §r III$(br2)§lApplicable Items: §r Swords, Axes, Tridents$(br2)§lEffect: §r Hold right-click to charge; each stage takes 5 seconds. After a full charge, the next attack deals stage-multiplied damage with knockback. Switching weapons, taking damage, or going 10 seconds without attacking interrupts the charge.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades$(br2)§lConflicts: §r Mutually exclusive with other melee damage/growth-type enchantments; only one may be applied to a weapon."
+      "text": "§lMax Level: §r III$(br2)§lApplicable Items: §r Swords, Axes, Tridents$(br2)§lEffect: §r Hold right-click to charge; a full charge makes your next attack deal multiplied damage with knockback. Taking damage or switching weapons interrupts the charge.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades$(br2)§lConflicts: §r Mutually exclusive with other melee damage/growth enchantments."
     }
   ]
 }

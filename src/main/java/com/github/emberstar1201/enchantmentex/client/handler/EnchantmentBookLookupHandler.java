@@ -8,9 +8,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import com.mojang.logging.LogUtils;
 import vazkii.patchouli.api.PatchouliAPI;
@@ -36,7 +38,14 @@ import org.slf4j.Logger;
  *   帕秋莉的内部计时随即归零，不会再跳转到错误的条目标目。
  *
  * 软前置：仅当帕秋莉已加载时才生效（ModList 守卫），未安装帕秋莉时静默返回。
+ *
+ * ★ 分发过滤：必须标注 value = Dist.CLIENT + bus = Bus.FORGE。
+ *   本类引用 RenderTooltipEvent（内含客户端专用 GuiGraphics），若把它
+ *   无条件注册到通用 FORGE 总线，DEDICATED_SERVER 启动时会加载该类并
+ *   触发 "invalid dist" 崩溃。标注为 CLIENT 分发后，FML 只在客户端自动
+ *   注册本类监听器，服务端完全不加载，模组才能正常跑服务器/存档。
  */
+@Mod.EventBusSubscriber(modid = EnchantmentExpansion.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class EnchantmentBookLookupHandler {
     // 本处理器自己的日志器（主类 LOGGER 为 private，无法跨类直接使用）
     private static final Logger LOGGER = LogUtils.getLogger();
