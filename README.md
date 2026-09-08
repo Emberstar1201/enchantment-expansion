@@ -1,13 +1,15 @@
 # Enchant-expansion-（附魔拓展-）
 用AI和朋友手搓
-可以在哔哩哔哩的我的个人主页投稿：https://b23.tv/6agWJVH
-爱发电赞助接:https://www.ifdian.net/a/Emberstar
-爱发电主页：https://www.ifdian.net/a/Emberstar
-内测人员感谢：Shixiangye,Shasnow,andan_,鸿銞
-赞助者感谢:andan_ 20元 鸿銞 5元 。乄夜幽魂。☆ 5元 丝羽珍 14.5元
-反馈人员感谢：Shasnow,andan_,鸿銞
+**可以在哔哩哔哩的我的个人主页投稿：https://b23.tv/6agWJVH**
+**|爱发电赞助接:https://www.ifdian.net/a/Emberstar|
+|爱发电主页：https://www.ifdian.net/a/Emberstar|
+|内测人员感谢：Shixiangye,Shasnow,andan_,鸿銞
+赞助者感谢:andan_ 20元 鸿銞 5元 。乄夜幽魂。☆ 5元 丝羽珍 14.5元|
+|反馈人员感谢：Shasnow,andan_,鸿銞**|
+|**ai中转站宣传https://rcolaapi.top/|
+|目前中转站运营者Zch，中转站群：272395232|**
 
-制作参与人员：Shasnow   
+**制作参与人员：Shasnow**
 
 🙏 致谢
 感谢内测群友的反馈与支持，以及朋友们的脑洞投稿
