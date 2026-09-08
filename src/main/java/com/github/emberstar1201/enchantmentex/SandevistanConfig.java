@@ -20,8 +20,8 @@ import java.util.List;
 //   持续结束后进入冷却，激活一次性消耗少量饥饿值。
 //
 // 等级数值均为三元素列表，依次对应 I / II / III 级：
-//   durationsSeconds       持续秒数          [3.0, 4.0, 5.0]
-//   cooldownsSeconds       冷却秒数          [60.0, 45.0, 30.0]
+//   durationsSeconds       持续秒数          [5.0, 15.0, 30.0]
+//   cooldownsSeconds       冷却秒数          [10.0, 30.0, 65.0]
 //   timeScales             世界时缓倍率      [0.50, 0.34, 0.25]
 //                            （0.25 = 世界以 1/4 速度运转）
 //   selfSpeedBonus         激活者移速加成    [0.30, 0.40, 0.50]
@@ -81,15 +81,15 @@ public class SandevistanConfig {
     // 二、三级数值（列表下标 0/1/2 = I/II/III 级）
     // ========================================================================
     private static final ForgeConfigSpec.ConfigValue<List<? extends Number>> DURATIONS = BUILDER
-            .comment("斯安维斯坦：各级持续时间（秒），依次为 I/II/III 级，默认 [3.0, 4.0, 5.0]")
+            .comment("斯安维斯坦：各级持续时间（秒），依次为 I/II/III 级，默认 [5.0, 15.0, 30.0]")
             .defineList("sandevistan.durationsSeconds",
-                    List.of(3.0, 4.0, 5.0),
-                    o -> o instanceof Number n && n.doubleValue() >= 0.5 && n.doubleValue() <= 30.0);
+                    List.of(5.0, 15.0, 30.0),
+                    o -> o instanceof Number n && n.doubleValue() >= 0.5 && n.doubleValue() <= 120.0);
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends Number>> COOLDOWNS = BUILDER
-            .comment("斯安维斯坦：各级冷却时间（秒），依次为 I/II/III 级，默认 [60.0, 45.0, 30.0]")
+            .comment("斯安维斯坦：各级冷却时间（秒），依次为 I/II/III 级，默认 [10.0, 30.0, 65.0]")
             .defineList("sandevistan.cooldownsSeconds",
-                    List.of(60.0, 45.0, 30.0),
+                    List.of(10.0, 30.0, 65.0),
                     o -> o instanceof Number n && n.doubleValue() >= 0.0 && n.doubleValue() <= 600.0);
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends Number>> TIME_SCALES = BUILDER

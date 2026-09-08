@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Sandevistan",
-      "text": "§lMax Level:§r III$(br2)§lApplies to:§r Chestplates (not elytra)$(br2)§lEffect:§r Press the activation key (default X, rebindable in Controls) to trigger bullet time: while active, the world around you slows down — mobs move in slow motion, projectiles hang in the air, and other players are slowed as well (toggleable in the config), while you gain a large movement and attack speed boost. A cooldown and a small hunger cost apply afterwards.$(br2)§lObtaining:§r Tier I: enchanting table, villagers, chests; Tiers II-III: structure chests only"
+      "text": "§lMax Level:§r III$(br2)§lApplies to:§r Chestplates (not elytra)$(br2)§lEffect:§r Press the activation key (default X, rebindable in Controls) to trigger bullet time: while active, the world around you is nearly frozen — mobs stop moving and drawing bows, projectiles (arrows/tridents) hang completely still, and other players are slowed as well (toggleable in the config), while you gain movement and attack speed boosts. Duration/cooldown: Tier I 5s / 10s, Tier II 15s / 30s, Tier III 30s / 65s; Bosses (Ender Dragon, Wither) are only slowed. A cooldown and a small hunger cost apply afterwards.$(br2)§lObtaining:§r Tier I: enchanting table, villagers, chests; Tiers II-III: structure chests only"
     }
   ]
 }
