@@ -128,6 +128,7 @@
   "message.enchantment_expansion.sandevistan.activated": "§b§l【Sandevistan】Activated — the world slows to a crawl",
   "message.enchantment_expansion.sandevistan.cooldown": "§b【Sandevistan】Cooling down: %s s remaining",
   "message.enchantment_expansion.sandevistan.no_armor": "§bYou must wear a chestplate enchanted with Sandevistan",
+  "message.enchantment_expansion.patchouli_reminder": "§6§l[Enchantment Expansion]§r For the best experience, pair this mod with the Patchouli manual — install this required additive mod to get an in-game guide covering the effects, obtaining methods, and conflict rules of every enchantment and item.",
   "message.enchantment_expansion.sandevistan.no_hunger": "§bNot enough hunger to activate Sandevistan",
   "overlay.enchantment_expansion.sandevistan.active": "Sandevistan · %s s",
 

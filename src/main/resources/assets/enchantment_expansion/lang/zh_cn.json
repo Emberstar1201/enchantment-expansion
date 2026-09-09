@@ -128,6 +128,7 @@
   "message.enchantment_expansion.sandevistan.activated": "§b§l【斯安维斯坦】已启动——世界在你眼中慢了下来",
   "message.enchantment_expansion.sandevistan.cooldown": "§b【斯安维斯坦】冷却中，剩余 %s 秒",
   "message.enchantment_expansion.sandevistan.no_armor": "§b需要穿着带有斯安维斯坦附魔的胸甲",
+  "message.enchantment_expansion.patchouli_reminder": "§6§l【附魔拓展】§r本模组搭配帕秋莉手册（Patchouli 前置模组）体验更佳——安装后可获得游戏内图鉴，全部附魔与物品的效果、获取方式及冲突规则均有完整说明。",
   "message.enchantment_expansion.sandevistan.no_hunger": "§b饥饿值不足，无法启动斯安维斯坦",
   "overlay.enchantment_expansion.sandevistan.active": "斯安维斯坦 · %s 秒",
 

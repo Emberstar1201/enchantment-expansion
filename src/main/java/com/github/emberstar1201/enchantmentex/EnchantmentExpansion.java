@@ -206,6 +206,8 @@ public class EnchantmentExpansion {
         // 斯安维斯坦：时缓核心逻辑 + 遗迹宝箱附魔书注入
         MinecraftForge.EVENT_BUS.register(SandevistanHandler.class);
         MinecraftForge.EVENT_BUS.register(SandevistanLootHandler.class);
+        // 帕秋莉手册软前置提醒：未装 Patchouli 的玩家进世界时提示搭配手册体验更佳
+        MinecraftForge.EVENT_BUS.register(PatchouliReminderHandler.class);
         MinecraftForge.EVENT_BUS.register(SniperHandler.class);
         MinecraftForge.EVENT_BUS.register(MadeInChinaHandler.class);
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat.class);
