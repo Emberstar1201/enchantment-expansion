@@ -202,6 +202,68 @@ tasks.named('processResources', ProcessResources).configure {
     }
 }
 
+// ================================================================
+// 【材质投递口】把 build 输出目录里新丢入的材质自动回灌到 src 源目录
+//
+// 背景：
+//   build/resources/main 是 processResources 任务的输出目录。
+//   每次 Gradle 同步 / 构建，它都会被 src/main/resources 的内容覆盖，
+//   所以直接把新材质丢进 build 输出目录，下一次同步就会被换回旧图。
+//
+// 做法：
+//   在 processResources 执行之前，先把 build 输出目录里的材质
+//   回灌（仅当内容不同才覆盖）到 src/main/resources，
+//   把"输出目录"当成投递口来用；随后 processResources 再照常
+//   把 src 复制回 build，jar 也会打进新图。
+//
+// 用法：
+//   · 平时直接把新材质丢进 build/resources/main/.../textures/item/
+//   · 想立刻生效，可单独执行：gradlew promoteDroppedTextures
+//
+// 注意：
+//   gradlew clean 会整个删除 build 目录。只要成功构建（或同步）过一次，
+//   材质就已回灌到 src，不会丢；若丢完还没构建就 clean，则会丢失。
+// ================================================================
+def dropTextureDir = file('build/resources/main/assets/enchantment_expansion/textures/item')
+def sourceTextureDir = file('src/main/resources/assets/enchantment_expansion/textures/item')
+
+tasks.register('promoteDroppedTextures') {
+    group = 'enchantment expansion'
+    description = '把 build 输出目录里新丢入的材质回灌到 src 源目录'
+
+    doLast {
+        if (!dropTextureDir.isDirectory()) {
+            return
+        }
+        sourceTextureDir.mkdirs()
+        dropTextureDir.listFiles()?.each { dropped ->
+            if (!dropped.isFile()) {
+                return
+            }
+            def target = new File(sourceTextureDir, dropped.name)
+            try {
+                byte[] droppedBytes = dropped.bytes
+                byte[] existingBytes = target.isFile() ? target.bytes : null
+                // 内容相同就不动，避免每次同步都无谓地改写 src 的时间戳
+                if (existingBytes == null || !java.util.Arrays.equals(existingBytes, droppedBytes)) {
+                    java.nio.file.Files.copy(
+                            dropped.toPath(), target.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+                    println "[promoteDroppedTextures] 已回灌到 src: ${dropped.name} (${droppedBytes.length} 字节)"
+                }
+            } catch (Exception e) {
+                // 文件被游戏/IDE 占用时只警告，不让构建失败
+                logger.warn "[promoteDroppedTextures] 跳过 ${dropped.name}（可能被占用）: ${e.message}"
+            }
+        }
+    }
+}
+
+// 让每次资源处理（构建、同步、启动游戏）都先回灌一次
+tasks.named('processResources').configure {
+    dependsOn 'promoteDroppedTextures'
+}
+
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
     manifest {

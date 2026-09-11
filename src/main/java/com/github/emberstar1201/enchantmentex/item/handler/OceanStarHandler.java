@@ -578,12 +578,29 @@ public class OceanStarHandler {
     }
 
     // ========================================================================
-    // 工具方法：检测玩家是否手持海洋之星（主手或副手）
+    // 工具方法：检测玩家是否手持海洋之星，或穿戴嵌入海洋之星的盔甲
     // ========================================================================
     private static boolean isHoldingOceanStar(Player player) {
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
-        return mainHand.is(ModItems.OCEAN_STAR.get())
-                || offHand.is(ModItems.OCEAN_STAR.get());
+        
+        // 检查手持海洋之星
+        if (mainHand.is(ModItems.OCEAN_STAR.get()) || offHand.is(ModItems.OCEAN_STAR.get())) {
+            return true;
+        }
+        
+        // 检查穿戴的盔甲中是否有嵌入的海洋之星
+        for (ItemStack armorPiece : player.getArmorSlots()) {
+            if (!armorPiece.isEmpty() 
+                    && armorPiece.hasTag() 
+                    && armorPiece.getTag().contains("EmbeddedStar")) {
+                String embeddedStar = armorPiece.getTag().getString("EmbeddedStar");
+                if ("ocean_star".equals(embeddedStar)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }

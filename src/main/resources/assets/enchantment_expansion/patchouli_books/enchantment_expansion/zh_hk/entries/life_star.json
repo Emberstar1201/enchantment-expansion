@@ -1,0 +1,19 @@
+{
+  "name": "生命之星",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:life_star",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:life_star",
+      "title": "生命之星",
+      "text": "§l獲取方式：§r 在工作台中放入 9 種不同的花合成。只要是 9 種不同的花就可以（按物品區分，例如不同顏色的鬱金香也算作不同的花）。$(br2)§l效果：§r$(br)手持或鑲嵌盔甲時生效：生命值上限由 20 提升至 50；回血速度提升為 2 倍；飢餓值與飽和度消耗速度減少 50%（包括快速回血所消耗的飽和度）。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:life_star",
+      "text": "提醒：只要放入 9 種不同的花（按物品區分）即可合成，顏色不限。圖中為示例擺法。"
+    }
+  ]
+}

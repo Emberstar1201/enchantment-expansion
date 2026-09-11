@@ -1,13 +1,7 @@
 package com.github.emberstar1201.enchantmentex.item;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 // ========================================================================
 // 「海洋之星」自定义物品类
@@ -18,7 +12,7 @@ import java.util.List;
 //   3. 重写 canBeDepleted() 返回 false，没有耐久耗尽摧毁路径
 //
 // 外观：附魔浮光（isFoil=true）。
-// 描述：读取语言文件 item.enchantment_expansion.ocean_star.desc。
+// 描述：已隐藏（不重写 appendHoverText，物品提示中不再显示任何说明文本）。
 // 被动效果（水下挖掘、水流免疫、守卫者中立等）由 OceanStarHandler 驱动。
 // ========================================================================
 public class OceanStarItem extends Item {
@@ -30,12 +24,6 @@ public class OceanStarItem extends Item {
     @Override
     public boolean isFoil(ItemStack stack) {
         return true;
-    }
-
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level,
-                                List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("item.enchantment_expansion.ocean_star.desc"));
     }
 
     // ========================================================================

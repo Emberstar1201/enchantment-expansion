@@ -116,6 +116,31 @@ public class ModItems {
     );
 
     // ========================================================================
+    // 【生命之星】（Life Star）
+    //   工作台合成（9种不同的花卉）获得
+    //
+    // Item.Properties 配置：
+    //   .stacksTo(1)         ：不可堆叠（唯一宝物）
+    //   .rarity(Rarity.EPIC) ：史诗稀有度，物品名显示为紫色
+    //   .fireResistant()     ：不会被火焰/岩浆销毁
+    //
+    // 效果（手持 + 盔甲嵌入均生效）：
+    //   1. 生命值上限：20 → 50 (+30)
+    //   2. 回血速度：×2 倍
+    //   3. 饥饿盾：满血时优先扣除饥饿值
+    //
+    // 物品属性定义见 LifeStarItem，效果由 LifeStarHandler 事件驱动
+    // 注册ID：life_star
+    // ========================================================================
+    public static final RegistryObject<Item> LIFE_STAR = ITEMS.register("life_star",
+            () -> new LifeStarItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.EPIC)
+                    .fireResistant()
+            )
+    );
+
+    // ========================================================================
     // 注册方法：在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     // ========================================================================
     public static void register(IEventBus eventBus) {
@@ -142,6 +167,7 @@ public class ModItems {
             if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
                 event.accept(END_STAR);
                 event.accept(OCEAN_STAR);
+                event.accept(LIFE_STAR);
                 event.accept(ENHANCEMENT_SCROLL);
             }
         }

@@ -4,6 +4,7 @@ import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
@@ -362,7 +363,9 @@ public class EndStarHandler {
         // 计算经验等级加成百分比：
         //   每 10 级提供 100% 加成（floor(level/10) * 100）
         //   例：level=0~9 → 0%, level=10~19 → 100%, level=100+ → 1000%
-        int bonusPercent = Math.floorDiv(attacker.experienceLevel, 10) * 100;
+        //   bonusTier 即“加成档位”：level/10 的整数部分（10级=1档，20级=2档…）
+        int bonusTier = Math.floorDiv(attacker.experienceLevel, 10);
+        int bonusPercent = bonusTier * 100;
 
         // 钳制上限：从配置读取（默认 1000%）
         int maxBonus = Config.endStarMaxBonusPercent;
@@ -383,16 +386,41 @@ public class EndStarHandler {
                 attacker.getName().getString(), attacker.experienceLevel,
                 bonusPercent, oldAmount, oldAmount * multiplier);
 
+        // 向玩家屏幕显示伤害加成信息（ActionBar）
+        // 【修复】原来显示的是原始经验等级 (Lv.%d)，当等级恰好停在 10 时
+        //        看起来像“卡在 Lv.10”，且等级数值并不等于加成强度。
+        //        改为显示“加成档位”（每 10 级提升 1 档），直观反映加成进度。
+        String bonusDisplay = String.format("§6[终界加成] §b+%d%% 伤害 §7[第 %d 档]", bonusPercent, bonusTier);
+        attacker.displayClientMessage(Component.literal(bonusDisplay), true);
+
         event.setAmount(oldAmount * multiplier);
     }
 
     // ========================================================================
-    // 工具方法：检查玩家是否在手持（主手或副手）终界之星
+    // 工具方法：检查玩家是否在手持（主手或副手）终界之星，或穿戴嵌入终界之星的盔甲
     // ========================================================================
     private static boolean isHoldingEndStar(Player player) {
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
-        return mainHand.is(ModItems.END_STAR.get()) || offHand.is(ModItems.END_STAR.get());
+        
+        // 检查手持终界之星
+        if (mainHand.is(ModItems.END_STAR.get()) || offHand.is(ModItems.END_STAR.get())) {
+            return true;
+        }
+        
+        // 检查穿戴的盔甲中是否有嵌入的终界之星
+        for (ItemStack armorPiece : player.getArmorSlots()) {
+            if (!armorPiece.isEmpty() 
+                    && armorPiece.hasTag() 
+                    && armorPiece.getTag().contains("EmbeddedStar")) {
+                String embeddedStar = armorPiece.getTag().getString("EmbeddedStar");
+                if ("end_star".equals(embeddedStar)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 
     // ========================================================================

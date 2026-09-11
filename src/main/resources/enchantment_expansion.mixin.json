@@ -12,7 +12,9 @@
     "SandevistanProjectileStallMixin$AbstractArrowInject",
     "ItemStackMaxDamageMixin",
     "ServerLevelGameEventMixin",
-    "WardenCanTargetMixin"
+    "WardenCanTargetMixin",
+    "PlayerFoodExhaustionMixin",
+    "FoodDataLifeStarMixin"
   ],
   "injectors": {
     "defaultRequire": 1

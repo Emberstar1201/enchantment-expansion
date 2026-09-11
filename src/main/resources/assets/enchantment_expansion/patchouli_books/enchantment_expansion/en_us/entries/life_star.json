@@ -1,0 +1,19 @@
+{
+  "name": "Life Star",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:life_star",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:life_star",
+      "title": "Life Star",
+      "text": "§lAcquisition: §r Crafted at a crafting table with 9 different flowers. Any 9 different flowers work (items are compared by ID, so different tulip colors count as different flowers).$(br2)§lEffect: §r$(br)Active while held or embedded in armor: max health increases from 20 to 50; regeneration speed is doubled; hunger and saturation drain 50% slower (including the saturation consumed by fast regeneration)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:life_star",
+      "text": "Note: just place 9 different flowers (compared by item) — colors do not need to match. The grid above is only an example."
+    }
+  ]
+}

@@ -53,12 +53,15 @@ import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHand
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.item.handler.EnhancementScrollHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.LifeStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.OceanStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.ProtectedItemHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.StarEmbedHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.SwordOfTheFreeWillHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.TerminalBookHandler;
 import com.github.emberstar1201.enchantmentex.client.handler.EnchantmentBookLookupHandler;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
+import com.github.emberstar1201.enchantmentex.recipe.ModRecipes;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -87,6 +90,8 @@ public class EnchantmentExpansion {
         ModItems.register(modEventBus);
         // 3. 实体注册器（琉璃冰魄箭实体等）
         ModEntities.register(modEventBus);
+        // 4. 配方序列化器注册器（生命之星：9 种不同的花）
+        ModRecipes.register(modEventBus);
 
         // ================================================================
         // 注册配置文件（琉璃冰魄箭 17 项配置、终界之星 5 项配置等）
@@ -181,6 +186,8 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(SwordOfTheFreeWillHandler.class);
         MinecraftForge.EVENT_BUS.register(TerminalBookHandler.class);
         MinecraftForge.EVENT_BUS.register(ProtectedItemHandler.class);
+        MinecraftForge.EVENT_BUS.register(StarEmbedHandler.class);
+        MinecraftForge.EVENT_BUS.register(LifeStarHandler.class);
         MinecraftForge.EVENT_BUS.register(EnhancementScrollHandler.class);
         MinecraftForge.EVENT_BUS.register(SwiftCrossbowHandler.class);
         MinecraftForge.EVENT_BUS.register(AgricultureHandler.class);
