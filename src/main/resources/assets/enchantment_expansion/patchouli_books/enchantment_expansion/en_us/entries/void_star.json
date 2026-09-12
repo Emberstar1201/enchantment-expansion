@@ -1,0 +1,19 @@
+{
+  "name": "Void Star",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:void_star",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:void_star",
+      "title": "Void Star",
+      "text": "§lAcquisition: §r Crafted at a crafting table with 4 Obsidian, 4 Ender Pearls and 1 Chorus Fruit.$(br2)§lEffect: §r$(br)Active while held or embedded in armor: immunity to fall damage; immunity to void damage; falling into the void instantly teleports you back to your spawn point (or to your bed / respawn anchor if one is set)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:void_star",
+      "text": "The grid above shows the layout: obsidian in the corners, ender pearls on the edges, chorus fruit in the center."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "星辉之星",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:starlight_star",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:starlight_star",
+      "title": "星辉之星",
+      "text": "§l获取方式：§r 在工作台中以荧石 ×4、紫水晶碎片 ×4、钻石 ×1 合成。$(br2)§l效果：§r$(br)手持或嵌入盔甲时生效：夜间移动速度 +20%；夜间获得夜视；击杀生物的经验掉落翻倍。效果仅在夜间（13000~23000 刻）生效，白天下界与末地无效。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:starlight_star",
+      "text": "图中为合成摆法：四角荧石，四边紫水晶碎片，中心钻石。"
+    }
+  ]
+}

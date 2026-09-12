@@ -1,0 +1,19 @@
+{
+  "name": "虛空之星",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:void_star",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:void_star",
+      "title": "虛空之星",
+      "text": "§l獲取方式：§r 在工作台中以黑曜石 ×4、終界珍珠 ×4、歌萊果 ×1 合成。$(br2)§l效果：§r$(br)手持或鑲嵌盔甲時生效：免疫摔落傷害；免疫虛空傷害；當墜入虛空時會被立刻傳送回重生點（若已設定床或重生錨，則回到該處）。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:void_star",
+      "text": "圖中為合成擺法：四角黑曜石，四邊終界珍珠，中心歌萊果。"
+    }
+  ]
+}

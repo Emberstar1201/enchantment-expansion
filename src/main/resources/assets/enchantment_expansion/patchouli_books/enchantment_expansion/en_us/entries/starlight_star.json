@@ -1,0 +1,19 @@
+{
+  "name": "Starlight Star",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:starlight_star",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:starlight_star",
+      "title": "Starlight Star",
+      "text": "§lAcquisition: §r Crafted at a crafting table with 4 Glowstone, 4 Amethyst Shards and 1 Diamond.$(br2)§lEffect: §r$(br)Active while held or embedded in armor: +20% movement speed at night; night vision at night; mob experience drops are doubled. Effects only apply at night (ticks 13000~23000); they never apply during the day, in the Nether or in the End."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:starlight_star",
+      "text": "The grid above shows the layout: glowstone in the corners, amethyst shards on the edges, diamond in the center."
+    }
+  ]
+}

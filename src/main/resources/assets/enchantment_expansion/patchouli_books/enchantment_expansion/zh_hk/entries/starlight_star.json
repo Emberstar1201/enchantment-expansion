@@ -1,0 +1,19 @@
+{
+  "name": "星輝之星",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:starlight_star",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:starlight_star",
+      "title": "星輝之星",
+      "text": "§l獲取方式：§r 在工作台中以螢石 ×4、紫水晶碎片 ×4、鑽石 ×1 合成。$(br2)§l效果：§r$(br)手持或鑲嵌盔甲時生效：夜間移動速度 +20%；夜間獲得夜視；擊殺生物的經驗掉落加倍。效果僅在夜間（13000~23000 刻）生效，白天、地獄與終界無效。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:starlight_star",
+      "text": "圖中為合成擺法：四角螢石，四邊紫水晶碎片，中心鑽石。"
+    }
+  ]
+}

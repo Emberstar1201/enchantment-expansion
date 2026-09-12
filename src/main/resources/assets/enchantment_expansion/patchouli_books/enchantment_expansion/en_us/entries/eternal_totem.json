@@ -1,0 +1,19 @@
+{
+  "name": "Eternal Totem",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:eternal_totem",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:eternal_totem",
+      "title": "Eternal Totem",
+      "text": "§lAcquisition: §r Crafted at a crafting table with 1 Totem of Undying, 4 Gold Ingots and 4 Diamonds.$(br2)§lEffect: §r$(br)Active only while held in the main hand or off hand: when you take fatal damage, the death is negated and your health is fully restored; each trigger consumes 1 durability (20 total). The totem shatters once its durability runs out.$(br2)§lSynergy: §r Healing is based on your current max health, so while a Life Star is equipped (max health 50) you are restored to the full 50 points."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:eternal_totem",
+      "text": "The grid above shows the layout: totem of undying in the center, gold ingots in the corners, diamonds on the edges."
+    }
+  ]
+}

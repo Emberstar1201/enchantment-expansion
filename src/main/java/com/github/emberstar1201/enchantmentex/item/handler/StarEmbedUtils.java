@@ -42,6 +42,16 @@ public class StarEmbedUtils {
                 tooltip.add(Component.literal(""));  // 空行分隔
                 tooltip.add(Component.translatable("item.enchantment_expansion.embedded_life_star.desc"));
                 break;
+            case "void_star":
+                // 虚空之星嵌入效果提示
+                tooltip.add(Component.literal(""));  // 空行分隔
+                tooltip.add(Component.translatable("item.enchantment_expansion.embedded_void_star.desc"));
+                break;
+            case "starlight_star":
+                // 星辉之星嵌入效果提示
+                tooltip.add(Component.literal(""));  // 空行分隔
+                tooltip.add(Component.translatable("item.enchantment_expansion.embedded_starlight_star.desc"));
+                break;
         }
     }
 
@@ -49,7 +59,8 @@ public class StarEmbedUtils {
      * 判断盔甲是否嵌入了指定类型的星星
      * 
      * @param armorStack 盔甲物品
-     * @param starType 星星类型（"end_star" / "ocean_star" / "life_star"）
+     * @param starType 星星类型（"end_star" / "ocean_star" / "life_star"
+     *                 / "void_star" / "starlight_star"）
      * @return 是否嵌入了该星星
      */
     public static boolean hasEmbeddedStar(ItemStack armorStack, String starType) {

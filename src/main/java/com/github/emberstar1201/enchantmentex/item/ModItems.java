@@ -127,7 +127,7 @@ public class ModItems {
     // 效果（手持 + 盔甲嵌入均生效）：
     //   1. 生命值上限：20 → 50 (+30)
     //   2. 回血速度：×2 倍
-    //   3. 饥饿盾：满血时优先扣除饥饿值
+    //   3. 饥饿值与饱和度消耗速度 −50%
     //
     // 物品属性定义见 LifeStarItem，效果由 LifeStarHandler 事件驱动
     // 注册ID：life_star
@@ -135,6 +135,84 @@ public class ModItems {
     public static final RegistryObject<Item> LIFE_STAR = ITEMS.register("life_star",
             () -> new LifeStarItem(new Item.Properties()
                     .stacksTo(1)
+                    .rarity(Rarity.EPIC)
+                    .fireResistant()
+            )
+    );
+
+    // ========================================================================
+    // 【虚空之星】（Void Star）
+    //   工作台合成（黑曜石 ×4 + 末影珍珠 ×4 + 紫颂果 ×1）获得
+    //
+    // Item.Properties 配置：
+    //   .stacksTo(1)         ：不可堆叠（唯一宝物）
+    //   .rarity(Rarity.EPIC) ：史诗稀有度，物品名显示为紫色
+    //   .fireResistant()     ：不会被火焰/岩浆销毁
+    //
+    // 效果（手持 + 盔甲嵌入均生效）：
+    //   1. 免疫摔落伤害
+    //   2. 免疫虚空伤害
+    //   3. 坠入虚空时传送回出生点（或已设置的床/重生锚）
+    //
+    // 物品属性定义见 VoidStarItem，效果由 VoidStarHandler 事件驱动
+    // 注册ID：void_star
+    // ========================================================================
+    public static final RegistryObject<Item> VOID_STAR = ITEMS.register("void_star",
+            () -> new VoidStarItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.EPIC)
+                    .fireResistant()
+            )
+    );
+
+    // ========================================================================
+    // 【星辉之星】（Starlight Star）
+    //   工作台合成（荧石 ×4 + 紫水晶碎片 ×4 + 钻石 ×1）获得
+    //
+    // Item.Properties 配置：
+    //   .stacksTo(1)         ：不可堆叠（唯一宝物）
+    //   .rarity(Rarity.EPIC) ：史诗稀有度，物品名显示为紫色
+    //   .fireResistant()     ：不会被火焰/岩浆销毁
+    //
+    // 效果（手持 + 盔甲嵌入均生效）：
+    //   1. 夜间移动速度 +20%（离开夜晚或放下即自动移除）
+    //   2. 夜间夜视
+    //   3. 击杀生物经验掉落 ×2
+    //
+    // 物品属性定义见 StarlightStarItem，效果由 StarlightStarHandler 事件驱动
+    // 注册ID：starlight_star
+    // ========================================================================
+    public static final RegistryObject<Item> STARLIGHT_STAR = ITEMS.register("starlight_star",
+            () -> new StarlightStarItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.EPIC)
+                    .fireResistant()
+            )
+    );
+
+    // ========================================================================
+    // 【永恒图腾】（Eternal Totem）
+    //   工作台合成（不死图腾 ×1 + 钻石 ×4 + 金锭 ×4）获得
+    //
+    // Item.Properties 配置：
+    //   .stacksTo(1)              ：不可堆叠
+    //   .durability(20)           ：20 点耐久，每抵挡一次致命伤消耗 1 点
+    //   .rarity(Rarity.EPIC)      ：史诗稀有度，物品名显示为紫色
+    //   .fireResistant()          ：不会被火焰/岩浆销毁
+    //
+    // 效果（仅主手/副手持有时生效）：
+    //   1. 受到致命伤时免除本次死亡
+    //   2. 生命值回复至上限（与生命之星联动：按加成后的上限回满）
+    //   3. 消耗 1 点耐久；耐久耗尽则图腾破碎消失
+    //   4. 物品始终带附魔光效
+    //
+    // 物品属性定义见 EternalTotemItem，效果由 EternalTotemHandler 事件驱动
+    // 注册ID：eternal_totem
+    // ========================================================================
+    public static final RegistryObject<Item> ETERNAL_TOTEM = ITEMS.register("eternal_totem",
+            () -> new EternalTotemItem(new Item.Properties()
+                    .stacksTo(1)
+                    .durability(20)
                     .rarity(Rarity.EPIC)
                     .fireResistant()
             )
@@ -168,6 +246,9 @@ public class ModItems {
                 event.accept(END_STAR);
                 event.accept(OCEAN_STAR);
                 event.accept(LIFE_STAR);
+                event.accept(VOID_STAR);
+                event.accept(STARLIGHT_STAR);
+                event.accept(ETERNAL_TOTEM);
                 event.accept(ENHANCEMENT_SCROLL);
             }
         }

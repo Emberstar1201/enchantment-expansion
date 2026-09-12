@@ -31,11 +31,18 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //        不扣氧气、守卫者中立化
 //   3. 生命之星 (LIFE_STAR)
 //      → 玩家穿戴此盔甲后持续获得：生命上限 +30 (20→50)、
-//        回血速度 ×2、满血时优先扣除饥饿值抵挡伤害
+//        回血速度 ×2、饥饿与饱和度消耗速度 −50%
+//   4. 虚空之星 (VOID_STAR)
+//      → 玩家穿戴此盔甲后持续获得：免疫摔落伤害、免疫虚空伤害、
+//        坠入虚空时传送回出生点（或已设置的床/重生锚）
+//   5. 星辉之星 (STARLIGHT_STAR)
+//      → 玩家穿戴此盔甲后持续获得：夜间移速 +20%、夜间夜视、
+//        击杀生物经验掉落 ×2
 //
 // 【NBT 标签】
 //   每件嵌入了星星的盔甲在 NBT 中存储：
 //   - "EmbeddedStar" → 字符串，值为 "end_star" / "ocean_star" / "life_star"
+//                              / "void_star" / "starlight_star"
 //   - "EmbedCost" → 整数，表示此次嵌入的铁砧花费（仅记录，不实际扣除）
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -66,6 +73,12 @@ public class StarEmbedHandler {
         } else if (material.is(ModItems.LIFE_STAR.get())) {
             starType = "life_star";
             baseCost = 5;  // 生命之星嵌入花费
+        } else if (material.is(ModItems.VOID_STAR.get())) {
+            starType = "void_star";
+            baseCost = 5;  // 虚空之星嵌入花费
+        } else if (material.is(ModItems.STARLIGHT_STAR.get())) {
+            starType = "starlight_star";
+            baseCost = 5;  // 星辉之星嵌入花费
         }
 
         if (starType == null) {
@@ -113,11 +126,14 @@ public class StarEmbedHandler {
     }
 
     // ========================================================================
-    // 工具方法：判断物品是否为星星（终界之星 / 海洋之星 / 生命之星）
+    // 工具方法：判断物品是否为星星
+    // （终界之星 / 海洋之星 / 生命之星 / 虚空之星 / 星辉之星）
     // ========================================================================
     private static boolean isStar(ItemStack stack) {
         return stack.is(ModItems.END_STAR.get()) 
             || stack.is(ModItems.OCEAN_STAR.get())
-            || stack.is(ModItems.LIFE_STAR.get());
+            || stack.is(ModItems.LIFE_STAR.get())
+            || stack.is(ModItems.VOID_STAR.get())
+            || stack.is(ModItems.STARLIGHT_STAR.get());
     }
 }

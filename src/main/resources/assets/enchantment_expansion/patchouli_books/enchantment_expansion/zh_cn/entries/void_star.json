@@ -1,0 +1,19 @@
+{
+  "name": "虚空之星",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:void_star",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:void_star",
+      "title": "虚空之星",
+      "text": "§l获取方式：§r 在工作台中以黑曜石 ×4、末影珍珠 ×4、紫颂果 ×1 合成。$(br2)§l效果：§r$(br)手持或嵌入盔甲时生效：免疫摔落伤害；免疫虚空伤害；当坠入虚空时会被立刻传送回出生点（若已设置床或重生锚，则回到该处）。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:void_star",
+      "text": "图中为合成摆法：四角黑曜石，四边末影珍珠，中心紫颂果。"
+    }
+  ]
+}

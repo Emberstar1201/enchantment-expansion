@@ -53,12 +53,15 @@ import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHand
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.item.handler.EnhancementScrollHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.EternalTotemHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.LifeStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.OceanStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.ProtectedItemHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.StarEmbedHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.StarlightStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.SwordOfTheFreeWillHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.TerminalBookHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.VoidStarHandler;
 import com.github.emberstar1201.enchantmentex.client.handler.EnchantmentBookLookupHandler;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
 import com.github.emberstar1201.enchantmentex.recipe.ModRecipes;
@@ -188,6 +191,12 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(ProtectedItemHandler.class);
         MinecraftForge.EVENT_BUS.register(StarEmbedHandler.class);
         MinecraftForge.EVENT_BUS.register(LifeStarHandler.class);
+        // 虚空之星：免疫摔落/虚空伤害 + 坠入虚空传送回出生点
+        MinecraftForge.EVENT_BUS.register(VoidStarHandler.class);
+        // 星辉之星：夜间移速加成 + 夜视 + 经验掉落翻倍
+        MinecraftForge.EVENT_BUS.register(StarlightStarHandler.class);
+        // 永恒图腾：致命伤抵挡 + 回满血 + 消耗耐久
+        MinecraftForge.EVENT_BUS.register(EternalTotemHandler.class);
         MinecraftForge.EVENT_BUS.register(EnhancementScrollHandler.class);
         MinecraftForge.EVENT_BUS.register(SwiftCrossbowHandler.class);
         MinecraftForge.EVENT_BUS.register(AgricultureHandler.class);

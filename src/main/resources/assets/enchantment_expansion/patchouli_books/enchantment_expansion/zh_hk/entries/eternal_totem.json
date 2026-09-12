@@ -1,0 +1,19 @@
+{
+  "name": "永恆圖騰",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:eternal_totem",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:eternal_totem",
+      "title": "永恆圖騰",
+      "text": "§l獲取方式：§r 在工作台中以不死圖騰 ×1、金錠 ×4、鑽石 ×4 合成。$(br2)§l效果：§r$(br)僅主手或副手持有時生效：當受到致命傷害時，免除本次死亡並將生命值回滿；每次觸發消耗 1 點耐久（共 20 點）。耐久耗盡後圖騰破碎消失。$(br2)§l聯動：§r 回血按當前生命值上限計算，若已裝備生命之星（上限 50），會直接回滿至 50 點。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "enchantment_expansion:eternal_totem",
+      "text": "圖中為合成擺法：中心不死圖騰，四角金錠，四邊鑽石。"
+    }
+  ]
+}
