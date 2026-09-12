@@ -2,6 +2,8 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
@@ -20,7 +22,10 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //       1. 取消本次伤害（玩家不死）
 //       2. 将生命值回满到 player.getMaxHealth()
 //          （若手持/嵌入生命之星，会自动按加成后的上限回满）
-//       3. 消耗图腾 1 点耐久；耐久耗尽则图腾破碎消失
+//       3. 给予 1 分钟增益：生命恢复 V、伤害吸收 V、抗性提升 V
+//       4. 广播实体事件 35：图腾粒子 + 原版触发音效 + 屏幕图腾动画
+//          （动画显示的贴图为永恒图腾本身，见 ClientPacketListenerTotemMixin）
+//       5. 消耗图腾 1 点耐久；耐久耗尽则图腾破碎消失
 //
 // 注意：
 //   - 仅服务端判定，避免客户端重复触发。
@@ -30,6 +35,12 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class EternalTotemHandler {
+
+    /** 增益持续时间：1 分钟（60 秒 × 20 tick） */
+    private static final int BUFF_DURATION = 20 * 60;
+
+    /** 增益等级：5 级（amplifier 从 0 起算，故为 4） */
+    private static final int BUFF_AMPLIFIER = 4;
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingDamage(LivingDamageEvent event) {
@@ -62,9 +73,33 @@ public class EternalTotemHandler {
         // 2. 回满生命值（getMaxHealth 已包含生命之星的上限加成，天然联动）
         player.setHealth(player.getMaxHealth());
 
-        // 3. 消耗 1 点耐久；耐久耗尽时 hurtAndBreak 会自动 shrink 并广播破碎动画
+        // 3. 给予 1 分钟增益：生命恢复 V、伤害吸收 V、抗性提升 V
+        applyTotemBuffs(player);
+
+        // 4. 广播实体事件 35（原版不死图腾的触发事件）
+        //    客户端 ClientPacketListener 收到后会自动：
+        //      - 生成图腾粒子（ParticleTypes.TOTEM_OF_UNDYING）
+        //      - 播放图腾音效（SoundEvents.TOTEM_USE）
+        //      - 为触发者本人播放屏幕中央的"举起图腾"动画
+        //    其中动画所显示的物品由 ClientPacketListenerTotemMixin 替换为永恒图腾。
+        player.level().broadcastEntityEvent(player, (byte) 35);
+
+        // 5. 消耗 1 点耐久；耐久耗尽时 hurtAndBreak 会自动 shrink 并广播破碎动画
         final InteractionHand finalHand = hand;
         totem.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(finalHand));
+    }
+
+    /**
+     * 给予永恒图腾触发后的增益效果。
+     * 若玩家已有同类且更高等级/更久的效果，addEffect 会自动保留更强的那个。
+     */
+    private static void applyTotemBuffs(Player player) {
+        player.addEffect(new MobEffectInstance(
+                MobEffects.REGENERATION, BUFF_DURATION, BUFF_AMPLIFIER, false, true, true));
+        player.addEffect(new MobEffectInstance(
+                MobEffects.ABSORPTION, BUFF_DURATION, BUFF_AMPLIFIER, false, true, true));
+        player.addEffect(new MobEffectInstance(
+                MobEffects.DAMAGE_RESISTANCE, BUFF_DURATION, BUFF_AMPLIFIER, false, true, true));
     }
 
     /**
