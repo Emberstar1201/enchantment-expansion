@@ -38,11 +38,14 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //   5. 星辉之星 (STARLIGHT_STAR)
 //      → 玩家穿戴此盔甲后持续获得：夜间移速 +20%、夜间夜视、
 //        击杀生物经验掉落 ×2
+//   6. 晨曦之星 (DAWN_STAR)
+//      → 玩家穿戴此盔甲后持续获得：击杀积累「晨光」，满层爆发「晨曦」
+//        （180 秒内伤害 ×1.25、暴击率 +10%、移速 +10%、每 2 秒回 2.5 点生命）
 //
 // 【NBT 标签】
 //   每件嵌入了星星的盔甲在 NBT 中存储：
 //   - "EmbeddedStar" → 字符串，值为 "end_star" / "ocean_star" / "life_star"
-//                              / "void_star" / "starlight_star"
+//                              / "void_star" / "starlight_star" / "dawn_star"
 //   - "EmbedCost" → 整数，表示此次嵌入的铁砧花费（仅记录，不实际扣除）
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -79,6 +82,9 @@ public class StarEmbedHandler {
         } else if (material.is(ModItems.STARLIGHT_STAR.get())) {
             starType = "starlight_star";
             baseCost = 5;  // 星辉之星嵌入花费
+        } else if (material.is(ModItems.DAWN_STAR.get())) {
+            starType = "dawn_star";
+            baseCost = 5;  // 晨曦之星嵌入花费
         }
 
         if (starType == null) {
@@ -127,13 +133,14 @@ public class StarEmbedHandler {
 
     // ========================================================================
     // 工具方法：判断物品是否为星星
-    // （终界之星 / 海洋之星 / 生命之星 / 虚空之星 / 星辉之星）
+    // （终界之星 / 海洋之星 / 生命之星 / 虚空之星 / 星辉之星 / 晨曦之星）
     // ========================================================================
     private static boolean isStar(ItemStack stack) {
         return stack.is(ModItems.END_STAR.get()) 
             || stack.is(ModItems.OCEAN_STAR.get())
             || stack.is(ModItems.LIFE_STAR.get())
             || stack.is(ModItems.VOID_STAR.get())
-            || stack.is(ModItems.STARLIGHT_STAR.get());
+            || stack.is(ModItems.STARLIGHT_STAR.get())
+            || stack.is(ModItems.DAWN_STAR.get());
     }
 }

@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Dawn",
-      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Swords, Axes, Tridents$(br2)§lEffect: §r Killing mobs permanently grows your damage and crit stats. Low-health targets always take a critical hit; kills grant lifesteal and splash damage.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades$(br2)§lConflicts: §r Mutually exclusive with other melee damage/growth enchantments."
+      "text": "§lMax Level: §r I$(br2)§lApplicable Items: §r Swords, Axes, Tridents$(br2)§lEffect: §r Killing mobs permanently grows your damage and crit stats. Low-health targets always take a critical hit; kills grant lifesteal and splash damage.$(br2)§lAcquisition: §r Enchanting Table, Loot Chests, Villager Trades; granted as a book upon earning the \"Set Off on the Journey!\" advancement$(br2)§lConflicts: §r Mutually exclusive with other melee damage/growth enchantments."
     }
   ]
 }

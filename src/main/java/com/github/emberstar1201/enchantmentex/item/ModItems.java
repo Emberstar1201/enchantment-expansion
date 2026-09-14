@@ -220,6 +220,32 @@ public class ModItems {
     );
 
     // ========================================================================
+    // 【晨曦之星】（Dawn Star）
+    //   成就获取：完成「我们逝去，我们永恒」后，于日落到日出之间
+    //   手持附魔拂晓的武器再度击杀凋零 → 自动放入背包（无法合成）
+    //
+    // Item.Properties 配置：
+    //   .stacksTo(1)         ：不可堆叠（唯一宝物）
+    //   .rarity(Rarity.EPIC) ：史诗稀有度，物品名显示为紫色
+    //   .fireResistant()     ：不会被火焰/岩浆销毁
+    //
+    // 效果（手持 + 盔甲嵌入均生效，嵌入不减效）：
+    //   1. 击杀敌对生物积累「晨光」（+0.25 层，主手带拂晓时 +2 层，上限 10 层）
+    //   2. 满层自动进入「晨曦」：180 秒内伤害 ×1.25、暴击率 +10%、
+    //      移速 +10%、每 2 秒回 2.5 点生命；随后冷却 90 秒
+    //
+    // 物品属性定义见 DawnStarItem，效果由 DawnStarHandler / DawnStarData 驱动
+    // 注册ID：dawn_star
+    // ========================================================================
+    public static final RegistryObject<Item> DAWN_STAR = ITEMS.register("dawn_star",
+            () -> new DawnStarItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.EPIC)
+                    .fireResistant()
+            )
+    );
+
+    // ========================================================================
     // 注册方法：在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     // ========================================================================
     public static void register(IEventBus eventBus) {
@@ -249,6 +275,7 @@ public class ModItems {
                 event.accept(LIFE_STAR);
                 event.accept(VOID_STAR);
                 event.accept(STARLIGHT_STAR);
+                event.accept(DAWN_STAR);
                 event.accept(ETERNAL_TOTEM);
                 event.accept(ENHANCEMENT_SCROLL);
             }

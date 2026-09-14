@@ -174,13 +174,17 @@ public class TouhouMaidEnchantmentCompat4 {
         if (server == null) return;
 
         MAID_DARK_WALKERS.clear();
-        for (var level : server.getAllLevels()) {
-            if (level.isClientSide) continue;
-            for (LivingEntity maid : level.getEntitiesOfClass(
-                    LivingEntity.class,
-                    new AABB(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
-                            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY),
-                    TLMSafe::isTouhouMaid)) {
+        for (ServerLevel level : server.getAllLevels()) {
+            // 【正确性修复】原先这里构造 AABB(±Double.POSITIVE_INFINITY) 想“扫全维度”，
+            // 实际是空操作：SectionPos.posToSectionCoord(-∞) 经 Mth.floor 得到
+            // Integer.MIN_VALUE，再减 1 溢出成 Integer.MAX_VALUE，于是
+            // EntitySectionStorage 的 x 轴循环上下界双双变成 134217727，
+            // 且 subSet 区间落在所有真实 section key 之外 —— 一次实体都取不到。
+            // 结果：下面的「终末将至」攻速 modifier 与「幽匿行者」活跃缓存从未生效过。
+            // 正确做法是直接遍历该维度已加载的全部实体（同 LevisEchoHandler 的写法）。
+            for (Entity entity : level.getAllEntities()) {
+                if (!(entity instanceof LivingEntity maid)) continue;
+                if (!TLMSafe.isTouhouMaid(maid)) continue;
 
                 // 终末将至：攻速 modifier
                 double endBonus = Config.endApproachesAttackSpeedBonus;
@@ -203,11 +207,21 @@ public class TouhouMaidEnchantmentCompat4 {
                                             UUID uuid, String name, double value, boolean apply) {
         var inst = e.getAttribute(attr);
         if (inst == null) return;
-        inst.removeModifier(uuid);
-        if (apply && value != 0) {
-            inst.addTransientModifier(new AttributeModifier(uuid, name, value,
-                    AttributeModifier.Operation.MULTIPLY_TOTAL));
+        var existing = inst.getModifier(uuid);
+        boolean want = apply && value != 0;
+
+        // 幂等：只在“状态需要改变”时才动 modifier。
+        // onServerTick 每 tick 都会走到这里，若无条件 remove + add，
+        // 会每 tick 触发一次属性重算与同步包（参考 EndApproachesHandler 的做法）。
+        if (!want) {
+            if (existing != null) inst.removeModifier(uuid);
+            return;
         }
+        if (existing != null && existing.getAmount() == value) return;
+
+        inst.removeModifier(uuid);
+        inst.addTransientModifier(new AttributeModifier(uuid, name, value,
+                AttributeModifier.Operation.MULTIPLY_TOTAL));
     }
 
     // ========================================================================

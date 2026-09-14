@@ -2,6 +2,7 @@ package com.github.emberstar1201.enchantmentex.enchantment;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -34,6 +35,10 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 public class AncientYunLaiHandler {
 
     private static final double PARTICLE_SPACING = 0.1D;
+    // 单 tick 允许插值生成的最大粒子数（防止异常位移导致 for 循环爆炸）
+    private static final int MAX_PARTICLES_PER_TICK = 128;
+    // 单 tick 允许插值的最大位移距离（方块）。超过则视为跨维度/传送跳变，放弃插值。
+    private static final double MAX_INTERPOLATION_DISTANCE = 64.0D;
     private static final Map<UUID, Vec3> ARROW_PARTICLE_POSITIONS = new HashMap<>();
 
     // ========================================================================
@@ -176,9 +181,26 @@ public class AncientYunLaiHandler {
             Vec3 previousPosition = entry.getValue();
             Vec3 currentPosition = arrow.position();
             Vec3 movement = currentPosition.subtract(previousPosition);
-            int particleCount = Math.max(1, (int) Math.ceil(movement.length() / PARTICLE_SPACING));
+            double distance = movement.length();
+
+            // 【关键修复】位移必须为有限值且在合理范围内，才允许插值。
+            // move.length() 若为 NaN/Infinity（跨维度、被传送、坐标异常）
+            // 会让 (int) Math.ceil(...) 饱和为 Integer.MAX_VALUE，
+            // 进而使下面的 for 循环条件 "i <= particleCount" 恒真，导致服务端主线程死循环永久卡死。
+            if (!Double.isFinite(distance) || distance > MAX_INTERPOLATION_DISTANCE) {
+                // 直接重置记录位置，跳过本 tick 的粒子插值
+                entry.setValue(currentPosition);
+                continue;
+            }
+
+            // 双重保险：即使距离正常，也把粒子数夹取到安全上限，杜绝循环无界
+            int particleCount = Mth.clamp(
+                    (int) Math.ceil(distance / PARTICLE_SPACING),
+                    1, MAX_PARTICLES_PER_TICK);
+
             ServerLevel level = (ServerLevel) arrow.level();
-            for (int i = 0; i <= particleCount; i++) {
+            // 使用 i < particleCount 而非 i <=，避免除零与多算一个端点
+            for (int i = 0; i < particleCount; i++) {
                 Vec3 particlePosition = previousPosition.lerp(currentPosition, (double) i / particleCount);
                 level.sendParticles(ParticleTypes.END_ROD,
                         particlePosition.x, particlePosition.y, particlePosition.z,

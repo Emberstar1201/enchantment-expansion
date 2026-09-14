@@ -52,6 +52,11 @@ public class StarEmbedUtils {
                 tooltip.add(Component.literal(""));  // 空行分隔
                 tooltip.add(Component.translatable("item.enchantment_expansion.embedded_starlight_star.desc"));
                 break;
+            case "dawn_star":
+                // 晨曦之星嵌入效果提示
+                tooltip.add(Component.literal(""));  // 空行分隔
+                tooltip.add(Component.translatable("item.enchantment_expansion.embedded_dawn_star.desc"));
+                break;
         }
     }
 
