@@ -1,3 +1,18 @@
 {
-  "type": "enchantment_expansion:life_star"
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:dandelion"
+    }
+  },
+  "result": {
+    "item": "enchantment_expansion:life_star",
+    "count": 1
+  }
 }
