@@ -1,0 +1,37 @@
+{
+  "display": {
+    "icon": {
+      "item": "enchantment_expansion:life_star"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.life_star.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.life_star.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "minecraft:adventure/root",
+  "criteria": {
+    "has_life_star": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "enchantment_expansion:life_star"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_life_star"
+    ]
+  ]
+}

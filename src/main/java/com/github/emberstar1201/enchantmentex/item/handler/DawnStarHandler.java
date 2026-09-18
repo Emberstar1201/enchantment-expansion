@@ -18,6 +18,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -43,8 +44,8 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //
 // 【获取方式】
 //   完成成就「我们逝去，我们永恒」后，于日落到日出之间（整段黑夜），
-//   手持附魔了拂晓的武器再度击杀一只凋零 → 晨曦之星自动放入背包，
-//   并弹出成就「所谓破晓，终将自由」。
+//   手持附魔了拂晓的武器再度击杀一只凋零 → 晨曦之星与凋零的战利品一同掉落在地上，
+//   拾取后点亮成就「所谓破晓，终将自由」。
 //
 // 【仅服务端处理】
 //   与星辉之星同理：属性修饰符若在客户端也执行 tick，会走进"移除修饰符"
@@ -287,11 +288,19 @@ public class DawnStarHandler {
         if (!isNightWindow(player.level())) return;
 
         // ---------- 发放晨曦之星 ----------
+        // 不再直接塞进玩家背包，而是与凋零的战利品一同掉落在地上（落点取凋零死亡处）。
+        //   凋零的下界之星正是在这一刻由 dropCustomDeathLoot 掉落，因此两者几乎同时落地。
+        //   setExtendedLifetime() 与下界之星保持一致：永不因存在时间过长而自然消失。
+        if (!(victim.level() instanceof ServerLevel victimLevel)) return;
+
         ItemStack star = new ItemStack(ModItems.DAWN_STAR.get());
         DawnStarData.writeLoreTo(star, player);
-        if (!player.addItem(star)) {
-            player.drop(star, false);  // 背包满则掉落在脚下
-        }
+
+        ItemEntity drop = new ItemEntity(victimLevel,
+                victim.getX(), victim.getY() + victim.getBbHeight() / 2.0D, victim.getZ(), star);
+        drop.setExtendedLifetime();
+        victimLevel.addFreshEntity(drop);
+
         DawnStarData.setObtained(player);
 
         // 稍抒情的提示

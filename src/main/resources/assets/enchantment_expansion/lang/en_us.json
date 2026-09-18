@@ -147,6 +147,10 @@
   "advancements.enchantment_expansion.face_the_deep.description": "The abyss bows before you.",
   "advancements.enchantment_expansion.journey.title": "Set Off on the Journey!",
   "advancements.enchantment_expansion.journey.description": "§7The journey begins here — may the Dawn walk with you.",
+  "advancements.enchantment_expansion.life_star.title": "The Meaning of Life?",
+  "advancements.enchantment_expansion.life_star.description": "Obtain the Life Star.",
+  "advancements.enchantment_expansion.void_star.title": "The Courage to Face the Abyss",
+  "advancements.enchantment_expansion.void_star.description": "Obtain the Void Star.",
 
   "enchantment.enchantment_expansion.sandevistan": "Sandevistan",
   "enchantment.enchantment_expansion.sandevistan.desc": "Chest implant. Press the activation key (default X) to trigger bullet time: the world around you slows while your speed and attack rate increase. Tier I from enchanting, Tiers II-III from structure chests only.",
@@ -171,5 +175,6 @@
   "enchantment_expansion.terminal_book.items_category": "Items",
   "enchantment_expansion.terminal_book.items_category_desc": "This category lists special items from Enchantment Expansion, their acquisition methods, and their passive or active effects.",
   "enchantment_expansion.terminal_book.enchantments_entry": "Enchantment Effects Overview",
-  "enchantment_expansion.terminal_book.items_entry": "Special Items Overview"
+  "enchantment_expansion.terminal_book.items_entry": "Special Items Overview",
+  "enchantment.level.12": "XII"
 }

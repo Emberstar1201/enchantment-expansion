@@ -2,22 +2,33 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Endermite;
+import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -73,6 +84,14 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //     PlayerTickEvent 中移除"缓慢 MOVEMENT_SLOWDOWN"状态效果
 //     移除 MOVEMENT_SPEED 属性的所有负面修饰符（MULTIPLY_TOTAL / ADDITION）
 //     仅移除负值修饰符，保留正值修饰符（如疾速药水、其他模组的增益）
+//
+//  8. 强制末影系敌对生物中立（终界之星专属）
+//     生效条件：手持终界之星，或盔甲嵌入终界之星
+//     末影人 / 末影螨 / 潜影贝：
+//       PlayerTickEvent 清除攻击目标 + LivingChangeTargetEvent 禁止锁定持有者
+//     末影龙：
+//       不使用 Mob.target，改由 LivingAttackEvent 拦截其全部直接伤害，
+//       实现绝对中立（即使玩家攻击它也不会还手）
 //
 //  所有效果支持 Config 中的开关与数值配置。
 // ========================================================================
@@ -193,6 +212,21 @@ public class EndStarHandler {
         }
 
         // ================================================================
+        // 效果 8：强制末影人/末影龙/末影螨/潜影贝中立（仅服务端）
+        //   手持终界之星时，周围 64 格内的末影系敌对生物清除攻击目标
+        //   【注意】末影龙不使用 Mob.target 字段，这里的 setTarget(null)
+        //          对它无效，末影龙的中立化由 onLivingAttack 拦截伤害实现
+        // ================================================================
+        if (isHoldingEndStar && !player.level().isClientSide()) {
+            AABB neutralSearchBox = player.getBoundingBox().inflate(64);
+            for (Mob mob : player.level().getEntitiesOfClass(Mob.class, neutralSearchBox)) {
+                if (isEndNeutralMob(mob) && mob.getTarget() != null) {
+                    mob.setTarget(null);
+                }
+            }
+        }
+
+        // ================================================================
         // 效果 4 + 5：紫色附魔字符粒子（仅客户端生成）
         //   - 手持时：玩家身体周围生成 ENCHANT 粒子
         //   - 丢弃时：玩家附近 32 格内的终界之星 ItemEntity 周围生成粒子
@@ -289,6 +323,59 @@ public class EndStarHandler {
     }
 
     // ========================================================================
+    // 效果 8（补充）：阻止末影系敌对生物把终界之星持有者选为攻击目标
+    //
+    // 【为什么不能只靠每 tick 清空目标】
+    //   原版 AI 的 NearestAttackableTargetGoal / HurtByTargetGoal 会周期性
+    //   重新选取目标，仅在 PlayerTickEvent 里清空会出现"清空 → 重新锁定"
+    //   的时间差。末影螨移动快、攻击间隔短，正好会打中这个空档。
+    //   在目标被写入的那一刻直接取消，才是真正的强制中立。
+    //
+    // 【生效范围】末影人 / 末影螨 / 潜影贝
+    //   末影龙不走 Mob.target，不会触发本事件，需靠 onLivingAttack 处理。
+    // ========================================================================
+    @SubscribeEvent
+    public static void onLivingChangeTarget(LivingChangeTargetEvent event) {
+        if (event.getNewTarget() instanceof Player player
+                && isEndNeutralMob(event.getEntity())
+                && isHoldingEndStar(player)) {
+            event.setCanceled(true);
+        }
+    }
+
+    // ========================================================================
+    // 效果 8（补充）：末影龙绝对中立（拦截伤害）
+    //
+    // 【为什么末影龙不能用 setTarget(null)】
+    //   末影龙的攻击完全由阶段 AI（PhaseManager）驱动。EnderDragon 本身
+    //   以及 DragonHoldingPatternPhase / DragonSittingScanningPhase 等阶段类
+    //   都不使用 Mob.target 字段，而是直接调用
+    //   level().getNearestPlayer(...) 选人，所以 setTarget(null) 是空操作，
+    //   这也正是"设置了中立但末影龙照样攻击"的原因。
+    //
+    // 【做法】在伤害生效前拦截
+    //   末影龙的所有直接伤害——冲撞、头/颈接触、翅膀击飞——都来自
+    //   damageSources().mobAttack(this)，即伤害来源实体就是末影龙本身。
+    //   取消 LivingAttackEvent 后伤害与击退一并失效，
+    //   即使玩家主动攻击末影龙，它也无法还手。
+    //
+    // 【说明】末影龙火球生成的龙息云使用不带来源实体的 magic 伤害，
+    //   无法归因到末影龙，仍走原有的减伤逻辑（80% 减免 + 10 点限伤）。
+    // ========================================================================
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onLivingAttack(LivingAttackEvent event) {
+        if (!(event.getEntity() instanceof Player player)
+                || player.level().isClientSide()
+                || !isHoldingEndStar(player)) {
+            return;
+        }
+
+        if (isEndNeutralMob(event.getSource().getEntity())) {
+            event.setCanceled(true);
+        }
+    }
+
+    // ========================================================================
     // 效果 2 + 3：限伤 + 伤害减免 + 伤害加成（LivingHurtEvent）
     //
     // 一个事件同时处理两个方向：
@@ -311,7 +398,8 @@ public class EndStarHandler {
     public static void onLivingHurt(LivingHurtEvent event) {
         DamageSource source = event.getSource();
         Player victim = event.getEntity() instanceof Player p ? p : null;
-        Player attacker = (source != null && source.getEntity() instanceof Player a) ? a : null;
+        // 攻击者放宽为 LivingEntity：玩家与女仆（车万女仆，软前置）都要走终界之星加成
+        LivingEntity attacker = (source != null && source.getEntity() instanceof LivingEntity a) ? a : null;
 
         // --------------------------------------------------------------
         // 方向 A：玩家受伤（限伤 + 伤害减免）
@@ -349,9 +437,13 @@ public class EndStarHandler {
         }
 
         // --------------------------------------------------------------
-        // 方向 B：玩家造成伤害（经验等级伤害加成）
+        // 方向 B：持有终界之星者造成伤害（经验加伤）
+        //   - 玩家：按经验等级，每 10 级 1 档，每档 +100%
+        //   - 女仆（车万女仆，软前置）：女仆没有「经验等级」，平替为「女仆自身经验」
+        //     （NBT MaidExperience，拾取经验球累加，死亡按此掉落），
+        //     每 endStarMaidXpPerTier 点经验 1 档，每档同样 +100%
         // 【关键修复】排除 attacker == victim 的情况
-        //   避免玩家自伤（摔落/药水等 source 实体为玩家自己）时加成覆盖减伤
+        //   避免自伤（摔落/药水等 source 实体为自己）时加成覆盖减伤
         // --------------------------------------------------------------
         if (attacker == null
                 || victim == attacker  // 排除自伤
@@ -360,11 +452,24 @@ public class EndStarHandler {
             return;
         }
 
-        // 计算经验等级加成百分比：
-        //   每 10 级提供 100% 加成（floor(level/10) * 100）
-        //   例：level=0~9 → 0%, level=10~19 → 100%, level=100+ → 1000%
-        //   bonusTier 即“加成档位”：level/10 的整数部分（10级=1档，20级=2档…）
-        int bonusTier = Math.floorDiv(attacker.experienceLevel, 10);
+        // 计算加成档位：
+        //   玩家：bonusTier = floor(experienceLevel / 10)，level=0~9 → 0 档, 10~19 → 1 档…
+        //   女仆：bonusTier = floor(女仆经验 / endStarMaidXpPerTier)
+        //         两者量纲不同（等级 vs 原始经验点），故除数分开配置，不可共用
+        int bonusTier;
+        if (attacker instanceof Player playerAttacker) {
+            bonusTier = Math.floorDiv(playerAttacker.experienceLevel, 10);
+        } else if (TLMSafe.isTouhouMaid(attacker)) {
+            int maidExperience = TLMSafe.getMaidExperience(attacker);
+            if (maidExperience < 0) {
+                return;  // 读不到女仆经验（未安装车万女仆 / 反射失败）：不加成
+            }
+            int xpPerTier = Math.max(1, Config.endStarMaidXpPerTier);
+            bonusTier = Math.floorDiv(maidExperience, xpPerTier);
+        } else {
+            return;  // 既不是玩家也不是女仆：不处理
+        }
+
         int bonusPercent = bonusTier * 100;
 
         // 钳制上限：从配置读取（默认 1000%）
@@ -382,45 +487,97 @@ public class EndStarHandler {
         float multiplier = 1.0f + (bonusPercent / 100.0f);
         float oldAmount = event.getAmount();
 
-        LOGGER.debug("[终界之星] 伤害加成触发：玩家={}, 经验等级={}, 加成={}%, 原伤害={}, 最终伤害={}",
-                attacker.getName().getString(), attacker.experienceLevel,
+        LOGGER.debug("[终界之星] 伤害加成触发：攻击者={}, 加成档位={}, 加成={}%, 原伤害={}, 最终伤害={}",
+                attacker.getName().getString(), bonusTier,
                 bonusPercent, oldAmount, oldAmount * multiplier);
 
-        // 向玩家屏幕显示伤害加成信息（ActionBar）
-        // 【修复】原来显示的是原始经验等级 (Lv.%d)，当等级恰好停在 10 时
-        //        看起来像“卡在 Lv.10”，且等级数值并不等于加成强度。
-        //        改为显示“加成档位”（每 10 级提升 1 档），直观反映加成进度。
+        // 显示伤害加成信息：
+        //   玩家 → ActionBar 直接提示本人
+        //   女仆 → 女仆没有客户端，displayClientMessage 无效，改为提示其主人
+        // 【历史修复】原来显示的是原始经验等级 (Lv.%d)，当等级恰好停在 10 时
+        //            看起来像"卡在 Lv.10"，且等级数值并不等于加成强度。
+        //            改为显示"加成档位"（每 10 级提升 1 档），直观反映加成进度。
         String bonusDisplay = String.format("§6[终界加成] §b+%d%% 伤害 §7[第 %d 档]", bonusPercent, bonusTier);
-        attacker.displayClientMessage(Component.literal(bonusDisplay), true);
+        if (attacker instanceof Player playerAttacker) {
+            playerAttacker.displayClientMessage(Component.literal(bonusDisplay), true);
+        } else {
+            notifyMaidOwner(attacker, bonusDisplay);
+        }
 
         event.setAmount(oldAmount * multiplier);
     }
 
     // ========================================================================
-    // 工具方法：检查玩家是否在手持（主手或副手）终界之星，或穿戴嵌入终界之星的盔甲
+    // 工具方法：把加成提示发给女仆的主人（女仆无客户端，无法直接显示 ActionBar）
     // ========================================================================
-    private static boolean isHoldingEndStar(Player player) {
-        ItemStack mainHand = player.getMainHandItem();
-        ItemStack offHand = player.getOffhandItem();
-        
-        // 检查手持终界之星
-        if (mainHand.is(ModItems.END_STAR.get()) || offHand.is(ModItems.END_STAR.get())) {
-            return true;
+    private static void notifyMaidOwner(LivingEntity maid, String message) {
+        UUID ownerId = TLMSafe.getMaidOwnerUUID(maid);
+        if (ownerId == null) return;
+
+        var server = maid.getServer();
+        if (server == null) return;
+
+        ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);
+        if (owner == null) return;
+
+        owner.displayClientMessage(Component.literal(message), true);
+    }
+
+    // ========================================================================
+    // 工具方法：检查玩家 / 女仆是否在手持（主手或副手）终界之星，
+    //           或穿戴嵌入终界之星的盔甲
+    //   女仆分支走 TLMSafe 反射收集装备（主手/副手/四件护甲），保持软前置
+    // ========================================================================
+    private static boolean isHoldingEndStar(LivingEntity entity) {
+        if (entity instanceof Player player) {
+            ItemStack mainHand = player.getMainHandItem();
+            ItemStack offHand = player.getOffhandItem();
+
+            // 检查手持终界之星
+            if (mainHand.is(ModItems.END_STAR.get()) || offHand.is(ModItems.END_STAR.get())) {
+                return true;
+            }
+
+            // 检查穿戴的盔甲中是否有嵌入的终界之星
+            for (ItemStack armorPiece : player.getArmorSlots()) {
+                if (hasEmbeddedEndStar(armorPiece)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
-        
-        // 检查穿戴的盔甲中是否有嵌入的终界之星
-        for (ItemStack armorPiece : player.getArmorSlots()) {
-            if (!armorPiece.isEmpty() 
-                    && armorPiece.hasTag() 
-                    && armorPiece.getTag().contains("EmbeddedStar")) {
-                String embeddedStar = armorPiece.getTag().getString("EmbeddedStar");
-                if ("end_star".equals(embeddedStar)) {
+
+        // 女仆（车万女仆，软前置）：未安装时 isTouhouMaid 恒为 false，无额外开销
+        if (TLMSafe.isTouhouMaid(entity)) {
+            for (ItemStack stack : TLMSafe.collectMaidEquipments(entity)) {
+                if (stack.isEmpty()) continue;
+                if (stack.is(ModItems.END_STAR.get()) || hasEmbeddedEndStar(stack)) {
                     return true;
                 }
             }
         }
-        
+
         return false;
+    }
+
+    // 判断该物品是否为「嵌入了终界之星」的装备（NBT: EmbeddedStar = "end_star"）
+    private static boolean hasEmbeddedEndStar(ItemStack stack) {
+        if (stack.isEmpty() || !stack.hasTag()) return false;
+        return stack.getTag().contains("EmbeddedStar")
+                && "end_star".equals(stack.getTag().getString("EmbeddedStar"));
+    }
+
+    // ========================================================================
+    // 工具方法：判断是否为终界之星需要"强制中立"的末影系敌对生物
+    //   末影人 / 末影螨 / 潜影贝：通过清除攻击目标 + 禁止锁定目标实现中立
+    //   末影龙：不使用 Mob.target，只能通过拦截其伤害实现绝对中立
+    // ========================================================================
+    private static boolean isEndNeutralMob(Entity entity) {
+        return entity instanceof EnderMan
+                || entity instanceof Endermite
+                || entity instanceof Shulker
+                || entity instanceof EnderDragon;
     }
 
     // ========================================================================

@@ -52,10 +52,10 @@ import com.github.emberstar1201.enchantmentex.enchantment.YunLaiArcheryHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHandler;
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
-import com.github.emberstar1201.enchantmentex.item.handler.DawnStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.EnhancementScrollHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.EternalTotemHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.LifeStarHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.MaidStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.OceanStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.ProtectedItemHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.StarEmbedHandler;
@@ -192,12 +192,12 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(ProtectedItemHandler.class);
         MinecraftForge.EVENT_BUS.register(StarEmbedHandler.class);
         MinecraftForge.EVENT_BUS.register(LifeStarHandler.class);
+        // 星星×车万女仆：女仆手持/佩戴星星时的全部效果（未装车万女仆时全部空转）
+        MinecraftForge.EVENT_BUS.register(MaidStarHandler.class);
         // 虚空之星：免疫摔落/虚空伤害 + 坠入虚空传送回出生点
         MinecraftForge.EVENT_BUS.register(VoidStarHandler.class);
         // 星辉之星：夜间移速加成 + 夜视 + 经验掉落翻倍
         MinecraftForge.EVENT_BUS.register(StarlightStarHandler.class);
-        // 晨曦之星：晨光积累 + 满层「晨曦」爆发 + 破晓获取仪式
-        MinecraftForge.EVENT_BUS.register(DawnStarHandler.class);
         // 永恒图腾：致命伤抵挡 + 回满血 + 消耗耐久
         MinecraftForge.EVENT_BUS.register(EternalTotemHandler.class);
         MinecraftForge.EVENT_BUS.register(EnhancementScrollHandler.class);

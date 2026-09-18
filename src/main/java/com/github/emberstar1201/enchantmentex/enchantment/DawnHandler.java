@@ -184,8 +184,10 @@ public class DawnHandler {
 
     // ========================================================================
     // Boss 判定逻辑
+    // 包级可见：女仆兼容层（TouhouMaidEnchantmentCompat）需要复用同一套 Boss 倍率，
+    // 避免"女仆打死凋灵只涨 1 点成长"与玩家版产生差异。
     // ========================================================================
-    private static boolean isBoss(LivingEntity entity) {
+    static boolean isBoss(LivingEntity entity) {
         // 末影龙 / 凋灵 / 监守者
         if (entity instanceof EnderDragon
                 || entity instanceof WitherBoss
@@ -200,7 +202,8 @@ public class DawnHandler {
     // 处决粒子特效：目标被处决时播放（金色爆裂 + 附魔符文柱 + 火焰迸发）
     // 视觉上比普通暴击更醒目，用来反馈"处决成功"
     // ========================================================================
-    private static void spawnExecuteParticles(LivingEntity target) {
+    // 包级可见：女仆兼容层（TouhouMaidEnchantmentCompat）复用同一套处决特效
+    static void spawnExecuteParticles(LivingEntity target) {
         if (!(target.level() instanceof ServerLevel serverLevel)) return;
 
         double x = target.getX();
@@ -402,27 +405,30 @@ public class DawnHandler {
     // ========================================================================
     // 刺破长夜 · 激活入口：设置状态、消耗连击、启动共享冷却
     //   type: 1=连击爆发（伤害+移速+攻距） 2=低血狂暴（伤害+吸血）
+    //
+    // 参数类型是 LivingEntity（而非 Player）：女仆兼容层需要复用同一套
+    // 状态机与视觉反馈，女仆同样是 LivingEntity。
     // ========================================================================
-    private static void activatePierce(Player player, int type) {
-        if (!(player.level() instanceof ServerLevel serverLevel)) return;
+    static void activatePierce(LivingEntity entity, int type) {
+        if (!(entity.level() instanceof ServerLevel serverLevel)) return;
 
         // 设置状态
-        DawnData.setActiveTicks(player, (int) (Config.dawnPierceDurationSeconds * 20));
-        DawnData.setActiveType(player, type);
-        DawnData.setCooldownTicks(player, (int) (Config.dawnPierceCooldownSeconds * 20));
-        DawnData.setCombo(player, 0); // 消耗连击
+        DawnData.setActiveTicks(entity, (int) (Config.dawnPierceDurationSeconds * 20));
+        DawnData.setActiveType(entity, type);
+        DawnData.setCooldownTicks(entity, (int) (Config.dawnPierceCooldownSeconds * 20));
+        DawnData.setCombo(entity, 0); // 消耗连击
 
         // 激活瞬间的强反馈：音效 + 粒子
-        double x = player.getX();
-        double y = player.getY() + player.getBbHeight() / 2;
-        double z = player.getZ();
+        double x = entity.getX();
+        double y = entity.getY() + entity.getBbHeight() / 2;
+        double z = entity.getZ();
         if (type == 1) {
             // 连击爆发：金色符文爆开 + 响亮爆发音（LIGHTNING_BOLT_IMPACT 已验证为 SoundEvent）
             serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT, x, y, z,
                     40, 0.6, 1.0, 0.6, 0.5);
             serverLevel.sendParticles(ParticleTypes.CRIT, x, y, z,
                     30, 0.8, 0.2, 0.8, 0.1);
-            serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
+            serverLevel.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
                     SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 2.0f, 1.2f);
         } else {
             // 低血狂暴：灵魂火蓝色爆发 + 低沉金属重击（IRON_GOLEM_ATTACK 已验证为 SoundEvent）
@@ -430,15 +436,15 @@ public class DawnHandler {
                     40, 0.6, 1.0, 0.6, 0.05);
             serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT, x, y, z,
                     20, 0.5, 0.8, 0.5, 0.4);
-            serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
+            serverLevel.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
                     SoundEvents.IRON_GOLEM_ATTACK, SoundSource.PLAYERS, 1.0f, 0.8f);
         }
     }
 
     /** 连击爆发型：应用移速 + 攻距 modifier */
-    private static void applyPierceModifiers(Player player) {
+    static void applyPierceModifiers(LivingEntity entity) {
         // 移动速度 +10%（固定比例加成）
-        AttributeInstance speedAttr = player.getAttribute(Attributes.MOVEMENT_SPEED);
+        AttributeInstance speedAttr = entity.getAttribute(Attributes.MOVEMENT_SPEED);
         if (speedAttr != null) {
             speedAttr.removeModifier(PIERCE_SPEED_UUID);
             AttributeModifier modifier = new AttributeModifier(
@@ -450,7 +456,7 @@ public class DawnHandler {
             speedAttr.addTransientModifier(modifier);
         }
         // 攻击距离 +2 格
-        AttributeInstance reachAttr = player.getAttribute(ForgeMod.ENTITY_REACH.get());
+        AttributeInstance reachAttr = entity.getAttribute(ForgeMod.ENTITY_REACH.get());
         if (reachAttr != null) {
             reachAttr.removeModifier(PIERCE_REACH_UUID);
             AttributeModifier modifier = new AttributeModifier(
@@ -464,23 +470,23 @@ public class DawnHandler {
     }
 
     /** 移除刺破长夜的移速/攻距 modifier */
-    private static void removePierceModifiers(Player player) {
-        AttributeInstance speedAttr = player.getAttribute(Attributes.MOVEMENT_SPEED);
+    static void removePierceModifiers(LivingEntity entity) {
+        AttributeInstance speedAttr = entity.getAttribute(Attributes.MOVEMENT_SPEED);
         if (speedAttr != null) {
             speedAttr.removeModifier(PIERCE_SPEED_UUID);
         }
-        AttributeInstance reachAttr = player.getAttribute(ForgeMod.ENTITY_REACH.get());
+        AttributeInstance reachAttr = entity.getAttribute(ForgeMod.ENTITY_REACH.get());
         if (reachAttr != null) {
             reachAttr.removeModifier(PIERCE_REACH_UUID);
         }
     }
 
     /** 激活期间的持续粒子：脚下淡淡的光雾提示状态 */
-    private static void spawnActiveParticles(Player player, int type) {
-        if (!(player.level() instanceof ServerLevel serverLevel)) return;
-        double x = player.getX();
-        double y = player.getY() + 0.2;
-        double z = player.getZ();
+    static void spawnActiveParticles(LivingEntity entity, int type) {
+        if (!(entity.level() instanceof ServerLevel serverLevel)) return;
+        double x = entity.getX();
+        double y = entity.getY() + 0.2;
+        double z = entity.getZ();
         if (type == 1) {
             // 连击爆发：稀疏散落的金色粒子
             serverLevel.sendParticles(ParticleTypes.CRIT, x, y, z,

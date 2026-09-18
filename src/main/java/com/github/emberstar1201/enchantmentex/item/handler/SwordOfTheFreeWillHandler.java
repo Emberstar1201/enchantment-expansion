@@ -5,12 +5,14 @@ import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.entity.CustomLightningEntity;
 import com.github.emberstar1201.enchantmentex.item.SwordOfTheFreeWill;
+import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -38,6 +40,7 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -93,43 +96,62 @@ public class SwordOfTheFreeWillHandler {
     private static final long BEAM_DURATION_TICKS = 100;
 
     // ============================================================
-    // 工具方法：检查背包是否有人权剑
+    // 工具方法：检查背包/装备栏是否有人权剑
+    //   玩家：主手 / 副手 / 背包全部槽位
+    //   女仆：主手 / 副手 / 四个护甲槽（女仆没有玩家式背包）
     // ============================================================
-    private static boolean hasSwordInInventory(Player player) {
-        if (player.getMainHandItem().getItem() instanceof SwordOfTheFreeWill) return true;
-        if (player.getOffhandItem().getItem() instanceof SwordOfTheFreeWill) return true;
-        for (ItemStack stack : player.getInventory().items) {
+    private static boolean hasSwordInInventory(LivingEntity entity) {
+        if (entity.getMainHandItem().getItem() instanceof SwordOfTheFreeWill) return true;
+        if (entity.getOffhandItem().getItem() instanceof SwordOfTheFreeWill) return true;
+
+        if (entity instanceof Player player) {
+            for (ItemStack stack : player.getInventory().items) {
+                if (stack.getItem() instanceof SwordOfTheFreeWill) return true;
+            }
+            return false;
+        }
+
+        for (ItemStack stack : TLMSafe.collectMaidEquipments(entity)) {
             if (stack.getItem() instanceof SwordOfTheFreeWill) return true;
         }
         return false;
     }
 
     // ============================================================
+    // 工具方法：判断是否为「能使用人的意志」的实体
+    //   玩家（右键触发）与车万女仆（持剑自动触发）。
+    //   两者共用同一套 PersistentData 键，但各写各的实体，互不干扰。
+    // ============================================================
+    private static boolean isWillUser(LivingEntity entity) {
+        return entity instanceof Player || TLMSafe.isTouhouMaid(entity);
+    }
+
+    // ============================================================
     // 工具方法：检查增益是否激活
     // ============================================================
-    private static boolean hasActiveBuff(Player player) {
-        return player.getPersistentData().getLong(KEY_BUFF_END) > player.level().getGameTime();
+    private static boolean hasActiveBuff(LivingEntity entity) {
+        return entity.getPersistentData().getLong(KEY_BUFF_END) > entity.level().getGameTime();
     }
 
     // ============================================================
     // 工具方法：检查冷却是否激活
     // ============================================================
-    private static boolean isOnCooldown(Player player) {
-        return player.getPersistentData().getLong(KEY_COOLDOWN_END) > player.level().getGameTime();
+    private static boolean isOnCooldown(LivingEntity entity) {
+        return entity.getPersistentData().getLong(KEY_COOLDOWN_END) > entity.level().getGameTime();
     }
 
     // ============================================================
     // 工具方法：剩余冷却秒数
     // ============================================================
-    private static int getRemainingCooldownSeconds(Player player) {
-        long remaining = player.getPersistentData().getLong(KEY_COOLDOWN_END)
-                - player.level().getGameTime();
+    private static int getRemainingCooldownSeconds(LivingEntity entity) {
+        long remaining = entity.getPersistentData().getLong(KEY_COOLDOWN_END)
+                - entity.level().getGameTime();
         return Math.max(0, (int) (remaining / 20));
     }
 
     // ============================================================
     // 工具方法：创建带内置附魔的人权剑
-    //   锋利 X + 亡灵杀手 X + 击退 II + 拂晓 I + 星火不灭 I
+    //   锋利 XII + 亡灵杀手 XII + 抢夺 XII + 击退 II + 拂晓 I + 星火不灭 I
     // ============================================================
     private static ItemStack createEnchantedSword() {
         ItemStack sword = new ItemStack(ModItems.SWORD_OF_THE_FREE_WILL.get());
@@ -139,13 +161,18 @@ public class SwordOfTheFreeWillHandler {
 
         CompoundTag sharpness = new CompoundTag();
         sharpness.putString("id", "minecraft:sharpness");
-        sharpness.putShort("lvl", (short) 10);
+        sharpness.putShort("lvl", (short) 12);
         enchantments.add(sharpness);
 
         CompoundTag smite = new CompoundTag();
         smite.putString("id", "minecraft:smite");
-        smite.putShort("lvl", (short) 10);
+        smite.putShort("lvl", (short) 12);
         enchantments.add(smite);
+
+        CompoundTag looting = new CompoundTag();
+        looting.putString("id", "minecraft:looting");
+        looting.putShort("lvl", (short) 12);
+        enchantments.add(looting);
 
         CompoundTag knockback = new CompoundTag();
         knockback.putString("id", "minecraft:knockback");
@@ -180,9 +207,11 @@ public class SwordOfTheFreeWillHandler {
 
     // ============================================================
     // 工具方法：护甲修饰符管理
+    //   玩家与女仆共用（女仆同样拥有 ARMOR 属性）。
+    //   每个实体的属性实例相互独立，同一 UUID 不会互相干扰。
     // ============================================================
-    private static void manageArmorModifier(Player player, boolean shouldHave) {
-        AttributeInstance armorAttr = player.getAttribute(Attributes.ARMOR);
+    private static void manageArmorModifier(LivingEntity entity, boolean shouldHave) {
+        AttributeInstance armorAttr = entity.getAttribute(Attributes.ARMOR);
         if (armorAttr == null) return;
 
         AttributeModifier existing = armorAttr.getModifier(ARMOR_MODIFIER_UUID);
@@ -270,33 +299,7 @@ public class SwordOfTheFreeWillHandler {
             return;
         }
 
-        long gameTime = player.level().getGameTime();
-
-        // 消耗生命值（> 50% 时才消耗）
-        float maxHealth = player.getMaxHealth();
-        float currentHealth = player.getHealth();
-        if (currentHealth > maxHealth * Config.swordHealthThreshold) {
-            float healthCost = currentHealth * (float) Config.swordHealthCostPercent;
-            player.setHealth(currentHealth - healthCost);
-        }
-
-        // 设置增益（默认 600 秒）
-        player.getPersistentData().putLong(KEY_BUFF_END,
-                gameTime + (long) (Config.swordBuffDuration * 20));
-        // 设置冷却（默认 900 秒）
-        player.getPersistentData().putLong(KEY_COOLDOWN_END,
-                gameTime + (long) (Config.swordCooldown * 20));
-        // 重置通知标记
-        player.getPersistentData().putBoolean(KEY_NOTIFIED, false);
-
-        // 粒子 + 音效
-        if (player instanceof ServerPlayer serverPlayer) {
-            ServerLevel serverLevel = serverPlayer.serverLevel();
-            spawnGoldenLightningParticles(serverLevel,
-                    player.getX(), player.getY(), player.getZ());
-            serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 2.0F, 0.8F);
-        }
+        activateWill(player);
 
         player.sendSystemMessage(Component.translatable(
                 "message.enchantment_expansion.sotfw.activated"
@@ -306,15 +309,56 @@ public class SwordOfTheFreeWillHandler {
     }
 
     // ============================================================
+    // 工具方法：执行「人的意志」激活流程
+    //   玩家（右键）与女仆（自动）共用：
+    //     消耗生命值 → 写入增益结束时间 / 冷却结束时间 → 粒子 + 音效
+    //   调用方需自行保证目标不在冷却中。
+    // ============================================================
+    private static void activateWill(LivingEntity entity) {
+        long gameTime = entity.level().getGameTime();
+
+        // 消耗生命值：比例高于阈值时才消耗，且绝不扣到阈值以下
+        //   只判断「当前生命 > 阈值」是不够的：若当前生命刚刚高于阈值（如 46%），
+        //   再扣 25% 会直接跌到 34%，既越过阈值、也可能一次把女仆扣死。
+        //   故把扣除结果钳制到阈值，作为硬下限——血量（比例）跌到阈值后不再扣。
+        float maxHealth = entity.getMaxHealth();
+        float currentHealth = entity.getHealth();
+        float healthFloor = maxHealth * (float) Config.swordHealthThreshold;
+        if (currentHealth > healthFloor) {
+            float healthCost = currentHealth * (float) Config.swordHealthCostPercent;
+            entity.setHealth(Math.max(healthFloor, currentHealth - healthCost));
+        }
+
+        // 设置增益（默认 600 秒）
+        entity.getPersistentData().putLong(KEY_BUFF_END,
+                gameTime + (long) (Config.swordBuffDuration * 20));
+        // 设置冷却（默认 900 秒）
+        entity.getPersistentData().putLong(KEY_COOLDOWN_END,
+                gameTime + (long) (Config.swordCooldown * 20));
+        // 重置通知标记
+        entity.getPersistentData().putBoolean(KEY_NOTIFIED, false);
+
+        // 粒子 + 音效
+        if (entity.level() instanceof ServerLevel serverLevel) {
+            spawnGoldenLightningParticles(serverLevel,
+                    entity.getX(), entity.getY(), entity.getZ());
+            serverLevel.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                    SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 2.0F, 0.8F);
+        }
+    }
+
+    // ============================================================
     // 事件3：攻击/受击事件（LivingHurtEvent）
     // ============================================================
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
         if (event.getEntity().level().isClientSide()) return;
 
-        // ---- 玩家作为攻击者 ----
-        if (event.getSource().getEntity() instanceof Player attacker) {
+        // ---- 攻击者（玩家 / 女仆）：人权剑主动技能加成 ----
+        if (event.getSource().getEntity() instanceof LivingEntity attacker
+                && isWillUser(attacker)) {
             ItemStack weapon = attacker.getMainHandItem();
+
             if (weapon.getItem() instanceof SwordOfTheFreeWill) {
                 if (hasActiveBuff(attacker)) {
                     // 伤害提升
@@ -342,12 +386,11 @@ public class SwordOfTheFreeWillHandler {
             }
         }
 
-        // ---- 玩家作为受害者 ----
-        if (event.getEntity() instanceof Player player) {
-            if (hasSwordInInventory(player)) {
-                event.setAmount(event.getAmount()
-                        * (1.0f - (float) Config.swordPassiveDamageReduction));
-            }
+        // ---- 受害者（玩家 / 女仆）：背包/装备栏持剑被动减伤 ----
+        LivingEntity victim = event.getEntity();
+        if (isWillUser(victim) && hasSwordInInventory(victim)) {
+            event.setAmount(event.getAmount()
+                    * (1.0f - (float) Config.swordPassiveDamageReduction));
         }
     }
 
@@ -376,6 +419,82 @@ public class SwordOfTheFreeWillHandler {
             player.getPersistentData().putBoolean(KEY_NOTIFIED, true);
             LOGGER.debug("[SOTFW] {} 的「人的意志」冷却已结束", player.getName().getString());
         }
+    }
+
+    // ============================================================
+    // 事件4.5：女仆 Tick（护甲管理 + 自动激活「人的意志」+ 冷却通知）
+    //
+    // 女仆没有 PlayerTickEvent，也没有右键入口，因此在 ServerTick 中
+    // 遍历所有车万女仆实体：
+    //   - 装备栏持剑      → 维护护甲修饰符（与玩家版一致）
+    //   - 主手持剑 + 增益已结束 + 冷却已结束 → 自动激活
+    //     激活时同时写入增益结束时间（600 秒）与冷却结束时间（900 秒），
+    //     即冷却与持续时间并行计时；增益先结束，冷却结束时条件再次成立，
+    //     于是「持续时间结束后，等冷却结束，15 分钟一到再次自动开启」。
+    //   - 冷却结束但未自动激活（主手已不是人权剑）→ 通知主人
+    //
+    // ★ 女仆枚举必须走 TLMSafe.collectMaids ★
+    //   此处原先是 getEntitiesOfClass(LivingEntity.class, 无穷大 AABB, ...)，
+    //   该写法因 Mth.floor(-Infinity) 整数溢出而恒返回空列表，
+    //   导致整段逻辑从未执行（日志表现为女仆 Buff=false 且 冷却=false）。
+    //   详见 TLMSafe#collectMaids 的说明。
+    // ============================================================
+    @SubscribeEvent
+    public static void onMaidServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return;
+
+        for (ServerLevel level : server.getAllLevels()) {
+            for (LivingEntity maid : TLMSafe.collectMaids(level)) {
+
+                boolean hasSword = hasSwordInInventory(maid);
+
+                // 护甲修饰符：装备栏（主手/副手/护甲）任一人权剑即生效
+                manageArmorModifier(maid, hasSword);
+
+                if (!hasSword) continue;
+
+                // 自动激活：只有主手持剑才值得开启（加成只在主手攻击时结算）
+                if (maid.getMainHandItem().getItem() instanceof SwordOfTheFreeWill
+                        && !hasActiveBuff(maid)
+                        && !isOnCooldown(maid)) {
+                    activateWill(maid);
+                    notifyMaidOwner(server, maid,
+                            "message.enchantment_expansion.sotfw.activated",
+                            ChatFormatting.GOLD, ChatFormatting.BOLD);
+                    LOGGER.debug("[SOTFW] 女仆 {} 自动激活了「人的意志」", maid.getName().getString());
+                    continue;
+                }
+
+                // 冷却结束通知（自动激活成功时已发过「已激活」，此处不重复）
+                long cooldownEnd = maid.getPersistentData().getLong(KEY_COOLDOWN_END);
+                if (cooldownEnd > 0
+                        && !maid.getPersistentData().getBoolean(KEY_NOTIFIED)
+                        && maid.level().getGameTime() >= cooldownEnd) {
+                    maid.getPersistentData().putBoolean(KEY_NOTIFIED, true);
+                    notifyMaidOwner(server, maid,
+                            "message.enchantment_expansion.sotfw.cooldown_done",
+                            ChatFormatting.GREEN, ChatFormatting.BOLD);
+                }
+            }
+        }
+    }
+
+    // ============================================================
+    // 工具方法：把提示发给女仆的主人（女仆自身没有聊天栏）
+    //   主人离线时静默跳过。
+    // ============================================================
+    private static void notifyMaidOwner(MinecraftServer server, LivingEntity maid,
+                                        String translationKey, ChatFormatting... styles) {
+        UUID ownerId = TLMSafe.getMaidOwnerUUID(maid);
+        if (ownerId == null) return;
+
+        ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);
+        if (owner == null) return;
+
+        owner.sendSystemMessage(Component.translatable(translationKey).withStyle(styles));
     }
 
     // ============================================================

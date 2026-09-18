@@ -27,7 +27,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -205,13 +204,8 @@ public class TouhouMaidEnchantmentCompat3 {
 
         for (var level : server.getAllLevels()) {
             if (level.isClientSide) continue;
-            for (LivingEntity maid : level.getEntitiesOfClass(
-                    LivingEntity.class,
-                    new AABB(
-                            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
-                            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY
-                    ),
-                    TLMSafe::isTouhouMaid)) {
+            // 女仆枚举统一走 TLMSafe.collectMaids（getEntitiesOfClass + 无穷大 AABB 恒为空）
+            for (LivingEntity maid : TLMSafe.collectMaids(level)) {
                 manageDifficultyGiftModifiers(maid);
             }
         }

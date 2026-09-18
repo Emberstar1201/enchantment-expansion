@@ -146,6 +146,10 @@
   "advancements.enchantment_expansion.face_the_deep.description": "深淵在你面前低頭。",
   "advancements.enchantment_expansion.journey.title": "踏上旅程！",
   "advancements.enchantment_expansion.journey.description": "§7旅程由此開始——願你與拂曉同行。",
+  "advancements.enchantment_expansion.life_star.title": "生命的意義？",
+  "advancements.enchantment_expansion.life_star.description": "獲得生命之星。",
+  "advancements.enchantment_expansion.void_star.title": "直面深淵的勇氣",
+  "advancements.enchantment_expansion.void_star.description": "獲得虛空之星。",
 
   "enchantment.enchantment_expansion.sandevistan": "斯安維斯坦",
   "enchantment.enchantment_expansion.sandevistan.desc": "胸甲植入體。按啟動鍵（預設 X）啟動子彈時間：範圍內世界減慢行動，自身移速與攻速提升；I 級附魔台可得，II/III 級僅遺跡寶箱",
@@ -170,5 +174,6 @@
   "enchantment_expansion.terminal_book.items_category": "物品",
   "enchantment_expansion.terminal_book.items_category_desc": "本分類收錄附魔拓展中的特殊物品及其取得方式與被動、主動效果。",
   "enchantment_expansion.terminal_book.enchantments_entry": "附魔效果總覽",
-  "enchantment_expansion.terminal_book.items_entry": "特殊物品總覽"
+  "enchantment_expansion.terminal_book.items_entry": "特殊物品總覽",
+  "enchantment.level.12": "XII"
 }

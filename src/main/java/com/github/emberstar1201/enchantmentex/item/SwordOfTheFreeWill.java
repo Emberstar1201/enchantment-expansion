@@ -22,13 +22,13 @@ import java.util.function.Consumer;
 // ========================================================================
 // 人权剑（Sword of the Free Will）物品类
 //
-// 【基础属性】
-//   攻击伤害：10（自定义 Tier 基础伤害 0 + 修饰符 10 = 总伤害加成 10）
-//   攻击速度：4.5（原版基础 4.0 + 0.5）
+// 【基础属性】（以下均为「未附魔」时的基础数值）
+//   基础伤害：24（武器本身提供 24 点，玩家基础攻击力 1 点另计，实际造成 25 点）
+//   攻击速度：6.5（原版基础 4.0 + 武器修饰符 2.5）
 //   耐久度：无限（canBeDepleted() 返回 false）
 //
 // 【内置附魔】（通过 inventoryTick 自动补充 NBT 数据）
-//   锋利 X、亡灵杀手 X、击退 II、拂晓 I、星火不灭 I
+//   锋利 XII、亡灵杀手 XII、抢夺 XII、击退 II、拂晓 I、星火不灭 I
 //
 // 【获取方式】
 //   击败凋灵掉落（由 SwordOfTheFreeWillHandler 实现）
@@ -54,7 +54,7 @@ public class SwordOfTheFreeWill extends SwordItem {
     };
 
     public SwordOfTheFreeWill() {
-        super(FREE_WILL_TIER, 10, 0.5f,
+        super(FREE_WILL_TIER, 24, 2.5f,
                 new Item.Properties()
                         .rarity(Rarity.EPIC)
                         .stacksTo(1)
@@ -95,17 +95,23 @@ public class SwordOfTheFreeWill extends SwordItem {
         // ================================================================
         ListTag enchList = new ListTag();
 
-        // 锋利 X
+        // 锋利 XII
         CompoundTag sharpness = new CompoundTag();
         sharpness.putString("id", "minecraft:sharpness");
-        sharpness.putShort("lvl", (short) 10);
+        sharpness.putShort("lvl", (short) 12);
         enchList.add(sharpness);
 
-        // 亡灵杀手 X
+        // 亡灵杀手 XII
         CompoundTag smite = new CompoundTag();
         smite.putString("id", "minecraft:smite");
-        smite.putShort("lvl", (short) 10);
+        smite.putShort("lvl", (short) 12);
         enchList.add(smite);
+
+        // 抢夺 XII
+        CompoundTag looting = new CompoundTag();
+        looting.putString("id", "minecraft:looting");
+        looting.putShort("lvl", (short) 12);
+        enchList.add(looting);
 
         // 击退 II
         CompoundTag knockback = new CompoundTag();
@@ -140,8 +146,9 @@ public class SwordOfTheFreeWill extends SwordItem {
     @Override
     public Map<Enchantment, Integer> getAllEnchantments(ItemStack stack) {
         Map<Enchantment, Integer> map = super.getAllEnchantments(stack);
-        map.put(Enchantments.SHARPNESS, 10);
-        map.put(Enchantments.SMITE, 10);
+        map.put(Enchantments.SHARPNESS, 12);
+        map.put(Enchantments.SMITE, 12);
+        map.put(Enchantments.MOB_LOOTING, 12);
         map.put(Enchantments.KNOCKBACK, 2);
         map.put(ModEnchantments.DAWN.get(), 1);
         map.put(ModEnchantments.ETERNAL_SPARK.get(), 1);

@@ -1,5 +1,6 @@
 package com.github.emberstar1201.enchantmentex.util;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -21,8 +22,11 @@ import java.util.UUID;
 //
 // 本工具目前提供：
 //   - isTouhouMaid(Entity)         —— 通过命名空间识别女仆实体
+//   - collectMaids(ServerLevel)    —— 枚举维度内全部已加载女仆（唯一正确的全维度枚举方式）
 //   - getMaidOwnerUUID(Entity)     —— 获取女仆主人的 UUID（可用于定位主人）
 //   - collectMaidEquipments(Entity)—— 收集女仆身上的主手/副手/装甲槽 ItemStack
+//   - collectMaidBaubles(Entity)   —— 收集女仆"饰品栏"（MaidBaubleInventory）物品
+//   - getMaidExperience(Entity)    —— 读取女仆「自身经验」（终界之星经验加伤的平替数据源）
 //
 // 如需读取女仆自定义背包（"护符栏"等），可在此类中继续追加反射方法。
 // ========================================================================
@@ -39,6 +43,17 @@ public final class TLMSafe {
     private static Method MAID_GET_INVENTORY = null;
     private static Method INVENTORY_GET_STACK = null;
     private static boolean MAID_INV_RESOLVED = false;
+
+    // 女仆「自身经验」反射缓存
+    private static Class<?> MAID_EXP_CLASS = null;
+    private static Method MAID_GET_EXP = null;
+    private static boolean MAID_EXP_RESOLVED = false;
+
+    // 女仆饰品栏（BaubleItemHandler）反射缓存
+    private static Method MAID_GET_BAUBLE = null;
+    private static Method BAUBLE_GET_SLOTS = null;
+    private static Method BAUBLE_GET_STACK = null;
+    private static boolean MAID_BAUBLE_RESOLVED = false;
 
     // 女仆主手 / 副手 / 四个装备槽 在 MaidInventory 中的槽位索引范围
     // 实际以反射的 getStack(slot) 读取；若超范围则跳过，不抛错。
@@ -57,6 +72,47 @@ public final class TLMSafe {
         if (entity == null) return false;
         var key = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
         return key != null && NAMESPACE_TLM.equals(key.getNamespace());
+    }
+
+    /**
+     * 收集某个维度中所有已加载的女仆实体。
+     *
+     * ★ 为什么不写成 level.getEntitiesOfClass(LivingEntity.class, 无穷大 AABB, ...) ★
+     *
+     * 形如 new AABB(-Infinity, -Infinity, -Infinity, +Infinity, +Infinity, +Infinity)
+     * 的包围盒看似能「覆盖整个维度」，实际恒为空结果。原因在 1.20.1 的 Mth#floor(double)：
+     *
+     *     public static int floor(double value) {
+     *         int i = (int) value;
+     *         return value < (double) i ? i - 1 : i;
+     *     }
+     *
+     * (int) Double.NEGATIVE_INFINITY == Integer.MIN_VALUE，
+     * 且 -Infinity < (double) Integer.MIN_VALUE 成立，于是返回 i - 1，
+     * 即 Integer.MIN_VALUE - 1 —— 整数溢出，结果为 Integer.MAX_VALUE。
+     * Double.POSITIVE_INFINITY 同样得到 Integer.MAX_VALUE。
+     * 两者换算成 section 坐标都是 134217727，于是查询落在同一个「不存在」的
+     * 区块段上：不报错、不卡顿，只是永远扫不到任何实体。
+     *
+     * 反过来，改用 ±3.0E7 这类「有限但巨大」的 AABB 同样不可取：
+     * EntitySectionStorage 内部要按 section 逐列循环，单次调用就是约 375 万次迭代，
+     * 会把服务端 tick 击穿（参见 ProtectedItemHandler 中记录的历史教训）。
+     *
+     * 正确做法即本方法：直接遍历 ServerLevel#getAllEntities()，再用 isTouhouMaid 过滤。
+     * 由于先把结果收集进 List，调用方在循环中修改实体（回血、加 modifier 等）
+     * 不会造成迭代期间的并发修改。未安装车万女仆时列表恒为空，等同空转。
+     */
+    public static List<LivingEntity> collectMaids(ServerLevel level) {
+        if (level == null) return Collections.emptyList();
+
+        List<LivingEntity> maids = new ArrayList<>();
+        for (Entity entity : level.getAllEntities()) {
+            // 先做 instanceof 过滤，可省下大量非生物实体的注册名查询
+            if (entity instanceof LivingEntity living && isTouhouMaid(living)) {
+                maids.add(living);
+            }
+        }
+        return maids;
     }
 
     /**
@@ -137,6 +193,76 @@ public final class TLMSafe {
         return result;
     }
 
+    /**
+     * 收集女仆「饰品栏」内的全部物品。
+     *
+     * 【为什么不用字段反射】
+     *   车万女仆 1.5.2 的 BaubleItemHandler 内部字段 baubles 并不是 List<ItemStack>，
+     *   而是 Int2ObjectSortedMap<IMaidBauble>（饰品实例的缓存）。
+     *   真正存放 ItemStack 的是它的父类 ItemStackHandler 的 itemStacks。
+     *   因此正确做法是走公开 API：EntityMaid#getMaidBauble() → ItemStackHandler，
+     *   再用 getSlots() / getStackInSlot(i) 读取。
+     *
+     * 未安装车万女仆、或反射签名变化时返回空列表，不会抛异常。
+     */
+    public static List<ItemStack> collectMaidBaubles(LivingEntity maid) {
+        if (maid == null) return Collections.emptyList();
+        if (!isTouhouMaid(maid)) return Collections.emptyList();
+        if (!MAID_BAUBLE_RESOLVED) resolveMaidBaubleReflect(maid);
+        if (MAID_GET_BAUBLE == null || BAUBLE_GET_SLOTS == null || BAUBLE_GET_STACK == null) {
+            return Collections.emptyList();
+        }
+
+        try {
+            Object handler = MAID_GET_BAUBLE.invoke(maid);
+            if (handler == null) return Collections.emptyList();
+
+            int slots = (Integer) BAUBLE_GET_SLOTS.invoke(handler);
+            List<ItemStack> result = new ArrayList<>(slots);
+            for (int i = 0; i < slots; i++) {
+                Object stack = BAUBLE_GET_STACK.invoke(handler, i);
+                result.add(stack instanceof ItemStack itemStack ? itemStack : ItemStack.EMPTY);
+            }
+            return result;
+        } catch (Throwable t) {
+            // 反射失败：退回"没有饰品"的安全结论
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 读取女仆「自身经验」。
+     *
+     * 【为什么用它】
+     *   终界之星的玩家版加成依赖 Player#experienceLevel，女仆没有「经验等级」。
+     *   但车万女仆自带独立经验系统：EntityMaid 用 NBT 标签 MaidExperience 记录经验，
+     *   拾取经验球（pickupXPOrb）时累加，死亡时按此值掉落经验。
+     *   因此这是语义上最贴近「经验加伤」的平替数据源。
+     *
+     * 【量纲提醒】
+     *   该值是「原始经验点」（一个经验球就是若干点，甚至上百点），
+     *   而玩家 experienceLevel 是「等级」。两者不能共用同一个除数，
+     *   调用方需按自己的档位除数（如 Config#endStarMaidXpPerTier）换算。
+     *
+     * 未安装车万女仆、实体不是女仆、或反射失败时返回 -1，调用方据此跳过加成。
+     */
+    public static int getMaidExperience(LivingEntity maid) {
+        if (maid == null) return -1;
+        if (!isTouhouMaid(maid)) return -1;
+        if (!MAID_EXP_RESOLVED) resolveMaidExperienceReflect(maid);
+        if (MAID_EXP_CLASS == null || MAID_GET_EXP == null) return -1;
+        if (!MAID_EXP_CLASS.isInstance(maid)) return -1;
+
+        try {
+            Object result = MAID_GET_EXP.invoke(maid);
+            return (result instanceof Integer value) ? value : -1;
+        } catch (Throwable t) {
+            // 反射失败时不再尝试，直接退回「读不到经验」
+            MAID_GET_EXP = null;
+            return -1;
+        }
+    }
+
     // ========================================================================
     // 反射解析：类加载 + 方法解析（每个 JVM 生命周期最多尝试一次）
     // ========================================================================
@@ -163,6 +289,38 @@ public final class TLMSafe {
                         m.setAccessible(true);
                         MAID_BASE_CLASS = c;
                         MAID_GET_OWNER_UUID = m;
+                        return;
+                    }
+                }
+            } catch (Throwable ignored) {
+                // 类未加载/方法缺失：跳过，继续下一个候选
+            }
+        }
+    }
+
+    // 解析女仆自身经验读取方法：无参、返回 int 的 getExperience()。
+    // IMaid 接口里就带该方法（默认返回 0），EntityMaid 覆写了它，因此优先在接口上取。
+    private static synchronized void resolveMaidExperienceReflect(LivingEntity sample) {
+        if (MAID_EXP_RESOLVED) return;
+        MAID_EXP_RESOLVED = true;
+
+        String[] candidateClasses = {
+                "com.github.tartaricacid.touhoulittlemaid.api.entity.IMaid",
+                "com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid",
+                sample != null ? sample.getClass().getName() : null
+        };
+
+        for (String cn : candidateClasses) {
+            if (cn == null) continue;
+            try {
+                Class<?> c = Class.forName(cn);
+                for (Method m : c.getMethods()) {
+                    if (m.getParameterCount() == 0
+                            && m.getReturnType() == int.class
+                            && m.getName().equals("getExperience")) {
+                        m.setAccessible(true);
+                        MAID_EXP_CLASS = c;
+                        MAID_GET_EXP = m;
                         return;
                     }
                 }
@@ -226,6 +384,61 @@ public final class TLMSafe {
             INVENTORY_GET_STACK = getStack;
         } catch (Throwable ignored) {
             // 所有反射失败：Maid inventory 读取回退到 vanilla 槽（已提供）
+        }
+    }
+
+    // 解析 EntityMaid#getMaidBauble() 以及饰品栏的槽位读取方法。
+    // 说明：只缓存 Method，不缓存实例——每个女仆各有一个饰品栏实例。
+    private static synchronized void resolveMaidBaubleReflect(LivingEntity sample) {
+        if (MAID_BAUBLE_RESOLVED) return;
+        MAID_BAUBLE_RESOLVED = true;
+
+        try {
+            Class<?> maidClass = null;
+            String[] maidClasses = {
+                    "com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid",
+                    sample.getClass().getName()
+            };
+            for (String cn : maidClasses) {
+                try {
+                    maidClass = Class.forName(cn);
+                    break;
+                } catch (Throwable ignored) {
+                    // continue
+                }
+            }
+            if (maidClass == null) return;
+
+            // getMaidBauble() 是车万女仆自己的方法，方法名在发布版中不会被混淆，可直取；
+            // 若未来改名，则退回"无参且返回类型名含 Bauble"的模糊匹配。
+            Method getBauble = null;
+            try {
+                getBauble = maidClass.getMethod("getMaidBauble");
+            } catch (NoSuchMethodException ignored) {
+                // 走模糊匹配
+            }
+            if (getBauble == null) {
+                for (Method m : maidClass.getMethods()) {
+                    if (m.getParameterCount() == 0
+                            && m.getReturnType().getSimpleName().contains("Bauble")) {
+                        getBauble = m;
+                        break;
+                    }
+                }
+            }
+            if (getBauble == null) return;
+
+            // BaubleItemHandler 继承 net.minecraftforge.items.ItemStackHandler，
+            // 故可直接用 getSlots() / getStackInSlot(int)。
+            Class<?> handlerClass = getBauble.getReturnType();
+            Method getSlots = handlerClass.getMethod("getSlots");
+            Method getStack = handlerClass.getMethod("getStackInSlot", int.class);
+
+            MAID_GET_BAUBLE = getBauble;
+            BAUBLE_GET_SLOTS = getSlots;
+            BAUBLE_GET_STACK = getStack;
+        } catch (Throwable ignored) {
+            // 反射失败：collectMaidBaubles 返回空列表（等同于"没戴饰品"）
         }
     }
 

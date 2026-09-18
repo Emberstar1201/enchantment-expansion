@@ -1,10 +1,11 @@
 package com.github.emberstar1201.enchantmentex.item.handler;
 
+import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.List;
 //
 // 【原理】
 //   与拂晓（DawnData）相同的双存储结构：
-//     1. 玩家 PersistentData（服务器端持久化，不自动同步到客户端）
+//     1. 实体 PersistentData（服务器端持久化，不自动同步到客户端）
 //     2. 物品 NBT（自动同步到客户端，用于 lore 显示）
 //
 //   PersistentData 结构：DawnStarData: {
@@ -28,6 +29,13 @@ import java.util.List;
 //   lore 结构：display.Lore = [ {晨光条}, {状态行} ]
 //     每行是 Component.Serializer 序列化后的 JSON 字符串，
 //     用 translatable 组件写入，客户端按语言文件本地化。
+//
+// 【为什么参数类型是 LivingEntity 而不是 Player】
+//   车万女仆（EntityMaid）同样是 LivingEntity，Forge 也为它提供了
+//   getPersistentData()。把参数放宽到 LivingEntity 后，女仆可以使用
+//   与玩家完全相同的晨光 / 晨曦状态存取逻辑，且数据存在女仆自己的
+//   PersistentData 里，与玩家互不干扰。
+//   （玩家调用点无需改动：Player 是 LivingEntity 的子类。）
 // ========================================================================
 public class DawnStarData {
 
@@ -71,67 +79,67 @@ public class DawnStarData {
     public static final String STAR_TYPE = "dawn_star";
 
     // ========================================================================
-    // Player PersistentData 存取（服务器端持久化）
+    // 实体 PersistentData 存取（服务器端持久化）
     // ========================================================================
 
     /** 获取当前晨光层数 */
-    public static double getCharge(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getDouble(KEY_CHARGE);
+    public static double getCharge(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getDouble(KEY_CHARGE);
     }
 
     /** 设置晨光层数（自动夹在 0 ~ MAX_CHARGE 之间） */
-    public static void setCharge(Player player, double charge) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setCharge(LivingEntity entity, double charge) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putDouble(KEY_CHARGE, Math.max(0.0D, Math.min(MAX_CHARGE, charge)));
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 增加晨光层数，返回增加后的层数 */
-    public static double addCharge(Player player, double amount) {
-        double updated = Math.max(0.0D, Math.min(MAX_CHARGE, getCharge(player) + amount));
-        setCharge(player, updated);
+    public static double addCharge(LivingEntity entity, double amount) {
+        double updated = Math.max(0.0D, Math.min(MAX_CHARGE, getCharge(entity) + amount));
+        setCharge(entity, updated);
         return updated;
     }
 
     /** 「晨曦」状态是否激活中 */
-    public static boolean isDawnActive(Player player) {
-        return getActiveTicks(player) > 0;
+    public static boolean isDawnActive(LivingEntity entity) {
+        return getActiveTicks(entity) > 0;
     }
 
     /** 获取「晨曦」状态剩余 tick */
-    public static int getActiveTicks(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_ACTIVE_TICKS);
+    public static int getActiveTicks(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_ACTIVE_TICKS);
     }
 
     /** 设置「晨曦」状态剩余 tick */
-    public static void setActiveTicks(Player player, int ticks) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setActiveTicks(LivingEntity entity, int ticks) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putInt(KEY_ACTIVE_TICKS, Math.max(0, ticks));
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 获取日出爆发冷却剩余 tick */
-    public static int getCooldownTicks(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_COOLDOWN_TICKS);
+    public static int getCooldownTicks(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_COOLDOWN_TICKS);
     }
 
     /** 设置日出爆发冷却剩余 tick */
-    public static void setCooldownTicks(Player player, int ticks) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setCooldownTicks(LivingEntity entity, int ticks) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putInt(KEY_COOLDOWN_TICKS, Math.max(0, ticks));
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 是否已通过仪式获得过晨曦之星（防止重复发放） */
-    public static boolean hasObtained(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getBoolean(KEY_OBTAINED);
+    public static boolean hasObtained(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getBoolean(KEY_OBTAINED);
     }
 
     /** 标记已获得晨曦之星 */
-    public static void setObtained(Player player) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setObtained(LivingEntity entity) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putBoolean(KEY_OBTAINED, true);
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     // ========================================================================
@@ -149,14 +157,23 @@ public class DawnStarData {
                 && STAR_TYPE.equals(armorStack.getTag().getString(NBT_EMBEDDED_STAR));
     }
 
-    /** 玩家是否持有（手持/副手）或穿戴（嵌入盔甲）晨曦之星 */
-    public static boolean isHoldingOrWearingDawnStar(Player player) {
-        if (isDawnStar(player.getMainHandItem()) || isDawnStar(player.getOffhandItem())) {
+    /** 是否持有（手持/副手）或穿戴（嵌入盔甲）晨曦之星 */
+    public static boolean isHoldingOrWearingDawnStar(LivingEntity entity) {
+        if (isDawnStar(entity.getMainHandItem()) || isDawnStar(entity.getOffhandItem())) {
             return true;
         }
-        for (ItemStack armorPiece : player.getArmorSlots()) {
+        for (ItemStack armorPiece : entity.getArmorSlots()) {
             if (!armorPiece.isEmpty() && hasEmbeddedDawnStar(armorPiece)) {
                 return true;
+            }
+        }
+        // 女仆（车万女仆，软前置）：饰品栏里的晨曦之星同样视为「携带」。
+        // 未安装车万女仆时 isTouhouMaid 恒为 false，此处等同空转。
+        if (TLMSafe.isTouhouMaid(entity)) {
+            for (ItemStack stack : TLMSafe.collectMaidBaubles(entity)) {
+                if (!stack.isEmpty() && isDawnStar(stack)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -167,35 +184,48 @@ public class DawnStarData {
     //   - 写入位置：主手、副手的晨曦之星；以及嵌入了晨曦之星的盔甲
     //   - 每行都是 translatable 组件序列化后的 JSON，客户端按语言文件渲染
     // ========================================================================
-    public static void refreshLore(Player player) {
-        double charge = getCharge(player);
-        int activeTicks = getActiveTicks(player);
-        int cooldownTicks = getCooldownTicks(player);
+    public static void refreshLore(LivingEntity entity) {
+        double charge = getCharge(entity);
+        int activeTicks = getActiveTicks(entity);
+        int cooldownTicks = getCooldownTicks(entity);
 
         List<Component> lore = buildLore(charge, activeTicks, cooldownTicks);
 
-        applyLore(player.getMainHandItem(), lore);
-        applyLore(player.getOffhandItem(), lore);
-        for (ItemStack armorPiece : player.getArmorSlots()) {
+        applyLore(entity.getMainHandItem(), lore);
+        applyLore(entity.getOffhandItem(), lore);
+        for (ItemStack armorPiece : entity.getArmorSlots()) {
             if (!armorPiece.isEmpty() && hasEmbeddedDawnStar(armorPiece)) {
                 applyLore(armorPiece, lore);
+            }
+        }
+        // 女仆（车万女仆，软前置）：饰品栏中的晨曦之星也要同步 lore
+        if (TLMSafe.isTouhouMaid(entity)) {
+            for (ItemStack stack : TLMSafe.collectMaidBaubles(entity)) {
+                applyLore(stack, lore);
             }
         }
     }
 
     /** 把当前晨光层数/状态写入指定物品（用于刚发放、尚未进入背包的星星） */
-    public static void writeLoreTo(ItemStack stack, Player player) {
-        applyLore(stack, buildLore(getCharge(player), getActiveTicks(player), getCooldownTicks(player)));
+    public static void writeLoreTo(ItemStack stack, LivingEntity entity) {
+        applyLore(stack, buildLore(getCharge(entity), getActiveTicks(entity), getCooldownTicks(entity)));
     }
 
     /** 是否存在"已持有但还没写过 lore"的相关物品（如刚嵌入盔甲的星星） */
-    public static boolean needsLoreRefresh(Player player) {
-        if (needsRefresh(player.getMainHandItem()) || needsRefresh(player.getOffhandItem())) {
+    public static boolean needsLoreRefresh(LivingEntity entity) {
+        if (needsRefresh(entity.getMainHandItem()) || needsRefresh(entity.getOffhandItem())) {
             return true;
         }
-        for (ItemStack armorPiece : player.getArmorSlots()) {
+        for (ItemStack armorPiece : entity.getArmorSlots()) {
             if (needsRefresh(armorPiece)) {
                 return true;
+            }
+        }
+        if (TLMSafe.isTouhouMaid(entity)) {
+            for (ItemStack stack : TLMSafe.collectMaidBaubles(entity)) {
+                if (needsRefresh(stack)) {
+                    return true;
+                }
             }
         }
         return false;

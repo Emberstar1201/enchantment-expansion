@@ -81,6 +81,21 @@ description='''${mod_description}'''
     ordering="AFTER"
     side="BOTH"
 
+# ================================================================
+# 车万女仆（Touhou Little Maid）软前置
+# - mandatory=false：玩家未安装车万女仆也能加载本模组，仅女仆联动功能不生效
+# - ordering=AFTER：若玩家安装了车万女仆，本模组在其后加载，确保女仆扩展注册生效
+# - side=BOTH：女仆本体与联动逻辑均在服务端结算，客户端只需渲染
+# - 许可提示：车万女仆代码部分为 MIT、素材部分为 CC BY-NC-SA 4.0，
+#   本模组仅通过公开 API 与反射实现兼容，未分发其任何代码或素材
+# ================================================================
+[[dependencies.${mod_id}]]
+    modId="touhou_little_maid"
+    mandatory=false
+    versionRange="${touhou_little_maid_version_range}"
+    ordering="AFTER"
+    side="BOTH"
+
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
 # stop your mod loading on the server for example.

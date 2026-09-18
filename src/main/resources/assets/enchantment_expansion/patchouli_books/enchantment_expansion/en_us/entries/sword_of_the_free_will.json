@@ -8,7 +8,7 @@
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:sword_of_the_free_will",
       "title": "Sword of the Free Will",
-      "text": "§lAcquisition: §r Drops after defeating the Wither; cannot be crafted.$(br2)§lPassive Effects: §r$(br)Armor +10, 25% damage reduction, with built-in Sharpness X, Smite X, Knockback II, and Dawn I.$(br2)§lActive Ability - Will of Man: §r$(br)Right-click to activate: for 10 minutes, Damage +150%, with every attack having a 90% chance to strike lightning; consumes 25% of health, with a 15-minute cooldown."
+      "text": "§lAcquisition: §r Drops after defeating the Wither; cannot be crafted.$(br2)§lPassive Effects: §r$(br)Armor +10, 25% damage reduction, with built-in Sharpness XII, Smite XII, Looting XII, Knockback II, and Dawn I.$(br2)§lActive Ability - Will of Man: §r$(br)Right-click to activate: for 10 minutes, Damage +150%, with every attack having a 90% chance to strike lightning; consumes 25% of health, with a 15-minute cooldown."
     }
   ]
 }

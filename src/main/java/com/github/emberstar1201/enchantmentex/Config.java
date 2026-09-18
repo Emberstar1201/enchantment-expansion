@@ -592,6 +592,12 @@ public class Config {
                     "100 级玩家达到上限：floor(100/10)*100 = 1000")
             .defineInRange("endStar.end_star_max_bonus_percent", 1000, 0, 100000);
 
+    private static final ForgeConfigSpec.IntValue END_STAR_MAID_XP_PER_TIER = BUILDER
+            .comment("女仆（车万女仆）持终界之星时，每多少点「女仆自身经验」提升 1 档伤害加成（默认 100）",
+                    "女仆经验是拾取经验球累加的原始经验点，与玩家经验等级量纲不同，故单独配置除数",
+                    "每档 +100% 伤害，上限沿用 endStar.end_star_max_bonus_percent")
+            .defineInRange("endStar.end_star_maid_xp_per_tier", 100, 1, 1000000);
+
     private static final ForgeConfigSpec.IntValue END_STAR_DROP_DELAY = BUILDER
             .comment("终界之星生成后多少 tick 可拾取（默认 100 = 5秒）")
             .defineInRange("endStar.end_star_drop_delay", 100, 0, 72000);
@@ -841,6 +847,7 @@ public class Config {
     public static double endStarDamageReductionPercent;
     public static boolean enableEndStarDamageBonus;
     public static int endStarMaxBonusPercent;
+    public static int endStarMaidXpPerTier;
     public static int endStarDropDelay;
     public static int endStarDespawnTime;
 
@@ -1020,6 +1027,7 @@ public class Config {
         endStarDamageReductionPercent = END_STAR_DAMAGE_REDUCTION_PERCENT.get();
         enableEndStarDamageBonus = ENABLE_END_STAR_DAMAGE_BONUS.get();
         endStarMaxBonusPercent = END_STAR_MAX_BONUS_PERCENT.get();
+        endStarMaidXpPerTier = END_STAR_MAID_XP_PER_TIER.get();
         endStarDropDelay = END_STAR_DROP_DELAY.get();
         endStarDespawnTime = END_STAR_DESPAWN_TIME.get();
 

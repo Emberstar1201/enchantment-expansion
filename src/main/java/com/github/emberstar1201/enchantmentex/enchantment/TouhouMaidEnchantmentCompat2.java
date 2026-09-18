@@ -77,13 +77,8 @@ public class TouhouMaidEnchantmentCompat2 {
 
         for (var level : server.getAllLevels()) {
             if (level.isClientSide) continue;
-            for (LivingEntity maid : level.getEntitiesOfClass(
-                    LivingEntity.class,
-                    new AABB(
-                            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
-                            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY
-                    ),
-                    TLMSafe::isTouhouMaid)) {
+            // 女仆枚举统一走 TLMSafe.collectMaids（getEntitiesOfClass + 无穷大 AABB 恒为空）
+            for (LivingEntity maid : TLMSafe.collectMaids(level)) {
                 ItemStack weapon = maid.getMainHandItem();
                 int yunlai = EnchantmentHelper.getItemEnchantmentLevel(
                         ModEnchantments.YUNLAI_SWORDMANSHIP.get(), weapon);
@@ -282,18 +277,15 @@ public class TouhouMaidEnchantmentCompat2 {
     @SubscribeEvent
     public static void onLivingTickTempConstant(TickEvent.LevelTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-        Level level = event.level;
-        if (level.isClientSide) return;
+        if (!(event.level instanceof ServerLevel level)) return;
         if (!TemperatureConstantConfig.enabled
                 || !TemperatureConstantConfig.preventFreeze) return;
-        for (LivingEntity maid : level.getEntitiesOfClass(
-                LivingEntity.class,
-                new AABB(
-                        Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
-                        Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY
-                ),
-                e -> TLMSafe.isTouhouMaid(e) && e.getTicksFrozen() > 0 && hasTemperatureConstant(e))) {
-            maid.setTicksFrozen(0);
+        // 女仆枚举统一走 TLMSafe.collectMaids（getEntitiesOfClass + 无穷大 AABB 恒为空）
+        for (LivingEntity maid : TLMSafe.collectMaids(level)) {
+            if (maid.getTicksFrozen() > 0 && hasTemperatureConstant(maid)) {
+                // 温度恒定：解除冰冻，使女仆不再受细雪/冰冻伤害影响
+                maid.setTicksFrozen(0);
+            }
         }
     }
 

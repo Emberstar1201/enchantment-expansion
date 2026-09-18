@@ -2,7 +2,7 @@ package com.github.emberstar1201.enchantmentex.enchantment;
 
 import com.github.emberstar1201.enchantmentex.Config;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 // ========================================================================
@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 //
 // 【原理】
 //   成长数据同时存储在两个地方：
-//     1. 玩家 PersistentData（服务器端持久化，不自动同步到客户端）
+//     1. 实体 PersistentData（服务器端持久化，不自动同步到客户端）
 //     2. 武器物品 NBT（自动同步到客户端，用于 Tooltip 显示）
 //
 //   NBT 结构（两者一致）：DawnData: { effectiveKills: <double> }
@@ -19,6 +19,13 @@ import net.minecraft.world.item.ItemStack;
 //   击杀时 → 写入 PersistentData + 同步到武器 NBT
 //   换武器时 → 从 PersistentData 复制到武器 NBT
 //   Tooltip → 从武器 NBT 读取（客户端能看到最新数据）
+//
+// 【为什么参数类型是 LivingEntity 而不是 Player】
+//   车万女仆（EntityMaid）同样是 LivingEntity，Forge 也为它提供了
+//   getPersistentData()。把参数放宽到 LivingEntity 后，女仆可以使用
+//   与玩家完全相同的暴击伪概率 / 刺破长夜状态存取逻辑，
+//   且数据存在女仆自己的 PersistentData 里，与玩家互不干扰。
+//   （玩家调用点无需改动：Player 是 LivingEntity 的子类。）
 // ========================================================================
 public class DawnData {
 
@@ -41,25 +48,25 @@ public class DawnData {
     private static final String KEY_COOLDOWN_TICKS = "cooldownTicks";
 
     // ========================================================================
-    // Player PersistentData 存取（服务器端持久化）
+    // 实体 PersistentData 存取（服务器端持久化）
     // ========================================================================
 
-    /** 获取累计有效击杀数（从玩家 PersistentData） */
-    public static double getEffectiveKills(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getDouble(KEY_KILLS);
+    /** 获取累计有效击杀数（从实体 PersistentData） */
+    public static double getEffectiveKills(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getDouble(KEY_KILLS);
     }
 
     /** 增加有效击杀数 */
-    public static void addEffectiveKills(Player player, double amount) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void addEffectiveKills(LivingEntity entity, double amount) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         double current = data.getDouble(KEY_KILLS);
         data.putDouble(KEY_KILLS, Math.max(0, current + amount));
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 清空所有数据 */
-    public static void clear(Player player) {
-        player.getPersistentData().remove(TAG_ROOT);
+    public static void clear(LivingEntity entity) {
+        entity.getPersistentData().remove(TAG_ROOT);
     }
 
     // ========================================================================
@@ -70,90 +77,90 @@ public class DawnData {
     // ========================================================================
 
     /** 获取当前累积的伪暴击率（百分比，如 15.0 = +15%） */
-    public static double getAccumulatedCrit(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getDouble(KEY_ACCUMULATED_CRIT);
+    public static double getAccumulatedCrit(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getDouble(KEY_ACCUMULATED_CRIT);
     }
 
     /** 设置累积伪暴击率 */
-    public static void setAccumulatedCrit(Player player, double value) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setAccumulatedCrit(LivingEntity entity, double value) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putDouble(KEY_ACCUMULATED_CRIT, Math.max(0, value));
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 增加累积伪暴击率 */
-    public static void addAccumulatedCrit(Player player, double amount) {
-        double current = getAccumulatedCrit(player);
-        setAccumulatedCrit(player, current + amount);
+    public static void addAccumulatedCrit(LivingEntity entity, double amount) {
+        double current = getAccumulatedCrit(entity);
+        setAccumulatedCrit(entity, current + amount);
     }
 
     // ========================================================================
-    // 刺破长夜 状态存取（全部存玩家 PersistentData，仅服务器端）
+    // 刺破长夜 状态存取（全部存实体 PersistentData，仅服务器端）
     // ========================================================================
 
     /** 获取当前连击数 */
-    public static int getCombo(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_COMBO);
+    public static int getCombo(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_COMBO);
     }
 
     /** 设置连击数 */
-    public static void setCombo(Player player, int combo) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setCombo(LivingEntity entity, int combo) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putInt(KEY_COMBO, Math.max(0, combo));
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 记录上次击杀的游戏 tick 时间戳 */
-    public static void setLastKillTime(Player player, long time) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setLastKillTime(LivingEntity entity, long time) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putLong(KEY_LAST_KILL_TIME, time);
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 获取上次击杀的游戏 tick 时间戳（无记录时返回 0） */
-    public static long getLastKillTime(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getLong(KEY_LAST_KILL_TIME);
+    public static long getLastKillTime(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getLong(KEY_LAST_KILL_TIME);
     }
 
     /** 获取刺破长夜激活剩余 tick */
-    public static int getActiveTicks(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_ACTIVE_TICKS);
+    public static int getActiveTicks(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_ACTIVE_TICKS);
     }
 
     /** 设置刺破长夜激活剩余 tick */
-    public static void setActiveTicks(Player player, int ticks) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setActiveTicks(LivingEntity entity, int ticks) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putInt(KEY_ACTIVE_TICKS, Math.max(0, ticks));
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 获取激活类型（1=连击爆发 2=低血狂暴） */
-    public static int getActiveType(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_ACTIVE_TYPE);
+    public static int getActiveType(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_ACTIVE_TYPE);
     }
 
     /** 设置激活类型 */
-    public static void setActiveType(Player player, int type) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setActiveType(LivingEntity entity, int type) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putInt(KEY_ACTIVE_TYPE, type);
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 获取共享冷却剩余 tick */
-    public static int getCooldownTicks(Player player) {
-        return player.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_COOLDOWN_TICKS);
+    public static int getCooldownTicks(LivingEntity entity) {
+        return entity.getPersistentData().getCompound(TAG_ROOT).getInt(KEY_COOLDOWN_TICKS);
     }
 
     /** 设置共享冷却剩余 tick */
-    public static void setCooldownTicks(Player player, int ticks) {
-        CompoundTag data = player.getPersistentData().getCompound(TAG_ROOT);
+    public static void setCooldownTicks(LivingEntity entity, int ticks) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
         data.putInt(KEY_COOLDOWN_TICKS, Math.max(0, ticks));
-        player.getPersistentData().put(TAG_ROOT, data);
+        entity.getPersistentData().put(TAG_ROOT, data);
     }
 
     /** 刺破长夜是否激活中 */
-    public static boolean isPierceActive(Player player) {
-        return getActiveTicks(player) > 0;
+    public static boolean isPierceActive(LivingEntity entity) {
+        return getActiveTicks(entity) > 0;
     }
 
     // ========================================================================
