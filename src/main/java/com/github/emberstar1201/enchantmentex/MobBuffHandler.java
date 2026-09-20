@@ -14,16 +14,16 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
-import net.minecraft.world.entity.monster.CaveSpider;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.CaveSpider;
 import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Evoker;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.monster.Pillager;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.monster.Vindicator;
-import net.minecraft.world.entity.monster.Evoker;
 import net.minecraft.world.entity.monster.WitherSkeleton;
 import net.minecraft.world.entity.monster.AbstractIllager;
 import net.minecraft.world.entity.monster.Zombie;
@@ -35,6 +35,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -178,6 +180,18 @@ public final class MobBuffHandler {
         }
     }
 
+    @SubscribeEvent
+    public static void onCheckSpawn(LivingSpawnEvent.CheckSpawn event) {
+        if (MobBuffConfig.enabled && event.getEntity() instanceof Phantom
+                && event.getLevel().getDayTime() / 24000L < MobBuffConfig.phantomNoSleepDays) {
+            event.setCanceled(true);
+        }
+        if (MobBuffConfig.enabled && event.getEntity() instanceof CaveSpider
+                && event.getLevel().getRandom().nextDouble() * 100.0D >= MobBuffConfig.caveSpiderSpawnChance) {
+            event.setCanceled(true);
+        }
+    }
+
     // ====================================================================
     // 二、小僵尸碰撞箱放大
     //
@@ -227,18 +241,31 @@ public final class MobBuffHandler {
         if (!MobBuffConfig.enabled) {
             return;
         }
-        if (!(event.getEntity() instanceof Zombie zombie)) {
+        LivingEntity entity = event.getEntity();
+        if (entity.level().isClientSide()) {
             return;
         }
-        if (zombie.level().isClientSide()) {
-            return;
+        RandomSource random = entity.getRandom();
+        if (entity instanceof Zombie zombie) {
+            addExtraDrop(event, zombie, Items.COPPER_INGOT, MobBuffConfig.zombieDropCopperIngotChance, random);
+            addExtraDrop(event, zombie, Items.GOLD_INGOT, MobBuffConfig.zombieDropGoldIngotChance, random);
+            addExtraDrop(event, zombie, Items.GOLD_NUGGET, MobBuffConfig.zombieDropGoldNuggetChance, random);
+            addExtraDrop(event, zombie, Items.IRON_NUGGET, MobBuffConfig.zombieDropIronNuggetChance, random);
+            addExtraDrop(event, zombie, Items.IRON_INGOT, MobBuffConfig.zombieDropIronIngotChance, random);
         }
-        RandomSource random = zombie.getRandom();
-        addExtraDrop(event, zombie, Items.COPPER_INGOT, MobBuffConfig.zombieDropCopperIngotChance, random);
-        addExtraDrop(event, zombie, Items.GOLD_INGOT, MobBuffConfig.zombieDropGoldIngotChance, random);
-        addExtraDrop(event, zombie, Items.GOLD_NUGGET, MobBuffConfig.zombieDropGoldNuggetChance, random);
-        addExtraDrop(event, zombie, Items.IRON_NUGGET, MobBuffConfig.zombieDropIronNuggetChance, random);
-        addExtraDrop(event, zombie, Items.IRON_INGOT, MobBuffConfig.zombieDropIronIngotChance, random);
+        if (entity instanceof Drowned drowned
+                && drowned.getItemBySlot(EquipmentSlot.MAINHAND).is(Items.TRIDENT)) {
+            drowned.setDropChance(EquipmentSlot.MAINHAND,
+                    (float) (MobBuffConfig.drownedTridentDropChance / 100.0D));
+        }
+        if (entity instanceof AbstractIllager) {
+            addExtraDrop(event, entity, Items.EMERALD, MobBuffConfig.illagerEmeraldChance, random);
+        }
+        if (entity instanceof Phantom) {
+            int count = 3 + random.nextInt(2);
+            event.getDrops().add(new ItemEntity(entity.level(), entity.getX(), entity.getY() + 0.3D, entity.getZ(),
+                    new ItemStack(Items.PHANTOM_MEMBRANE, count)));
+        }
     }
 
     // ====================================================================
