@@ -154,6 +154,9 @@ public class EnchantmentExpansion {
         // 斯安维斯坦附魔独立配置（时缓半径/作用对象开关/三级数值）
         context.registerConfig(ModConfig.Type.COMMON, SandevistanConfig.SPEC,
                 "enchantment_expansion-sandevistan.toml");
+        // 原版怪物强化独立配置（僵尸/骷髅/蜘蛛/苦力怕/末影人的数值调整，可整体关闭）
+        context.registerConfig(ModConfig.Type.COMMON, MobBuffConfig.SPEC,
+                "enchantment_expansion-mob_buff.toml");
 
         // ================================================================
         // ★★★★★ 显式注册所有事件处理器到 Forge 事件总线 ★★★★★
@@ -233,6 +236,10 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat2.class);
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat3.class);
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat4.class);
+        // 原版怪物强化：血量 / 装备 / 额外掉落 / 小僵尸碰撞箱 / 蜘蛛结网
+        MinecraftForge.EVENT_BUS.register(MobBuffHandler.class);
+        // 原版怪物强化：游戏内配置命令 /ee mobbuff ...（仅 OP / 服主可用）
+        MinecraftForge.EVENT_BUS.register(MobBuffCommandHandler.class);
         // 附魔书快捷查找（EnchantmentBookLookupHandler）：
         //   不再在这里显式注册。它是纯客户端处理器（引用 RenderTooltipEvent / GuiGraphics），
         //   已加 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Bus.FORGE)，

@@ -14,7 +14,10 @@
     "ServerLevelGameEventMixin",
     "WardenCanTargetMixin",
     "PlayerFoodExhaustionMixin",
-    "FoodDataLifeStarMixin"
+    "FoodDataLifeStarMixin",
+    "CreeperSwellAccessor",
+    "RangedBowAttackGoalMixin",
+    "EnderManHurtMixin"
   ],
   "client": [
     "ClientPacketListenerTotemMixin"

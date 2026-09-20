@@ -1,0 +1,481 @@
+package com.github.emberstar1201.enchantmentex;
+
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+// ========================================================================
+// 「原版怪物强化」独立配置文件
+//
+// 加载本模组后，原版怪物（僵尸系 / 骷髅系 / 蜘蛛 / 苦力怕 / 末影人）
+// 的数值会被整体上调。所有数值都在这里集中管理，
+// 服务器管理员可单独调整，不污染主 Config.java。
+//
+// 配置路径：config/enchantment_expansion-mob_buff.toml
+// ========================================================================
+@Mod.EventBusSubscriber(modid = EnchantmentExpansion.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+public class MobBuffConfig {
+
+    private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+
+    // ================================================================
+    // 总开关
+    // ================================================================
+    private static final ForgeConfigSpec.BooleanValue ENABLED = BUILDER
+            .comment("总开关：是否启用「原版怪物强化」的全部改动（默认 true）",
+                     "关闭后所有怪物恢复原版数值，便于与原版行为做对比测试")
+            .define("mobBuff.enabled", true);
+
+    // ================================================================
+    // 一、僵尸系（僵尸 / 尸壳 / 溺尸 / 僵尸村民 / 僵尸猪灵）
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_MIN_HEALTH = BUILDER
+            .comment("僵尸系：生成时的最低血量（默认 25.0，原版为 20.0）")
+            .defineInRange("zombie.minHealth", 25.0D, 1.0D, 1024.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_MAX_HEALTH = BUILDER
+            .comment("僵尸系：生成时的最高血量（默认 30.0）",
+                     "实际血量在 [minHealth, maxHealth] 之间随机")
+            .defineInRange("zombie.maxHealth", 30.0D, 1.0D, 1024.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_EQUIP_CHANCE = BUILDER
+            .comment("僵尸系：生成时「拥有一整套装备」的总概率（百分比，默认 25.0）",
+                     "原版为 15% × 难度系数；此处直接替换为固定 25%")
+            .defineInRange("zombie.equipChance", 25.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_EQUIP_PIECE_CHANCE = BUILDER
+            .comment("僵尸系：逐件穿甲的概率（百分比，默认 25.0，与原版普通难度一致）",
+                     "材质等级仍沿用原版（皮革/金/锁链/铁/钻石），因此不会出现下界合金装备")
+            .defineInRange("zombie.equipPieceChance", 25.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_WEAPON_CHANCE = BUILDER
+            .comment("僵尸系：主手为空时补一把武器（铁剑/铁锹）的概率（百分比，默认 25.0）",
+                     "僵尸猪灵、溺尸等已有专属武器的变种不会被覆盖")
+            .defineInRange("zombie.weaponChance", 25.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_DROP_CHANCE = BUILDER
+            .comment("僵尸系：身上装备的掉落概率（百分比，默认 15.0，原版为 8.5）",
+                     "这里指的是「被杀死后装备掉落的概率」，不是物品掉落概率")
+            .defineInRange("zombie.equipmentDropChance", 15.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_COPPER_INGOT_CHANCE = BUILDER
+            .comment("僵尸系：额外掉落铜锭的概率（百分比，默认 5.0，填 0 关闭）")
+            .defineInRange("zombie.dropCopperIngotChance", 5.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_GOLD_INGOT_CHANCE = BUILDER
+            .comment("僵尸系：额外掉落金锭的概率（百分比，默认 1.2，填 0 关闭）")
+            .defineInRange("zombie.dropGoldIngotChance", 1.2D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_GOLD_NUGGET_CHANCE = BUILDER
+            .comment("僵尸系：额外掉落金粒的概率（百分比，默认 2.5，填 0 关闭）")
+            .defineInRange("zombie.dropGoldNuggetChance", 2.5D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_IRON_NUGGET_CHANCE = BUILDER
+            .comment("僵尸系：额外掉落铁粒的概率（百分比，默认 45.0，填 0 关闭）")
+            .defineInRange("zombie.dropIronNuggetChance", 45.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_IRON_INGOT_CHANCE = BUILDER
+            .comment("僵尸系：额外掉落铁锭的概率（百分比，默认 2.5）",
+                     "原版僵尸战利品表本身已有约 2.5% 的铁锭，这里是额外追加一份，",
+                     "因此实际铁锭掉率约为原版的两倍（「掉落铁锭的概率更高」）")
+            .defineInRange("zombie.dropIronIngotChance", 2.5D, 0.0D, 100.0D);
+
+    // ================================================================
+    // 二、骷髅系（骷髅 / 流浪者 / 凋灵骷髅）
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue SKELETON_MIN_HEALTH = BUILDER
+            .comment("骷髅系：生成时的最低血量（默认 25.0，原版为 20.0）")
+            .defineInRange("skeleton.minHealth", 25.0D, 1.0D, 1024.0D);
+
+    private static final ForgeConfigSpec.DoubleValue SKELETON_MAX_HEALTH = BUILDER
+            .comment("骷髅系：生成时的最高血量（默认 30.0，与僵尸一致）")
+            .defineInRange("skeleton.maxHealth", 30.0D, 1.0D, 1024.0D);
+
+    private static final ForgeConfigSpec.DoubleValue SKELETON_EQUIP_CHANCE = BUILDER
+            .comment("骷髅系：生成时穿甲的总概率（百分比，默认 25.0，原版为 15%×难度系数）")
+            .defineInRange("skeleton.equipChance", 25.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue SKELETON_EQUIP_PIECE_CHANCE = BUILDER
+            .comment("骷髅系：逐件穿甲的概率（百分比，默认 25.0）")
+            .defineInRange("skeleton.equipPieceChance", 25.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue SKELETON_DROP_CHANCE = BUILDER
+            .comment("骷髅系：身上装备的掉落概率（百分比，默认 15.0，原版为 8.5）")
+            .defineInRange("skeleton.equipmentDropChance", 15.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.IntValue SKELETON_BOW_DRAW_TICKS = BUILDER
+            .comment("骷髅系：拉满弓所需 tick 数（默认 10，原版为 20；20 tick = 1 秒）",
+                     "实现方式：把实际拉弓 tick 按比例放大到原版 20 tick 阈值，",
+                     "因此射出的箭依旧是满蓄力（100% 伤害与速度），只是更早射出。",
+                     "取值必须 ≤ 20，填 20 等于原版行为")
+            .defineInRange("skeleton.bowDrawTicks", 10, 1, 20);
+
+    // ================================================================
+    // 三、小僵尸碰撞箱
+    // ================================================================
+    private static final ForgeConfigSpec.BooleanValue BABY_ZOMBIE_SIZE_ENABLED = BUILDER
+            .comment("小僵尸：是否放大其碰撞箱，方便玩家命中（默认 true）")
+            .define("babyZombie.enlargeHitbox", true);
+
+    private static final ForgeConfigSpec.DoubleValue BABY_ZOMBIE_SIZE_MULTIPLIER = BUILDER
+            .comment("小僵尸：碰撞箱放大倍率（默认 1.5）",
+                     "小僵尸原版碰撞箱为 0.3 × 0.975 格；1.5 倍后约为 0.45 × 1.46 格")
+            .defineInRange("babyZombie.sizeMultiplier", 1.5D, 1.0D, 4.0D);
+
+    // ================================================================
+    // 四、蜘蛛：攻击时生成蜘蛛网
+    // ================================================================
+    private static final ForgeConfigSpec.BooleanValue SPIDER_WEB_ENABLED = BUILDER
+            .comment("蜘蛛：攻击玩家时是否在附近生成蜘蛛网（默认 true）")
+            .define("spider.webEnabled", true);
+
+    private static final ForgeConfigSpec.DoubleValue SPIDER_WEB_CHANCE = BUILDER
+            .comment("蜘蛛：每次命中玩家触发结网的概率（百分比，默认 50.0）",
+                     "蜘蛛网本身会大幅限制走位，若设为 100（每击必触发），",
+                     "成群蜘蛛会把玩家直接粘死，因此默认只给一半概率；",
+                     "觉得过强可下调到 30 左右，想还原「每击必结网」则填 100")
+            .defineInRange("spider.webChance", 50.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.IntValue SPIDER_WEB_RADIUS = BUILDER
+            .comment("蜘蛛：结网半径（格，默认 4，以被攻击的玩家为中心）")
+            .defineInRange("spider.webRadius", 4, 1, 16);
+
+    private static final ForgeConfigSpec.IntValue SPIDER_WEB_COUNT = BUILDER
+            .comment("蜘蛛：每次触发最多生成多少个蜘蛛网（默认 2）")
+            .defineInRange("spider.webCount", 2, 1, 16);
+
+    // ================================================================
+    // 五、苦力怕：蓄力更久、移速更快
+    // ================================================================
+    private static final ForgeConfigSpec.IntValue CREEPER_SWELL_TICKS = BUILDER
+            .comment("苦力怕：引爆所需蓄力 tick（默认 50，原版为 30；20 tick = 1 秒）",
+                     "数值越大，玩家越有时间逃离爆炸范围")
+            .defineInRange("creeper.swellTicks", 50, 30, 200);
+
+    private static final ForgeConfigSpec.DoubleValue CREEPER_SPEED_MULTIPLIER = BUILDER
+            .comment("苦力怕：移速倍率（默认 1.4，原版基础移速 0.25）")
+            .defineInRange("creeper.speedMultiplier", 1.4D, 1.0D, 5.0D);
+
+    // ================================================================
+    // 六、末影人
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue ENDERMAN_HEALTH = BUILDER
+            .comment("末影人：生成血量（默认 50.0，原版为 40.0）")
+            .defineInRange("enderman.health", 50.0D, 1.0D, 1024.0D);
+
+    private static final ForgeConfigSpec.BooleanValue ENDERMAN_PROJECTILE_VULNERABLE = BUILDER
+            .comment("末影人：是否可以被弹射物命中（默认 true）",
+                     "开启后弓箭/弩箭/雪球等弹射物不再被瞬移躲避，而是正常造成伤害；",
+                     "药水与近战逻辑保持原版不变")
+            .define("enderman.vulnerableToProjectiles", true);
+
+    // 配置 SPEC 实例（供 registerConfig 注册）
+    static final ForgeConfigSpec SPEC = BUILDER.build();
+
+    // ================================================================
+    // 游戏内命令用的配置项登记表（路径 → 配置项 + 类型 + 取值范围）
+    //
+    // 为什么不直接用 SPEC.getValues()？
+    //   getValues() 返回的是 UnmodifiableConfig（纯结构快照），既能拿到
+    //   配置项对象、也读不到 defineInRange 的上下界；而 ConfigValue.set(T)
+    //   在字节码层面不做任何范围校验（只检查 spec / childConfig 非 null），
+    //   越界值会被原样写进 toml。因此这里手工登记范围，由命令层先校验再写入。
+    // ================================================================
+    private static final Map<String, Entry> ENTRIES;
+
+    static {
+        Map<String, Entry> map = new LinkedHashMap<>();
+        add(map, "mobBuff.enabled", ValueType.BOOLEAN, ENABLED, 0.0D, 0.0D);
+
+        add(map, "zombie.minHealth", ValueType.DOUBLE, ZOMBIE_MIN_HEALTH, 1.0D, 1024.0D);
+        add(map, "zombie.maxHealth", ValueType.DOUBLE, ZOMBIE_MAX_HEALTH, 1.0D, 1024.0D);
+        add(map, "zombie.equipChance", ValueType.DOUBLE, ZOMBIE_EQUIP_CHANCE, 0.0D, 100.0D);
+        add(map, "zombie.equipPieceChance", ValueType.DOUBLE, ZOMBIE_EQUIP_PIECE_CHANCE, 0.0D, 100.0D);
+        add(map, "zombie.weaponChance", ValueType.DOUBLE, ZOMBIE_WEAPON_CHANCE, 0.0D, 100.0D);
+        add(map, "zombie.equipmentDropChance", ValueType.DOUBLE, ZOMBIE_DROP_CHANCE, 0.0D, 100.0D);
+        add(map, "zombie.dropCopperIngotChance", ValueType.DOUBLE, ZOMBIE_COPPER_INGOT_CHANCE, 0.0D, 100.0D);
+        add(map, "zombie.dropGoldIngotChance", ValueType.DOUBLE, ZOMBIE_GOLD_INGOT_CHANCE, 0.0D, 100.0D);
+        add(map, "zombie.dropGoldNuggetChance", ValueType.DOUBLE, ZOMBIE_GOLD_NUGGET_CHANCE, 0.0D, 100.0D);
+        add(map, "zombie.dropIronNuggetChance", ValueType.DOUBLE, ZOMBIE_IRON_NUGGET_CHANCE, 0.0D, 100.0D);
+        add(map, "zombie.dropIronIngotChance", ValueType.DOUBLE, ZOMBIE_IRON_INGOT_CHANCE, 0.0D, 100.0D);
+
+        add(map, "skeleton.minHealth", ValueType.DOUBLE, SKELETON_MIN_HEALTH, 1.0D, 1024.0D);
+        add(map, "skeleton.maxHealth", ValueType.DOUBLE, SKELETON_MAX_HEALTH, 1.0D, 1024.0D);
+        add(map, "skeleton.equipChance", ValueType.DOUBLE, SKELETON_EQUIP_CHANCE, 0.0D, 100.0D);
+        add(map, "skeleton.equipPieceChance", ValueType.DOUBLE, SKELETON_EQUIP_PIECE_CHANCE, 0.0D, 100.0D);
+        add(map, "skeleton.equipmentDropChance", ValueType.DOUBLE, SKELETON_DROP_CHANCE, 0.0D, 100.0D);
+        add(map, "skeleton.bowDrawTicks", ValueType.INT, SKELETON_BOW_DRAW_TICKS, 1.0D, 20.0D);
+
+        add(map, "babyZombie.enlargeHitbox", ValueType.BOOLEAN, BABY_ZOMBIE_SIZE_ENABLED, 0.0D, 0.0D);
+        add(map, "babyZombie.sizeMultiplier", ValueType.DOUBLE, BABY_ZOMBIE_SIZE_MULTIPLIER, 1.0D, 4.0D);
+
+        add(map, "spider.webEnabled", ValueType.BOOLEAN, SPIDER_WEB_ENABLED, 0.0D, 0.0D);
+        add(map, "spider.webChance", ValueType.DOUBLE, SPIDER_WEB_CHANCE, 0.0D, 100.0D);
+        add(map, "spider.webRadius", ValueType.INT, SPIDER_WEB_RADIUS, 1.0D, 16.0D);
+        add(map, "spider.webCount", ValueType.INT, SPIDER_WEB_COUNT, 1.0D, 16.0D);
+
+        add(map, "creeper.swellTicks", ValueType.INT, CREEPER_SWELL_TICKS, 30.0D, 200.0D);
+        add(map, "creeper.speedMultiplier", ValueType.DOUBLE, CREEPER_SPEED_MULTIPLIER, 1.0D, 5.0D);
+
+        add(map, "enderman.health", ValueType.DOUBLE, ENDERMAN_HEALTH, 1.0D, 1024.0D);
+        add(map, "enderman.vulnerableToProjectiles", ValueType.BOOLEAN, ENDERMAN_PROJECTILE_VULNERABLE, 0.0D, 0.0D);
+
+        ENTRIES = Collections.unmodifiableMap(map);
+    }
+
+    private static void add(Map<String, Entry> map, String path, ValueType type,
+                            ForgeConfigSpec.ConfigValue<?> value, double min, double max) {
+        map.put(path, new Entry(path, type, value, min, max));
+    }
+
+    /** 配置项类型（决定命令参数的解析方式与校验方式） */
+    public enum ValueType {
+        BOOLEAN, INT, DOUBLE
+    }
+
+    /** 一个可在游戏内读写的配置项 */
+    public static final class Entry {
+
+        private final String path;
+        private final ValueType type;
+        private final ForgeConfigSpec.ConfigValue<?> value;
+        private final double min;
+        private final double max;
+
+        private Entry(String path, ValueType type, ForgeConfigSpec.ConfigValue<?> value,
+                      double min, double max) {
+            this.path = path;
+            this.type = type;
+            this.value = value;
+            this.min = min;
+            this.max = max;
+        }
+
+        /** toml 中的配置路径，如 zombie.maxHealth */
+        public String path() {
+            return path;
+        }
+
+        public ValueType type() {
+            return type;
+        }
+
+        /** 当前值的展示字符串（供 list / get 输出） */
+        public String currentValue() {
+            Object current = value.get();
+            if (type == ValueType.DOUBLE && current instanceof Number number) {
+                return trimTrailingZeros(number.doubleValue());
+            }
+            return String.valueOf(current);
+        }
+
+        /** 默认值的展示字符串 */
+        public String defaultValue() {
+            Object def = value.getDefault();
+            if (type == ValueType.DOUBLE && def instanceof Number number) {
+                return trimTrailingZeros(number.doubleValue());
+            }
+            return String.valueOf(def);
+        }
+
+        /** 取值范围的可读描述 */
+        public String rangeText() {
+            return switch (type) {
+                case BOOLEAN -> "true / false";
+                case INT -> (long) min + " ~ " + (long) max;
+                case DOUBLE -> trimTrailingZeros(min) + " ~ " + trimTrailingZeros(max);
+            };
+        }
+
+        /**
+         * 按字符串写入配置并落盘，然后刷新静态缓存使其立即生效。
+         * 输入非法时抛 IllegalArgumentException，消息可直接反馈给命令执行者。
+         *
+         * ★ ConfigValue.set() 自身不做范围校验，必须在这里挡住越界值，
+         *   否则 toml 里会被写入非法数值（游戏内表现为数值直接生效，非常危险）。
+         */
+        @SuppressWarnings("unchecked")
+        public void setFromString(String raw) {
+            String text = raw == null ? "" : raw.trim();
+            switch (type) {
+                case BOOLEAN -> {
+                    if ("true".equalsIgnoreCase(text)) {
+                        ((ForgeConfigSpec.ConfigValue<Boolean>) value).set(Boolean.TRUE);
+                    } else if ("false".equalsIgnoreCase(text)) {
+                        ((ForgeConfigSpec.ConfigValue<Boolean>) value).set(Boolean.FALSE);
+                    } else {
+                        throw new IllegalArgumentException("应为 true 或 false");
+                    }
+                }
+                case INT -> {
+                    int parsed;
+                    try {
+                        parsed = Integer.parseInt(text);
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("应为整数，范围 " + rangeText());
+                    }
+                    if (parsed < min || parsed > max) {
+                        throw new IllegalArgumentException("超出范围，应为 " + rangeText());
+                    }
+                    ((ForgeConfigSpec.ConfigValue<Integer>) value).set(parsed);
+                }
+                case DOUBLE -> {
+                    double parsed;
+                    try {
+                        parsed = Double.parseDouble(text);
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("应为数字，范围 " + rangeText());
+                    }
+                    if (parsed < min || parsed > max) {
+                        throw new IllegalArgumentException("超出范围，应为 " + rangeText());
+                    }
+                    ((ForgeConfigSpec.ConfigValue<Double>) value).set(parsed);
+                }
+            }
+            value.save();
+            refreshCache();
+        }
+    }
+
+    /** 去掉浮点数的多余尾随零（5.0 → 5，1.2 保持 1.2） */
+    private static String trimTrailingZeros(double value) {
+        if (!Double.isInfinite(value) && value == Math.rint(value)) {
+            return String.valueOf((long) value);
+        }
+        return String.valueOf(value);
+    }
+
+    /** 全部可调整项（按登记顺序，供 list 命令遍历） */
+    public static Collection<Entry> entries() {
+        return ENTRIES.values();
+    }
+
+    /** 按路径查找配置项；不存在返回 null */
+    public static Entry entry(String path) {
+        return ENTRIES.get(path);
+    }
+
+    // ================================================================
+    // 缓存到静态字段的配置值（运行时读取这些字段）
+    // ================================================================
+    public static boolean enabled;
+
+    public static double zombieMinHealth;
+    public static double zombieMaxHealth;
+    public static double zombieEquipChance;
+    public static double zombieEquipPieceChance;
+    public static double zombieWeaponChance;
+    public static double zombieEquipmentDropChance;
+    public static double zombieDropCopperIngotChance;
+    public static double zombieDropGoldIngotChance;
+    public static double zombieDropGoldNuggetChance;
+    public static double zombieDropIronNuggetChance;
+    public static double zombieDropIronIngotChance;
+
+    public static double skeletonMinHealth;
+    public static double skeletonMaxHealth;
+    public static double skeletonEquipChance;
+    public static double skeletonEquipPieceChance;
+    public static double skeletonEquipmentDropChance;
+    public static int skeletonBowDrawTicks;
+
+    public static boolean babyZombieEnlargeHitbox;
+    public static double babyZombieSizeMultiplier;
+
+    public static boolean spiderWebEnabled;
+    public static double spiderWebChance;
+    public static int spiderWebRadius;
+    public static int spiderWebCount;
+
+    public static int creeperSwellTicks;
+    public static double creeperSpeedMultiplier;
+
+    public static double enderManHealth;
+    public static boolean enderManProjectileVulnerable;
+
+    @SubscribeEvent
+    static void onLoad(final ModConfigEvent event) {
+        // ★ 关键过滤：本类会被自动注册到所有 MOD 配置的加载事件上，
+        //   只有当事件对应的就是「本模组怪物强化」这份配置时才读取数值。
+        //   否则在其他配置加载时，尚未加载的 ConfigValue 直接 .get()
+        //   会抛 "Cannot get config value before config is loaded"。
+        if (event.getConfig() == null || event.getConfig().getSpec() != MobBuffConfig.SPEC) {
+            return;
+        }
+        refreshCache();
+    }
+
+    /**
+     * 把配置项的当前值同步到静态缓存字段。
+     * 配置加载（onLoad）与游戏内命令改动后都会调用，
+     * 保证事件处理器读到的永远是最新值。
+     *
+     * ★ ConfigValue 内部带缓存，但 set(T) 会同步更新该缓存，
+     *   所以 set 之后立刻 get() 拿到的是新值，这里无需 clearCache()。
+     */
+    private static void refreshCache() {
+        enabled = ENABLED.get();
+
+        zombieMinHealth = ZOMBIE_MIN_HEALTH.get();
+        zombieMaxHealth = ZOMBIE_MAX_HEALTH.get();
+        zombieEquipChance = ZOMBIE_EQUIP_CHANCE.get();
+        zombieEquipPieceChance = ZOMBIE_EQUIP_PIECE_CHANCE.get();
+        zombieWeaponChance = ZOMBIE_WEAPON_CHANCE.get();
+        zombieEquipmentDropChance = ZOMBIE_DROP_CHANCE.get();
+        zombieDropCopperIngotChance = ZOMBIE_COPPER_INGOT_CHANCE.get();
+        zombieDropGoldIngotChance = ZOMBIE_GOLD_INGOT_CHANCE.get();
+        zombieDropGoldNuggetChance = ZOMBIE_GOLD_NUGGET_CHANCE.get();
+        zombieDropIronNuggetChance = ZOMBIE_IRON_NUGGET_CHANCE.get();
+        zombieDropIronIngotChance = ZOMBIE_IRON_INGOT_CHANCE.get();
+
+        skeletonMinHealth = SKELETON_MIN_HEALTH.get();
+        skeletonMaxHealth = SKELETON_MAX_HEALTH.get();
+        skeletonEquipChance = SKELETON_EQUIP_CHANCE.get();
+        skeletonEquipPieceChance = SKELETON_EQUIP_PIECE_CHANCE.get();
+        skeletonEquipmentDropChance = SKELETON_DROP_CHANCE.get();
+        skeletonBowDrawTicks = SKELETON_BOW_DRAW_TICKS.get();
+
+        babyZombieEnlargeHitbox = BABY_ZOMBIE_SIZE_ENABLED.get();
+        babyZombieSizeMultiplier = BABY_ZOMBIE_SIZE_MULTIPLIER.get();
+
+        spiderWebEnabled = SPIDER_WEB_ENABLED.get();
+        spiderWebChance = SPIDER_WEB_CHANCE.get();
+        spiderWebRadius = SPIDER_WEB_RADIUS.get();
+        spiderWebCount = SPIDER_WEB_COUNT.get();
+
+        creeperSwellTicks = CREEPER_SWELL_TICKS.get();
+        creeperSpeedMultiplier = CREEPER_SPEED_MULTIPLIER.get();
+
+        enderManHealth = ENDERMAN_HEALTH.get();
+        enderManProjectileVulnerable = ENDERMAN_PROJECTILE_VULNERABLE.get();
+    }
+
+    // ================================================================
+    // 运行工具方法
+    // ================================================================
+
+    /** 僵尸系随机血量（区间被自动纠正，防止 min > max 时取到非法值） */
+    public static double rollZombieHealth(net.minecraft.util.RandomSource random) {
+        double min = Math.min(zombieMinHealth, zombieMaxHealth);
+        double max = Math.max(zombieMinHealth, zombieMaxHealth);
+        return min + random.nextDouble() * (max - min);
+    }
+
+    /** 骷髅系随机血量 */
+    public static double rollSkeletonHealth(net.minecraft.util.RandomSource random) {
+        double min = Math.min(skeletonMinHealth, skeletonMaxHealth);
+        double max = Math.max(skeletonMinHealth, skeletonMaxHealth);
+        return min + random.nextDouble() * (max - min);
+    }
+
+    /** 骷髅拉满弓所需 tick，钳制到 [1, 20] 防止 Mixin 中除零或反效果 */
+    public static int getSkeletonBowDrawTicks() {
+        return Math.max(1, Math.min(20, skeletonBowDrawTicks));
+    }
+}
