@@ -84,7 +84,7 @@ public class MobBuffConfig {
             .comment("僵尸系：额外掉落铁锭的概率（百分比，默认 2.5）",
                      "原版僵尸战利品表本身已有约 2.5% 的铁锭，这里是额外追加一份，",
                      "因此实际铁锭掉率约为原版的两倍（「掉落铁锭的概率更高」）")
-            .defineInRange("zombie.dropIronIngotChance", 2.5D, 0.0D, 100.0D);
+            .defineInRange("zombie.dropIronIngotChance", 7.5D, 0.0D, 100.0D);
 
     // ================================================================
     // 二、骷髅系（骷髅 / 流浪者 / 凋灵骷髅）
@@ -107,7 +107,7 @@ public class MobBuffConfig {
 
     private static final ForgeConfigSpec.DoubleValue SKELETON_DROP_CHANCE = BUILDER
             .comment("骷髅系：身上装备的掉落概率（百分比，默认 15.0，原版为 8.5）")
-            .defineInRange("skeleton.equipmentDropChance", 15.0D, 0.0D, 100.0D);
+            .defineInRange("skeleton.equipmentDropChance", 25.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.IntValue SKELETON_BOW_DRAW_TICKS = BUILDER
             .comment("骷髅系：拉满弓所需 tick 数（默认 10，原版为 20；20 tick = 1 秒）",
@@ -175,6 +175,97 @@ public class MobBuffConfig {
                      "药水与近战逻辑保持原版不变")
             .define("enderman.vulnerableToProjectiles", true);
 
+    // ================================================================
+    // 七、末影龙强化
+    // ================================================================
+    private static final ForgeConfigSpec.BooleanValue ENDER_DRAGON_ENABLED = BUILDER
+            .comment("末影龙强化：是否启用（默认 true）")
+            .define("enderDragon.enabled", true);
+
+    private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_HEALTH = BUILDER
+            .comment("末影龙：最大生命值（默认 1000.0，原版为 200.0）")
+            .defineInRange("enderDragon.health", 1000.0D, 200.0D, 2048.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_ARMOR = BUILDER
+            .comment("末影龙：护甲值（默认 15.0）")
+            .defineInRange("enderDragon.armor", 15.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_LOW_HEALTH_DAMAGE_MULTIPLIER = BUILDER
+            .comment("末影龙：低于 50% 生命值后的伤害倍率（默认 2.5，即伤害提升 150%）")
+            .defineInRange("enderDragon.lowHealthDamageMultiplier", 2.5D, 1.0D, 10.0D);
+
+    private static final ForgeConfigSpec.IntValue ENDER_DRAGON_ROAR_DAMAGE_SECONDS = BUILDER
+            .comment("末影龙：吼叫时给予附近玩家的持续伤害时长（秒，默认 5）")
+            .defineInRange("enderDragon.roarDamageSeconds", 5, 1, 30);
+
+    private static final ForgeConfigSpec.IntValue ENDER_DRAGON_CRYSTAL_ATTACK_COOLDOWN = BUILDER
+            .comment("末地水晶：攻击玩家的间隔（tick，默认 60；仅末地维度）")
+            .defineInRange("enderDragon.crystalAttackCooldown", 60, 20, 600);
+
+    private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_CRYSTAL_ATTACK_DAMAGE = BUILDER
+            .comment("末地水晶：每次攻击伤害（默认 4.0）")
+            .defineInRange("enderDragon.crystalAttackDamage", 4.0D, 0.5D, 40.0D);
+
+    private static final ForgeConfigSpec.IntValue ENDER_DRAGON_ALTAR_BREATH_SECONDS = BUILDER
+            .comment("末影龙：首次降至半血时，祭坛附近龙息持续时间（秒，默认 3）")
+            .defineInRange("enderDragon.altarBreathSeconds", 3, 1, 15);
+
+    // ================================================================
+    // 八、凋零与凋零骷髅强化
+    // ================================================================
+    private static final ForgeConfigSpec.BooleanValue WITHER_ENABLED = BUILDER
+            .comment("凋零强化：是否启用（默认 true）")
+            .define("wither.enabled", true);
+
+    private static final ForgeConfigSpec.DoubleValue WITHER_HEALTH = BUILDER
+            .comment("凋零：最大生命值（默认 800.0，原版为 300.0）")
+            .defineInRange("wither.health", 800.0D, 300.0D, 4096.0D);
+
+    private static final ForgeConfigSpec.DoubleValue WITHER_ARMOR = BUILDER
+            .comment("凋零：护甲值（默认 14.0）")
+            .defineInRange("wither.armor", 14.0D, 0.0D, 100.0D);
+
+    private static final ForgeConfigSpec.DoubleValue WITHER_LOW_HEALTH_DAMAGE_REDUCTION = BUILDER
+            .comment("凋零：低于 50% 生命值后的普通伤害减免比例（默认 0.2）",
+                     "带 DamageTypeTags.BYPASSES_ARMOR 的伤害不受此减免影响")
+            .defineInRange("wither.lowHealthDamageReduction", 0.2D, 0.0D, 1.0D);
+
+    private static final ForgeConfigSpec.DoubleValue WITHER_SKULL_DAMAGE_MULTIPLIER = BUILDER
+            .comment("凋零头颅：造成伤害的倍率（默认 2.0）")
+            .defineInRange("wither.skullDamageMultiplier", 2.0D, 0.1D, 10.0D);
+
+    private static final ForgeConfigSpec.BooleanValue WITHER_MOTHER_SKULL_ENABLED = BUILDER
+            .comment("凋零：是否启用母弹飞行后分裂（默认 true）")
+            .define("wither.motherSkullEnabled", true);
+
+    private static final ForgeConfigSpec.IntValue WITHER_MOTHER_SKULL_FLIGHT_TICKS = BUILDER
+            .comment("凋零母弹：飞行多少 tick 后分裂（默认 100）")
+            .defineInRange("wither.motherSkullFlightTicks", 100, 1, 1200);
+
+    private static final ForgeConfigSpec.IntValue WITHER_MOTHER_SKULL_SPLIT_COUNT = BUILDER
+            .comment("凋零母弹：分裂数量（默认 2，允许 2~3）")
+            .defineInRange("wither.motherSkullSplitCount", 2, 2, 3);
+
+    private static final ForgeConfigSpec.DoubleValue WITHER_DEATH_EXPLOSION_POWER = BUILDER
+            .comment("凋零：死亡爆炸威力（默认 3.0，使用 NONE 不破坏方块）")
+            .defineInRange("wither.deathExplosionPower", 3.0D, 0.0D, 20.0D);
+
+    private static final ForgeConfigSpec.DoubleValue WITHER_SKELETON_LOW_HEALTH_DAMAGE_MULTIPLIER = BUILDER
+            .comment("凋灵骷髅：低于 50% 生命值后的伤害倍率（默认 2.0）")
+            .defineInRange("witherSkeleton.lowHealthDamageMultiplier", 2.0D, 1.0D, 10.0D);
+
+    private static final ForgeConfigSpec.IntValue WITHER_EXPERIENCE = BUILDER
+            .comment("凋零：死亡经验值（默认 500）")
+            .defineInRange("wither.experience", 500, 0, 100000);
+
+    private static final ForgeConfigSpec.IntValue ENDER_DRAGON_FIRST_EXPERIENCE = BUILDER
+            .comment("末影龙：首次击败经验值（默认 48000）")
+            .defineInRange("enderDragon.firstExperience", 48000, 0, 1000000);
+
+    private static final ForgeConfigSpec.IntValue ENDER_DRAGON_RESPAWN_EXPERIENCE = BUILDER
+            .comment("末影龙：重生后击败经验值（默认 24000）")
+            .defineInRange("enderDragon.respawnExperience", 24000, 0, 1000000);
+
     // 配置 SPEC 实例（供 registerConfig 注册）
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -225,6 +316,43 @@ public class MobBuffConfig {
 
         add(map, "enderman.health", ValueType.DOUBLE, ENDERMAN_HEALTH, 1.0D, 1024.0D);
         add(map, "enderman.vulnerableToProjectiles", ValueType.BOOLEAN, ENDERMAN_PROJECTILE_VULNERABLE, 0.0D, 0.0D);
+
+        add(map, "enderDragon.enabled", ValueType.BOOLEAN, ENDER_DRAGON_ENABLED, 0.0D, 0.0D);
+        add(map, "enderDragon.health", ValueType.DOUBLE, ENDER_DRAGON_HEALTH, 200.0D, 2048.0D);
+        add(map, "enderDragon.armor", ValueType.DOUBLE, ENDER_DRAGON_ARMOR, 0.0D, 100.0D);
+        add(map, "enderDragon.lowHealthDamageMultiplier", ValueType.DOUBLE,
+                ENDER_DRAGON_LOW_HEALTH_DAMAGE_MULTIPLIER, 1.0D, 10.0D);
+        add(map, "enderDragon.roarDamageSeconds", ValueType.INT,
+                ENDER_DRAGON_ROAR_DAMAGE_SECONDS, 1.0D, 30.0D);
+        add(map, "enderDragon.crystalAttackCooldown", ValueType.INT,
+                ENDER_DRAGON_CRYSTAL_ATTACK_COOLDOWN, 20.0D, 600.0D);
+        add(map, "enderDragon.crystalAttackDamage", ValueType.DOUBLE,
+                ENDER_DRAGON_CRYSTAL_ATTACK_DAMAGE, 0.5D, 40.0D);
+        add(map, "enderDragon.altarBreathSeconds", ValueType.INT,
+                ENDER_DRAGON_ALTAR_BREATH_SECONDS, 1.0D, 15.0D);
+
+        add(map, "wither.enabled", ValueType.BOOLEAN, WITHER_ENABLED, 0.0D, 0.0D);
+        add(map, "wither.health", ValueType.DOUBLE, WITHER_HEALTH, 300.0D, 4096.0D);
+        add(map, "wither.armor", ValueType.DOUBLE, WITHER_ARMOR, 0.0D, 100.0D);
+        add(map, "wither.lowHealthDamageReduction", ValueType.DOUBLE,
+                WITHER_LOW_HEALTH_DAMAGE_REDUCTION, 0.0D, 1.0D);
+        add(map, "wither.skullDamageMultiplier", ValueType.DOUBLE,
+                WITHER_SKULL_DAMAGE_MULTIPLIER, 0.1D, 10.0D);
+        add(map, "wither.motherSkullEnabled", ValueType.BOOLEAN,
+                WITHER_MOTHER_SKULL_ENABLED, 0.0D, 0.0D);
+        add(map, "wither.motherSkullFlightTicks", ValueType.INT,
+                WITHER_MOTHER_SKULL_FLIGHT_TICKS, 1.0D, 1200.0D);
+        add(map, "wither.motherSkullSplitCount", ValueType.INT,
+                WITHER_MOTHER_SKULL_SPLIT_COUNT, 2.0D, 3.0D);
+        add(map, "wither.deathExplosionPower", ValueType.DOUBLE,
+                WITHER_DEATH_EXPLOSION_POWER, 0.0D, 20.0D);
+        add(map, "witherSkeleton.lowHealthDamageMultiplier", ValueType.DOUBLE,
+                WITHER_SKELETON_LOW_HEALTH_DAMAGE_MULTIPLIER, 1.0D, 10.0D);
+        add(map, "wither.experience", ValueType.INT, WITHER_EXPERIENCE, 0.0D, 100000.0D);
+        add(map, "enderDragon.firstExperience", ValueType.INT,
+                ENDER_DRAGON_FIRST_EXPERIENCE, 0.0D, 1000000.0D);
+        add(map, "enderDragon.respawnExperience", ValueType.INT,
+                ENDER_DRAGON_RESPAWN_EXPERIENCE, 0.0D, 1000000.0D);
 
         ENTRIES = Collections.unmodifiableMap(map);
     }
@@ -399,6 +527,29 @@ public class MobBuffConfig {
     public static double enderManHealth;
     public static boolean enderManProjectileVulnerable;
 
+    public static boolean enderDragonEnabled;
+    public static double enderDragonHealth;
+    public static double enderDragonArmor;
+    public static double enderDragonLowHealthDamageMultiplier;
+    public static int enderDragonRoarDamageSeconds;
+    public static int enderDragonCrystalAttackCooldown;
+    public static double enderDragonCrystalAttackDamage;
+    public static int enderDragonAltarBreathSeconds;
+
+    public static boolean witherEnabled;
+    public static double witherHealth;
+    public static double witherArmor;
+    public static double witherLowHealthDamageReduction;
+    public static double witherSkullDamageMultiplier;
+    public static boolean witherMotherSkullEnabled;
+    public static int witherMotherSkullFlightTicks;
+    public static int witherMotherSkullSplitCount;
+    public static double witherDeathExplosionPower;
+    public static double witherSkeletonLowHealthDamageMultiplier;
+    public static int witherExperience;
+    public static int enderDragonFirstExperience;
+    public static int enderDragonRespawnExperience;
+
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
         // ★ 关键过滤：本类会被自动注册到所有 MOD 配置的加载事件上，
@@ -454,6 +605,29 @@ public class MobBuffConfig {
 
         enderManHealth = ENDERMAN_HEALTH.get();
         enderManProjectileVulnerable = ENDERMAN_PROJECTILE_VULNERABLE.get();
+
+        enderDragonEnabled = ENDER_DRAGON_ENABLED.get();
+        enderDragonHealth = ENDER_DRAGON_HEALTH.get();
+        enderDragonArmor = ENDER_DRAGON_ARMOR.get();
+        enderDragonLowHealthDamageMultiplier = ENDER_DRAGON_LOW_HEALTH_DAMAGE_MULTIPLIER.get();
+        enderDragonRoarDamageSeconds = ENDER_DRAGON_ROAR_DAMAGE_SECONDS.get();
+        enderDragonCrystalAttackCooldown = ENDER_DRAGON_CRYSTAL_ATTACK_COOLDOWN.get();
+        enderDragonCrystalAttackDamage = ENDER_DRAGON_CRYSTAL_ATTACK_DAMAGE.get();
+        enderDragonAltarBreathSeconds = ENDER_DRAGON_ALTAR_BREATH_SECONDS.get();
+
+        witherEnabled = WITHER_ENABLED.get();
+        witherHealth = WITHER_HEALTH.get();
+        witherArmor = WITHER_ARMOR.get();
+        witherLowHealthDamageReduction = WITHER_LOW_HEALTH_DAMAGE_REDUCTION.get();
+        witherSkullDamageMultiplier = WITHER_SKULL_DAMAGE_MULTIPLIER.get();
+        witherMotherSkullEnabled = WITHER_MOTHER_SKULL_ENABLED.get();
+        witherMotherSkullFlightTicks = WITHER_MOTHER_SKULL_FLIGHT_TICKS.get();
+        witherMotherSkullSplitCount = WITHER_MOTHER_SKULL_SPLIT_COUNT.get();
+        witherDeathExplosionPower = WITHER_DEATH_EXPLOSION_POWER.get();
+        witherSkeletonLowHealthDamageMultiplier = WITHER_SKELETON_LOW_HEALTH_DAMAGE_MULTIPLIER.get();
+        witherExperience = WITHER_EXPERIENCE.get();
+        enderDragonFirstExperience = ENDER_DRAGON_FIRST_EXPERIENCE.get();
+        enderDragonRespawnExperience = ENDER_DRAGON_RESPAWN_EXPERIENCE.get();
     }
 
     // ================================================================

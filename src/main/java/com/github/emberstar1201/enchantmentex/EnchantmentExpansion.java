@@ -238,6 +238,10 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat4.class);
         // 原版怪物强化：血量 / 装备 / 额外掉落 / 小僵尸碰撞箱 / 蜘蛛结网
         MinecraftForge.EVENT_BUS.register(MobBuffHandler.class);
+        // 凋零强化：属性 / 半血减伤 / 母弹分裂 / 死亡爆炸与经验
+        MinecraftForge.EVENT_BUS.register(WitherBuffHandler.class);
+        // 末影龙强化：血量 / 护甲 / 水晶攻击 / 吼叫 / 半血机制
+        MinecraftForge.EVENT_BUS.register(EnderDragonBuffHandler.class);
         // 原版怪物强化：游戏内配置命令 /ee mobbuff ...（仅 OP / 服主可用）
         MinecraftForge.EVENT_BUS.register(MobBuffCommandHandler.class);
         // 附魔书快捷查找（EnchantmentBookLookupHandler）：

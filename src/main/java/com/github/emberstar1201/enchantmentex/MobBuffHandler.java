@@ -3,6 +3,7 @@ package com.github.emberstar1201.enchantmentex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Spider;
+import net.minecraft.world.entity.monster.WitherSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -58,6 +60,7 @@ public final class MobBuffHandler {
     private static final UUID SKELETON_HEALTH_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000002");
     private static final UUID ENDERMAN_HEALTH_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000003");
     private static final UUID CREEPER_SPEED_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000004");
+    private static final UUID WITHER_HEALTH_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000005");
 
     private static final String HEALTH_MODIFIER_NAME = "enchantment_expansion:mob_buff_health";
     private static final String SPEED_MODIFIER_NAME = "enchantment_expansion:mob_buff_speed";
@@ -191,7 +194,15 @@ public final class MobBuffHandler {
     // ====================================================================
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
-        if (!MobBuffConfig.enabled || !MobBuffConfig.spiderWebEnabled) {
+        if (!MobBuffConfig.enabled) {
+            return;
+        }
+        if (event.getSource().getEntity() instanceof WitherSkeleton witherSkeleton
+                && witherSkeleton.getHealth() <= witherSkeleton.getMaxHealth() * 0.5F) {
+            event.setAmount(event.getAmount()
+                    * (float) MobBuffConfig.witherSkeletonLowHealthDamageMultiplier);
+        }
+        if (!MobBuffConfig.spiderWebEnabled) {
             return;
         }
         // 攻击者必须是蜘蛛（含洞穴蜘蛛）
