@@ -47,7 +47,7 @@ public class MobBuffConfig {
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_EQUIP_CHANCE = BUILDER
             .comment("僵尸系：生成时「拥有一整套装备」的总概率（百分比，默认 25.0）",
                      "原版为 15% × 难度系数；此处直接替换为固定 25%")
-            .defineInRange("zombie.equipChance", 25.0D, 0.0D, 100.0D);
+            .defineInRange("zombie.equipChance", 50.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_EQUIP_PIECE_CHANCE = BUILDER
             .comment("僵尸系：逐件穿甲的概率（百分比，默认 25.0，与原版普通难度一致）",
@@ -99,7 +99,7 @@ public class MobBuffConfig {
 
     private static final ForgeConfigSpec.DoubleValue SKELETON_EQUIP_CHANCE = BUILDER
             .comment("骷髅系：生成时穿甲的总概率（百分比，默认 25.0，原版为 15%×难度系数）")
-            .defineInRange("skeleton.equipChance", 25.0D, 0.0D, 100.0D);
+            .defineInRange("skeleton.equipChance", 50.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue SKELETON_EQUIP_PIECE_CHANCE = BUILDER
             .comment("骷髅系：逐件穿甲的概率（百分比，默认 25.0）")
@@ -176,7 +176,56 @@ public class MobBuffConfig {
             .define("enderman.vulnerableToProjectiles", true);
 
     // ================================================================
-    // 七、末影龙强化
+    // 七、洞穴蜘蛛、溺尸、灾厄村民、幻翼与劫掠兽
+    // ================================================================
+    private static final ForgeConfigSpec.DoubleValue CAVE_SPIDER_HEALTH = BUILDER
+            .comment("洞穴蜘蛛：最大生命值（默认 14.0）")
+            .defineInRange("caveSpider.health", 14.0D, 1.0D, 1024.0D);
+    private static final ForgeConfigSpec.DoubleValue CAVE_SPIDER_SIZE = BUILDER
+            .comment("洞穴蜘蛛：碰撞箱倍率（默认 1.35）")
+            .defineInRange("caveSpider.sizeMultiplier", 1.35D, 1.0D, 4.0D);
+    private static final ForgeConfigSpec.DoubleValue CAVE_SPIDER_SPAWN_CHANCE = BUILDER
+            .comment("洞穴蜘蛛：自然生成额外放行概率（百分比，默认 35.0）")
+            .defineInRange("caveSpider.spawnChance", 35.0D, 0.0D, 100.0D);
+    private static final ForgeConfigSpec.DoubleValue DROWNED_TRIDENT_CHANCE = BUILDER
+            .comment("溺尸：空手时携带三叉戟的概率（百分比，默认 35.0）")
+            .defineInRange("drowned.tridentChance", 35.0D, 0.0D, 100.0D);
+    private static final ForgeConfigSpec.DoubleValue DROWNED_TRIDENT_DROP_CHANCE = BUILDER
+            .comment("溺尸：三叉戟装备掉落概率（百分比，默认 15.0）")
+            .defineInRange("drowned.tridentDropChance", 15.0D, 0.0D, 100.0D);
+    private static final ForgeConfigSpec.DoubleValue ILLAGER_HEALTH = BUILDER
+            .comment("掠夺者、卫道士、唤魔者：最大生命值（默认 30.0）")
+            .defineInRange("illager.health", 30.0D, 1.0D, 1024.0D);
+    private static final ForgeConfigSpec.DoubleValue ILLAGER_ARMOR = BUILDER
+            .comment("掠夺者、卫道士、唤魔者：额外护甲（默认 2.0）")
+            .defineInRange("illager.armor", 2.0D, 0.0D, 100.0D);
+    private static final ForgeConfigSpec.DoubleValue ILLAGER_EMERALD_CHANCE = BUILDER
+            .comment("灾厄村民：额外绿宝石掉落概率（百分比，默认 50.0）")
+            .defineInRange("illager.emeraldChance", 50.0D, 0.0D, 100.0D);
+    private static final ForgeConfigSpec.DoubleValue ILLAGER_WEAPON_DROP_CHANCE = BUILDER
+            .comment("掠夺者、卫道士：武器装备掉落概率（百分比，默认 25.0）")
+            .defineInRange("illager.weaponDropChance", 25.0D, 0.0D, 100.0D);
+    private static final ForgeConfigSpec.DoubleValue PHANTOM_SIZE = BUILDER
+            .comment("幻翼：碰撞箱倍率（默认 1.25）")
+            .defineInRange("phantom.sizeMultiplier", 1.25D, 1.0D, 4.0D);
+    private static final ForgeConfigSpec.DoubleValue PHANTOM_SPEED_MULTIPLIER = BUILDER
+            .comment("幻翼：俯冲速度倍率（默认 1.35）")
+            .defineInRange("phantom.speedMultiplier", 1.35D, 1.0D, 5.0D);
+    private static final ForgeConfigSpec.IntValue PHANTOM_NO_SLEEP_DAYS = BUILDER
+            .comment("幻翼：至少不睡觉多少天后才允许刷新（默认 6）")
+            .defineInRange("phantom.noSleepDays", 6, 1, 100);
+    private static final ForgeConfigSpec.DoubleValue RAVAGER_HEALTH = BUILDER
+            .comment("劫掠兽：最大生命值（默认 200.0）")
+            .defineInRange("ravager.health", 200.0D, 1.0D, 2048.0D);
+    private static final ForgeConfigSpec.DoubleValue RAVAGER_SPEED_MULTIPLIER = BUILDER
+            .comment("劫掠兽：冲撞速度倍率（默认 1.35）")
+            .defineInRange("ravager.speedMultiplier", 1.35D, 1.0D, 5.0D);
+    private static final ForgeConfigSpec.IntValue RAVAGER_STUN_TICKS = BUILDER
+            .comment("劫掠兽：撞盾眩晕额外时长（默认 60 tick，即 3 秒）")
+            .defineInRange("ravager.stunTicks", 60, 0, 600);
+
+    // ================================================================
+    // 八、末影龙强化
     // ================================================================
     private static final ForgeConfigSpec.BooleanValue ENDER_DRAGON_ENABLED = BUILDER
             .comment("末影龙强化：是否启用（默认 true）")
@@ -302,6 +351,22 @@ public class MobBuffConfig {
         add(map, "skeleton.equipPieceChance", ValueType.DOUBLE, SKELETON_EQUIP_PIECE_CHANCE, 0.0D, 100.0D);
         add(map, "skeleton.equipmentDropChance", ValueType.DOUBLE, SKELETON_DROP_CHANCE, 0.0D, 100.0D);
         add(map, "skeleton.bowDrawTicks", ValueType.INT, SKELETON_BOW_DRAW_TICKS, 1.0D, 20.0D);
+
+        add(map, "caveSpider.health", ValueType.DOUBLE, CAVE_SPIDER_HEALTH, 1.0D, 1024.0D);
+        add(map, "caveSpider.sizeMultiplier", ValueType.DOUBLE, CAVE_SPIDER_SIZE, 1.0D, 4.0D);
+        add(map, "caveSpider.spawnChance", ValueType.DOUBLE, CAVE_SPIDER_SPAWN_CHANCE, 0.0D, 100.0D);
+        add(map, "drowned.tridentChance", ValueType.DOUBLE, DROWNED_TRIDENT_CHANCE, 0.0D, 100.0D);
+        add(map, "drowned.tridentDropChance", ValueType.DOUBLE, DROWNED_TRIDENT_DROP_CHANCE, 0.0D, 100.0D);
+        add(map, "illager.health", ValueType.DOUBLE, ILLAGER_HEALTH, 1.0D, 1024.0D);
+        add(map, "illager.armor", ValueType.DOUBLE, ILLAGER_ARMOR, 0.0D, 100.0D);
+        add(map, "illager.emeraldChance", ValueType.DOUBLE, ILLAGER_EMERALD_CHANCE, 0.0D, 100.0D);
+        add(map, "illager.weaponDropChance", ValueType.DOUBLE, ILLAGER_WEAPON_DROP_CHANCE, 0.0D, 100.0D);
+        add(map, "phantom.sizeMultiplier", ValueType.DOUBLE, PHANTOM_SIZE, 1.0D, 4.0D);
+        add(map, "phantom.speedMultiplier", ValueType.DOUBLE, PHANTOM_SPEED_MULTIPLIER, 1.0D, 5.0D);
+        add(map, "phantom.noSleepDays", ValueType.INT, PHANTOM_NO_SLEEP_DAYS, 1.0D, 100.0D);
+        add(map, "ravager.health", ValueType.DOUBLE, RAVAGER_HEALTH, 1.0D, 2048.0D);
+        add(map, "ravager.speedMultiplier", ValueType.DOUBLE, RAVAGER_SPEED_MULTIPLIER, 1.0D, 5.0D);
+        add(map, "ravager.stunTicks", ValueType.INT, RAVAGER_STUN_TICKS, 0.0D, 600.0D);
 
         add(map, "babyZombie.enlargeHitbox", ValueType.BOOLEAN, BABY_ZOMBIE_SIZE_ENABLED, 0.0D, 0.0D);
         add(map, "babyZombie.sizeMultiplier", ValueType.DOUBLE, BABY_ZOMBIE_SIZE_MULTIPLIER, 1.0D, 4.0D);
@@ -513,6 +578,22 @@ public class MobBuffConfig {
     public static double skeletonEquipmentDropChance;
     public static int skeletonBowDrawTicks;
 
+    public static double caveSpiderHealth;
+    public static double caveSpiderSizeMultiplier;
+    public static double caveSpiderSpawnChance;
+    public static double drownedTridentChance;
+    public static double drownedTridentDropChance;
+    public static double illagerHealth;
+    public static double illagerArmor;
+    public static double illagerEmeraldChance;
+    public static double illagerWeaponDropChance;
+    public static double phantomSizeMultiplier;
+    public static double phantomSpeedMultiplier;
+    public static int phantomNoSleepDays;
+    public static double ravagerHealth;
+    public static double ravagerSpeedMultiplier;
+    public static int ravagerStunTicks;
+
     public static boolean babyZombieEnlargeHitbox;
     public static double babyZombieSizeMultiplier;
 
@@ -591,6 +672,22 @@ public class MobBuffConfig {
         skeletonEquipPieceChance = SKELETON_EQUIP_PIECE_CHANCE.get();
         skeletonEquipmentDropChance = SKELETON_DROP_CHANCE.get();
         skeletonBowDrawTicks = SKELETON_BOW_DRAW_TICKS.get();
+
+        caveSpiderHealth = CAVE_SPIDER_HEALTH.get();
+        caveSpiderSizeMultiplier = CAVE_SPIDER_SIZE.get();
+        caveSpiderSpawnChance = CAVE_SPIDER_SPAWN_CHANCE.get();
+        drownedTridentChance = DROWNED_TRIDENT_CHANCE.get();
+        drownedTridentDropChance = DROWNED_TRIDENT_DROP_CHANCE.get();
+        illagerHealth = ILLAGER_HEALTH.get();
+        illagerArmor = ILLAGER_ARMOR.get();
+        illagerEmeraldChance = ILLAGER_EMERALD_CHANCE.get();
+        illagerWeaponDropChance = ILLAGER_WEAPON_DROP_CHANCE.get();
+        phantomSizeMultiplier = PHANTOM_SIZE.get();
+        phantomSpeedMultiplier = PHANTOM_SPEED_MULTIPLIER.get();
+        phantomNoSleepDays = PHANTOM_NO_SLEEP_DAYS.get();
+        ravagerHealth = RAVAGER_HEALTH.get();
+        ravagerSpeedMultiplier = RAVAGER_SPEED_MULTIPLIER.get();
+        ravagerStunTicks = RAVAGER_STUN_TICKS.get();
 
         babyZombieEnlargeHitbox = BABY_ZOMBIE_SIZE_ENABLED.get();
         babyZombieSizeMultiplier = BABY_ZOMBIE_SIZE_MULTIPLIER.get();

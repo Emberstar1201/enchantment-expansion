@@ -11,12 +11,21 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.monster.CaveSpider;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.entity.monster.Pillager;
+import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Spider;
+import net.minecraft.world.entity.monster.Vindicator;
+import net.minecraft.world.entity.monster.Evoker;
 import net.minecraft.world.entity.monster.WitherSkeleton;
+import net.minecraft.world.entity.monster.AbstractIllager;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -61,6 +70,11 @@ public final class MobBuffHandler {
     private static final UUID ENDERMAN_HEALTH_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000003");
     private static final UUID CREEPER_SPEED_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000004");
     private static final UUID WITHER_HEALTH_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000005");
+    private static final UUID CAVE_SPIDER_HEALTH_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000006");
+    private static final UUID ILLAGER_HEALTH_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000007");
+    private static final UUID ILLAGER_ARMOR_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000008");
+    private static final UUID PHANTOM_SPEED_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000009");
+    private static final UUID RAVAGER_HEALTH_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f01-000000000010");
 
     private static final String HEALTH_MODIFIER_NAME = "enchantment_expansion:mob_buff_health";
     private static final String SPEED_MODIFIER_NAME = "enchantment_expansion:mob_buff_speed";
@@ -111,6 +125,41 @@ public final class MobBuffHandler {
         }
 
         RandomSource random = mob.getRandom();
+        if (mob instanceof CaveSpider caveSpider) {
+            applyHealth(caveSpider, MobBuffConfig.caveSpiderHealth, CAVE_SPIDER_HEALTH_UUID);
+        }
+        if (mob instanceof Drowned drowned) {
+            if (drowned.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()
+                    && random.nextDouble() * 100.0D < MobBuffConfig.drownedTridentChance) {
+                drowned.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.TRIDENT));
+            }
+            if (!drowned.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()
+                    && drowned.getItemBySlot(EquipmentSlot.MAINHAND).is(Items.TRIDENT)) {
+                drowned.setDropChance(EquipmentSlot.MAINHAND,
+                        (float) (MobBuffConfig.drownedTridentDropChance / 100.0D));
+            }
+        }
+        if (mob instanceof AbstractIllager illager) {
+            applyHealth(illager, MobBuffConfig.illagerHealth, ILLAGER_HEALTH_UUID);
+            AttributeInstance armor = illager.getAttribute(Attributes.ARMOR);
+            if (armor != null) {
+                armor.removeModifier(ILLAGER_ARMOR_UUID);
+                armor.addPermanentModifier(new AttributeModifier(ILLAGER_ARMOR_UUID, HEALTH_MODIFIER_NAME,
+                        MobBuffConfig.illagerArmor, AttributeModifier.Operation.ADDITION));
+            }
+            if (illager instanceof Pillager || illager instanceof Vindicator) {
+                for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.MAINHAND}) {
+                    illager.setDropChance(slot, (float) (MobBuffConfig.illagerWeaponDropChance / 100.0D));
+                }
+            }
+        }
+        if (mob instanceof Phantom phantom) {
+            applySpeedMultiplier(phantom, MobBuffConfig.phantomSpeedMultiplier, PHANTOM_SPEED_UUID);
+        }
+        if (mob instanceof Ravager ravager) {
+            applyHealth(ravager, MobBuffConfig.ravagerHealth, RAVAGER_HEALTH_UUID);
+            applySpeedMultiplier(ravager, MobBuffConfig.ravagerSpeedMultiplier, PHANTOM_SPEED_UUID);
+        }
 
         if (mob instanceof Zombie) {
             // ---- 僵尸系（僵尸 / 尸壳 / 溺尸 / 僵尸村民 / 僵尸猪灵）----
@@ -146,10 +195,16 @@ public final class MobBuffHandler {
         if (!MobBuffConfig.enabled || !MobBuffConfig.babyZombieEnlargeHitbox) {
             return;
         }
-        if (!(event.getEntity() instanceof Zombie zombie) || !zombie.isBaby()) {
+        double multiplier;
+        if (event.getEntity() instanceof Zombie zombie && zombie.isBaby()) {
+            multiplier = MobBuffConfig.babyZombieSizeMultiplier;
+        } else if (event.getEntity() instanceof CaveSpider) {
+            multiplier = MobBuffConfig.caveSpiderSizeMultiplier;
+        } else if (event.getEntity() instanceof Phantom) {
+            multiplier = MobBuffConfig.phantomSizeMultiplier;
+        } else {
             return;
         }
-        double multiplier = MobBuffConfig.babyZombieSizeMultiplier;
         if (multiplier <= 1.0D) {
             return;
         }
@@ -312,15 +367,19 @@ public final class MobBuffHandler {
 
     /** 苦力怕等：给移速加一个固定 UUID 的乘算修饰符 */
     private static void applySpeedMultiplier(Mob mob, double multiplier) {
+        applySpeedMultiplier(mob, multiplier, CREEPER_SPEED_UUID);
+    }
+
+    private static void applySpeedMultiplier(Mob mob, double multiplier, UUID modifierId) {
         AttributeInstance speed = mob.getAttribute(Attributes.MOVEMENT_SPEED);
         if (speed == null) {
             return;
         }
-        speed.removeModifier(CREEPER_SPEED_UUID);
+        speed.removeModifier(modifierId);
         double amount = multiplier - 1.0D;
         if (amount > 0.0001D) {
             speed.addPermanentModifier(new AttributeModifier(
-                    CREEPER_SPEED_UUID, SPEED_MODIFIER_NAME, amount, AttributeModifier.Operation.MULTIPLY_BASE));
+                    modifierId, SPEED_MODIFIER_NAME, amount, AttributeModifier.Operation.MULTIPLY_BASE));
         }
     }
 
