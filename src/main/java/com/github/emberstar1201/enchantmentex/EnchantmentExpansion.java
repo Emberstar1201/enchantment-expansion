@@ -240,7 +240,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(MobBuffHandler.class);
         // 凋零强化：属性 / 半血减伤 / 母弹分裂 / 死亡爆炸与经验
         MinecraftForge.EVENT_BUS.register(WitherBuffHandler.class);
-        // 末影龙强化：血量 / 护甲 / 水晶攻击 / 吼叫 / 半血机制
+        // 末影龙强化：血量 / 护甲 / 主动攻击 / 吼叫 / 半血机制
         MinecraftForge.EVENT_BUS.register(EnderDragonBuffHandler.class);
         // 原版怪物强化：游戏内配置命令 /ee mobbuff ...（仅 OP / 服主可用）
         MinecraftForge.EVENT_BUS.register(MobBuffCommandHandler.class);

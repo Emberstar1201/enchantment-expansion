@@ -17,6 +17,7 @@
     "FoodDataLifeStarMixin",
     "CreeperSwellAccessor",
     "RangedBowAttackGoalMixin",
+    "RavagerCombatMixin",
     "EnderManHurtMixin"
   ],
   "client": [

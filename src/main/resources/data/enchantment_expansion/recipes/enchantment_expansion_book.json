@@ -8,7 +8,7 @@
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "b#b",
-    "#s#",
+    "#e#",
     "b#b"
   ],
   "key": {
@@ -18,8 +18,8 @@
     "#": {
       "item": "minecraft:amethyst_shard"
     },
-    "s": {
-      "item": "minecraft:nether_star"
+    "e": {
+      "item": "minecraft:end_rod"
     }
   },
   "result": {
