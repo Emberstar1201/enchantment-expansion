@@ -3,7 +3,9 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.entity.CrescentEntity;
 import com.github.emberstar1201.enchantmentex.entity.CustomLightningEntity;
+import net.minecraft.world.phys.Vec3;
 import com.github.emberstar1201.enchantmentex.item.SwordOfTheFreeWill;
 import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import com.mojang.logging.LogUtils;
@@ -18,6 +20,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -34,9 +38,11 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -73,13 +79,22 @@ public class SwordOfTheFreeWillHandler {
     private static final String KEY_COOLDOWN_END = "SOTFW_CooldownEnd";
     private static final String KEY_BUFF_END = "SOTFW_BuffEnd";
     private static final String KEY_NOTIFIED = "SOTFW_CooldownNotified";
+    private static final String KEY_ETERNAL_SPARK_ATTACKERS = "SOTFW_EternalSparkAttackers";
+    private static final String KEY_ENHANCED_TOTEM_COOLDOWN_END = "SOTFW_EnhancedTotemCooldownEnd";
+    private static final String KEY_ENHANCED_TOTEM_NOTIFIED = "SOTFW_EnhancedTotemNotified";
+    private static final long ENHANCED_TOTEM_COOLDOWN_TICKS = 300L * 20L;
 
     // ============================================================
     // 修饰符 UUID（护甲）
     // ============================================================
     private static final UUID ARMOR_MODIFIER_UUID =
             UUID.fromString("d4e5f6a7-b8c9-0123-4567-890abcdef012");
+    private static final UUID TOUGHNESS_MODIFIER_UUID =
+            UUID.fromString("e5f6a7b8-c9d0-1234-5678-90abcdef0123");
     private static final String ARMOR_MODIFIER_NAME = "SOTFW Armor Bonus";
+    private static final String TOUGHNESS_MODIFIER_NAME = "SOTFW Armor Toughness Bonus";
+    private static final double ENHANCED_ARMOR_BONUS = 100.0D;
+    private static final double ENHANCED_TOUGHNESS_BONUS = 25.0D;
 
     // ============================================================
     // 光柱粒子跟踪表
@@ -101,20 +116,32 @@ public class SwordOfTheFreeWillHandler {
     //   女仆：主手 / 副手 / 四个护甲槽（女仆没有玩家式背包）
     // ============================================================
     private static boolean hasSwordInInventory(LivingEntity entity) {
-        if (entity.getMainHandItem().getItem() instanceof SwordOfTheFreeWill) return true;
-        if (entity.getOffhandItem().getItem() instanceof SwordOfTheFreeWill) return true;
+        return hasSwordVariantInInventory(entity, false) || hasSwordVariantInInventory(entity, true);
+    }
+
+    private static boolean hasSwordVariantInInventory(LivingEntity entity, boolean enhanced) {
+        if (isSwordVariant(entity.getMainHandItem(), enhanced)
+                || isSwordVariant(entity.getOffhandItem(), enhanced)) {
+            return true;
+        }
 
         if (entity instanceof Player player) {
             for (ItemStack stack : player.getInventory().items) {
-                if (stack.getItem() instanceof SwordOfTheFreeWill) return true;
+                if (isSwordVariant(stack, enhanced)) return true;
             }
             return false;
         }
 
         for (ItemStack stack : TLMSafe.collectMaidEquipments(entity)) {
-            if (stack.getItem() instanceof SwordOfTheFreeWill) return true;
+            if (isSwordVariant(stack, enhanced)) return true;
         }
         return false;
+    }
+
+    private static boolean isSwordVariant(ItemStack stack, boolean enhanced) {
+        return enhanced
+                ? stack.getItem() == ModItems.SWORD_OF_THE_FREE_WILL_ENHANCED.get()
+                : stack.getItem() == ModItems.SWORD_OF_THE_FREE_WILL.get();
     }
 
     // ============================================================
@@ -210,26 +237,33 @@ public class SwordOfTheFreeWillHandler {
     //   玩家与女仆共用（女仆同样拥有 ARMOR 属性）。
     //   每个实体的属性实例相互独立，同一 UUID 不会互相干扰。
     // ============================================================
-    private static void manageArmorModifier(LivingEntity entity, boolean shouldHave) {
+    private static void manageArmorModifier(LivingEntity entity, boolean hasNormalSword, boolean hasEnhancedSword) {
         AttributeInstance armorAttr = entity.getAttribute(Attributes.ARMOR);
-        if (armorAttr == null) return;
+        AttributeInstance toughnessAttr = entity.getAttribute(Attributes.ARMOR_TOUGHNESS);
+        if (armorAttr == null || toughnessAttr == null) return;
 
-        AttributeModifier existing = armorAttr.getModifier(ARMOR_MODIFIER_UUID);
-        if (shouldHave) {
-            if (existing == null) {
-                armorAttr.addTransientModifier(
-                        new AttributeModifier(ARMOR_MODIFIER_UUID, ARMOR_MODIFIER_NAME,
-                                Config.swordPassiveArmor, AttributeModifier.Operation.ADDITION));
-            } else if (existing.getAmount() != Config.swordPassiveArmor) {
-                armorAttr.removeModifier(ARMOR_MODIFIER_UUID);
-                armorAttr.addTransientModifier(
-                        new AttributeModifier(ARMOR_MODIFIER_UUID, ARMOR_MODIFIER_NAME,
-                                Config.swordPassiveArmor, AttributeModifier.Operation.ADDITION));
-            }
-        } else {
+        updateModifier(armorAttr, ARMOR_MODIFIER_UUID, ARMOR_MODIFIER_NAME,
+                hasEnhancedSword ? ENHANCED_ARMOR_BONUS
+                        : hasNormalSword ? Config.swordPassiveArmor : 0.0D);
+        updateModifier(toughnessAttr, TOUGHNESS_MODIFIER_UUID, TOUGHNESS_MODIFIER_NAME,
+                hasEnhancedSword ? ENHANCED_TOUGHNESS_BONUS : 0.0D);
+    }
+
+    private static void updateModifier(AttributeInstance attribute, UUID uuid, String name, double amount) {
+        AttributeModifier existing = attribute.getModifier(uuid);
+        if (amount == 0.0D) {
             if (existing != null) {
-                armorAttr.removeModifier(ARMOR_MODIFIER_UUID);
+                attribute.removeModifier(uuid);
             }
+            return;
+        }
+
+        if (existing == null || existing.getAmount() != amount) {
+            if (existing != null) {
+                attribute.removeModifier(uuid);
+            }
+            attribute.addTransientModifier(
+                    new AttributeModifier(uuid, name, amount, AttributeModifier.Operation.ADDITION));
         }
     }
 
@@ -289,6 +323,7 @@ public class SwordOfTheFreeWillHandler {
 
         ItemStack stack = event.getItemStack();
         if (!(stack.getItem() instanceof SwordOfTheFreeWill)) return;
+        if (stack.getItem() == ModItems.SWORD_OF_THE_FREE_WILL_ENHANCED.get()) return;
 
         if (isOnCooldown(player)) {
             int remaining = getRemainingCooldownSeconds(player);
@@ -347,8 +382,86 @@ public class SwordOfTheFreeWillHandler {
         }
     }
 
+    private static boolean isMarkedFor(LivingEntity target, LivingEntity attacker) {
+        CompoundTag marks = target.getPersistentData().getCompound(KEY_ETERNAL_SPARK_ATTACKERS);
+        return marks.getBoolean(attacker.getUUID().toString());
+    }
+
+    private static void markTarget(LivingEntity target, LivingEntity attacker) {
+        CompoundTag marks = target.getPersistentData().getCompound(KEY_ETERNAL_SPARK_ATTACKERS);
+        marks.putBoolean(attacker.getUUID().toString(), true);
+        target.getPersistentData().put(KEY_ETERNAL_SPARK_ATTACKERS, marks);
+    }
+
+    private static void fireEternalSpark(LivingEntity attacker, LivingEntity target, float weaponDamage) {
+        if (!(attacker.level() instanceof ServerLevel serverLevel)) return;
+
+        Vec3 start = attacker.getEyePosition();
+        CrescentEntity spark = new CrescentEntity(
+                serverLevel, attacker, start, attacker.getLookAngle(),
+                1.6F, weaponDamage * 10.0F, 24.0D,
+                CrescentEntity.TYPE_ETERNAL_SPARK);
+        serverLevel.addFreshEntity(spark);
+        serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                start.x, start.y, start.z, 10, 0.2, 0.2, 0.2, 0.04);
+    }
+
+    private static void applyEternalSpark(LivingHurtEvent event, LivingEntity attacker, ItemStack weapon) {
+        if (event.getSource().getDirectEntity() instanceof CrescentEntity) return;
+
+        LivingEntity target = event.getEntity();
+        if (isMarkedFor(target, attacker)) {
+            event.setAmount(event.getAmount() * 2.0F);
+        }
+
+        float attackDamage = event.getAmount();
+        markTarget(target, attacker);
+        if (target.isAlive()) {
+            fireEternalSpark(attacker, target, attackDamage);
+        }
+    }
+
     // ============================================================
-    // 事件3：攻击/受击事件（LivingHurtEvent）
+    // 事件3：强化人权剑「星火不灭」致命伤保护
+    // ============================================================
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onLivingDamage(LivingDamageEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (entity.level().isClientSide() || !isWillUser(entity)) return;
+        if (event.getAmount() < entity.getHealth()
+                || !hasSwordVariantInInventory(entity, true)) return;
+
+        long gameTime = entity.level().getGameTime();
+        long cooldownEnd = entity.getPersistentData().getLong(KEY_ENHANCED_TOTEM_COOLDOWN_END);
+        if (gameTime < cooldownEnd) return;
+
+        event.setCanceled(true);
+        entity.setHealth(entity.getMaxHealth());
+        entity.addEffect(new MobEffectInstance(
+                MobEffects.REGENERATION, 20 * 60, 4, false, true, true));
+        entity.addEffect(new MobEffectInstance(
+                MobEffects.ABSORPTION, 20 * 60, 4, false, true, true));
+        entity.addEffect(new MobEffectInstance(
+                MobEffects.DAMAGE_RESISTANCE, 20 * 60, 4, false, true, true));
+        entity.level().broadcastEntityEvent(entity, (byte) 35);
+
+        entity.getPersistentData().putLong(KEY_ENHANCED_TOTEM_COOLDOWN_END,
+                gameTime + ENHANCED_TOTEM_COOLDOWN_TICKS);
+        entity.getPersistentData().putBoolean(KEY_ENHANCED_TOTEM_NOTIFIED, false);
+
+        if (entity instanceof Player player) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.enchantment_expansion.sotfw.enhanced_triggered"
+            ).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        } else if (entity.level() instanceof ServerLevel serverLevel) {
+            notifyMaidOwner(serverLevel.getServer(), entity,
+                    "message.enchantment_expansion.sotfw.enhanced_triggered",
+                    ChatFormatting.GOLD, ChatFormatting.BOLD);
+        }
+    }
+
+    // ============================================================
+    // 事件4：攻击/受击事件（LivingHurtEvent）
     // ============================================================
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
@@ -359,7 +472,9 @@ public class SwordOfTheFreeWillHandler {
                 && isWillUser(attacker)) {
             ItemStack weapon = attacker.getMainHandItem();
 
-            if (weapon.getItem() instanceof SwordOfTheFreeWill) {
+            if (weapon.getItem() == ModItems.SWORD_OF_THE_FREE_WILL_ENHANCED.get()) {
+                applyEternalSpark(event, attacker, weapon);
+            } else if (weapon.getItem() instanceof SwordOfTheFreeWill) {
                 if (hasActiveBuff(attacker)) {
                     // 伤害提升
                     event.setAmount(event.getAmount()
@@ -403,10 +518,11 @@ public class SwordOfTheFreeWillHandler {
         if (event.player.level().isClientSide()) return;
 
         Player player = event.player;
-        boolean hasSword = hasSwordInInventory(player);
+        boolean hasNormalSword = hasSwordVariantInInventory(player, false);
+        boolean hasEnhancedSword = hasSwordVariantInInventory(player, true);
 
-        // 护甲修饰符
-        manageArmorModifier(player, hasSword);
+        // 普通版使用配置护甲；强化版提供固定的护甲与盔甲韧性。
+        manageArmorModifier(player, hasNormalSword, hasEnhancedSword);
 
         // 冷却通知
         long cooldownEnd = player.getPersistentData().getLong(KEY_COOLDOWN_END);
@@ -418,6 +534,17 @@ public class SwordOfTheFreeWillHandler {
             ).withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
             player.getPersistentData().putBoolean(KEY_NOTIFIED, true);
             LOGGER.debug("[SOTFW] {} 的「人的意志」冷却已结束", player.getName().getString());
+        }
+
+        long enhancedCooldownEnd = player.getPersistentData()
+                .getLong(KEY_ENHANCED_TOTEM_COOLDOWN_END);
+        if (enhancedCooldownEnd > 0
+                && !player.getPersistentData().getBoolean(KEY_ENHANCED_TOTEM_NOTIFIED)
+                && player.level().getGameTime() >= enhancedCooldownEnd) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.enchantment_expansion.sotfw.enhanced_cooldown_done"
+            ).withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
+            player.getPersistentData().putBoolean(KEY_ENHANCED_TOTEM_NOTIFIED, true);
         }
     }
 
@@ -449,15 +576,36 @@ public class SwordOfTheFreeWillHandler {
         for (ServerLevel level : server.getAllLevels()) {
             for (LivingEntity maid : TLMSafe.collectMaids(level)) {
 
-                boolean hasSword = hasSwordInInventory(maid);
+                boolean hasNormalSword = hasSwordVariantInInventory(maid, false);
+                boolean hasEnhancedSword = hasSwordVariantInInventory(maid, true);
+                boolean hasSword = hasNormalSword || hasEnhancedSword;
 
-                // 护甲修饰符：装备栏（主手/副手/护甲）任一人权剑即生效
-                manageArmorModifier(maid, hasSword);
+                // 普通版使用配置护甲；强化版提供固定的护甲与盔甲韧性。
+                manageArmorModifier(maid, hasNormalSword, hasEnhancedSword);
 
                 if (!hasSword) continue;
 
-                // 自动激活：只有主手持剑才值得开启（加成只在主手攻击时结算）
-                if (maid.getMainHandItem().getItem() instanceof SwordOfTheFreeWill
+                // 强化版只使用星火剑气与星火印记，不参与「人的意志」提示和冷却逻辑。
+                if (maid.getMainHandItem().getItem() == ModItems.SWORD_OF_THE_FREE_WILL_ENHANCED.get()) {
+                    maid.getPersistentData().remove(KEY_BUFF_END);
+                    maid.getPersistentData().remove(KEY_COOLDOWN_END);
+                    maid.getPersistentData().remove(KEY_NOTIFIED);
+
+                    long enhancedCooldownEnd = maid.getPersistentData()
+                            .getLong(KEY_ENHANCED_TOTEM_COOLDOWN_END);
+                    if (enhancedCooldownEnd > 0
+                            && !maid.getPersistentData().getBoolean(KEY_ENHANCED_TOTEM_NOTIFIED)
+                            && maid.level().getGameTime() >= enhancedCooldownEnd) {
+                        maid.getPersistentData().putBoolean(KEY_ENHANCED_TOTEM_NOTIFIED, true);
+                        notifyMaidOwner(server, maid,
+                                "message.enchantment_expansion.sotfw.enhanced_cooldown_done",
+                                ChatFormatting.GREEN, ChatFormatting.BOLD);
+                    }
+                    continue;
+                }
+
+                // 自动激活：只有普通人权剑主手持有时才开启「人的意志」。
+                if (maid.getMainHandItem().getItem() == ModItems.SWORD_OF_THE_FREE_WILL.get()
                         && !hasActiveBuff(maid)
                         && !isOnCooldown(maid)) {
                     activateWill(maid);
@@ -507,6 +655,10 @@ public class SwordOfTheFreeWillHandler {
                 AttributeInstance armorAttr = event.getPlayer().getAttribute(Attributes.ARMOR);
                 if (armorAttr != null) {
                     armorAttr.removeModifier(ARMOR_MODIFIER_UUID);
+                }
+                AttributeInstance toughnessAttr = event.getPlayer().getAttribute(Attributes.ARMOR_TOUGHNESS);
+                if (toughnessAttr != null) {
+                    toughnessAttr.removeModifier(TOUGHNESS_MODIFIER_UUID);
                 }
             }
         }

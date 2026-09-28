@@ -69,6 +69,12 @@ public class ModItems {
     public static final RegistryObject<SwordOfTheFreeWill> SWORD_OF_THE_FREE_WILL =
             ITEMS.register("sword_of_the_free_will", SwordOfTheFreeWill::new);
 
+    public static final RegistryObject<EnhancedSwordOfTheFreeWill> SWORD_OF_THE_FREE_WILL_ENHANCED =
+            ITEMS.register("sword_of_the_free_will_enhanced", EnhancedSwordOfTheFreeWill::new);
+
+    public static final RegistryObject<ResidualScytheItem> RESIDUAL_SCYTHE =
+            ITEMS.register("residual_scythe", ResidualScytheItem::new);
+
     // ========================================================================
     // 【海洋之星】（Ocean star）
     //   在海洋神殿结构内的宝箱中获得（每神殿仅一个，100%生成）
@@ -275,6 +281,8 @@ public class ModItems {
                 event.accept(LIFE_STAR);
                 event.accept(VOID_STAR);
                 event.accept(STARLIGHT_STAR);
+                event.accept(SWORD_OF_THE_FREE_WILL);
+                event.accept(RESIDUAL_SCYTHE);
                 event.accept(DAWN_STAR);
                 event.accept(ETERNAL_TOTEM);
                 event.accept(ENHANCEMENT_SCROLL);

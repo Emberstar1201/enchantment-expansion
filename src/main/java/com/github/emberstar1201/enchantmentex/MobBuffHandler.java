@@ -16,6 +16,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.CaveSpider;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Ghast;
+import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Evoker;
@@ -26,13 +28,17 @@ import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.monster.Vindicator;
 import net.minecraft.world.entity.monster.WitherSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.ZombifiedPiglin;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.event.entity.EntityEvent;
@@ -51,10 +57,11 @@ import java.util.UUID;
 // 【原版怪物强化】事件处理器
 //
 // 覆盖用户需求：
-//   1. 僵尸系：血量 25~30 随机；25% 概率穿甲（最多到钻石，无下界合金）+ 25% 补武器；
-//      装备掉落概率提升到 15%；额外掉落铜锭/金锭/金粒/铁粒/铁锭
+//   1. 僵尸系：血量 25~30 随机；指定僵尸变种完整穿戴铁至钻石盔甲；
+//      普通僵尸与尸壳有 75% 概率装备附魔铁剑，装备与武器掉落率为 75%；
+//      额外掉落铜锭/金锭/金粒/铁粒/铁锭
 //   2. 小僵尸：碰撞箱放大（EntityEvent.Size，无需 Mixin）
-//   3. 骷髅系：血量 25~30；25% 概率穿甲；装备掉落率 15%；拉弓更快（由 Mixin 完成）
+//   3. 骷髅系：血量 25~30；完整穿戴铁至钻石盔甲；装备与武器掉落率为 75%；拉弓更快（由 Mixin 完成）
 //   4. 蜘蛛：命中玩家时在 4 格范围内结网
 //   5. 苦力怕：蓄力时间更长（Mixin 改 maxSwell）+ 移速加快（属性修饰符）
 //   6. 末影人：血量 40 → 50；弹射物可命中（由 Mixin 完成）
@@ -132,37 +139,45 @@ public final class MobBuffHandler {
 
         RandomSource random = mob.getRandom();
 
-        if (mob instanceof CaveSpider) {
+        if (mob instanceof Ghast) {
+            // 恶魂只需要 Mixin 调整 AI 与弹射物速度，实体加入事件无需重复处理。
+            return;
+        } else if (mob instanceof ZombifiedPiglin zombifiedPiglin) {
+            applyHealth(zombifiedPiglin, MobBuffConfig.rollZombieHealth(random), ZOMBIE_HEALTH_UUID);
+            applyEquipmentDropChance(zombifiedPiglin, 15.0D);
+            populateArmor(zombifiedPiglin, random);
+        } else if (mob instanceof CaveSpider) {
             applyHealth(mob, MobBuffConfig.caveSpiderHealth, CAVE_SPIDER_HEALTH_UUID);
         } else if (mob instanceof Drowned drowned) {
             applyHealth(mob, MobBuffConfig.rollZombieHealth(random), ZOMBIE_HEALTH_UUID);
             if (drowned.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()
-                    && random.nextDouble() * 100.0D < MobBuffConfig.drownedTridentChance) {
+                    && random.nextDouble() * 100.0D < 75.0D) {
                 drowned.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.TRIDENT));
             }
-            applyEquipmentDropChance(drowned, MobBuffConfig.zombieEquipmentDropChance);
+            applyEquipmentDropChance(drowned, 15.0D);
             if (drowned.getItemBySlot(EquipmentSlot.MAINHAND).is(Items.TRIDENT)) {
-                drowned.setDropChance(EquipmentSlot.MAINHAND,
-                        (float) (MobBuffConfig.drownedTridentDropChance / 100.0D));
+                drowned.setDropChance(EquipmentSlot.MAINHAND, 0.15F);
             }
         } else if (mob instanceof Zombie) {
-            // ---- 僵尸系（僵尸 / 尸壳 / 僵尸村民 / 僵尸猪灵）----
+            // ---- 僵尸系：指定变种必须获得完整铁质起步套装 ----
             applyHealth(mob, MobBuffConfig.rollZombieHealth(random), ZOMBIE_HEALTH_UUID);
-            applyEquipmentDropChance(mob, MobBuffConfig.zombieEquipmentDropChance);
-            buffZombieEquipment(mob, random);
+            applyEquipmentDropChance(mob, 15.0D);
+            if (mob instanceof Husk || mob.getType() == net.minecraft.world.entity.EntityType.ZOMBIE) {
+                buffZombieEquipment(mob, random);
+            }
         } else if (mob instanceof AbstractSkeleton) {
             // ---- 骷髅系（骷髅 / 流浪者 / 凋灵骷髅）----
             applyHealth(mob, MobBuffConfig.rollSkeletonHealth(random), SKELETON_HEALTH_UUID);
-            applyEquipmentDropChance(mob, MobBuffConfig.skeletonEquipmentDropChance);
+            applyEquipmentDropChance(mob, 15.0D);
             buffSkeletonEquipment(mob, random);
         } else if (mob instanceof Pillager pillager) {
             applyHealth(pillager, MobBuffConfig.pillagerHealth, ILLAGER_HEALTH_UUID);
             applyArmor(pillager, MobBuffConfig.pillagerArmor, ILLAGER_ARMOR_UUID);
-            applyEquipmentDropChance(pillager, MobBuffConfig.illagerWeaponDropChance);
+            applyEquipmentDropChance(pillager, 15.0D);
         } else if (mob instanceof Vindicator vindicator) {
             applyHealth(vindicator, MobBuffConfig.vindicatorHealth, ILLAGER_HEALTH_UUID);
             applyArmor(vindicator, MobBuffConfig.vindicatorArmor, ILLAGER_ARMOR_UUID);
-            applyEquipmentDropChance(vindicator, MobBuffConfig.illagerWeaponDropChance);
+            applyEquipmentDropChance(vindicator, 15.0D);
         } else if (mob instanceof Evoker evoker) {
             applyHealth(evoker, MobBuffConfig.evokerHealth, ILLAGER_HEALTH_UUID);
             applyArmor(evoker, MobBuffConfig.evokerArmor, ILLAGER_ARMOR_UUID);
@@ -243,10 +258,11 @@ public final class MobBuffHandler {
         RandomSource random = killed.getRandom();
         if (killed instanceof Zombie zombie) {
             addExtraDrop(event, zombie, Items.COPPER_INGOT, MobBuffConfig.zombieDropCopperIngotChance, random);
+            addExtraDrop(event, zombie, Items.DIAMOND, MobBuffConfig.zombieDropDiamondChance, random);
             addExtraDrop(event, zombie, Items.GOLD_INGOT, MobBuffConfig.zombieDropGoldIngotChance, random);
             addExtraDrop(event, zombie, Items.GOLD_NUGGET, MobBuffConfig.zombieDropGoldNuggetChance, random);
-            addExtraDrop(event, zombie, Items.IRON_NUGGET, MobBuffConfig.zombieDropIronNuggetChance, random);
             addExtraDrop(event, zombie, Items.IRON_INGOT, MobBuffConfig.zombieDropIronIngotChance, random);
+            addExtraDrop(event, zombie, Items.IRON_NUGGET, MobBuffConfig.zombieDropIronNuggetChance, random);
         }
         if (killed instanceof Pillager || killed instanceof Vindicator || killed instanceof Evoker) {
             for (int i = 0; i < MobBuffConfig.illagerEmeraldCount; i++) {
@@ -404,54 +420,49 @@ public final class MobBuffHandler {
         }
     }
 
-    /** 僵尸系：25% 概率穿甲 + 25% 概率补武器 */
+    /** 普通僵尸与尸壳：保证完整盔甲，并按配置概率装备附魔铁剑。 */
     private static void buffZombieEquipment(Mob mob, RandomSource random) {
-        if (random.nextDouble() * 100.0D < MobBuffConfig.zombieEquipChance) {
-            populateArmor(mob, random, MobBuffConfig.zombieEquipPieceChance);
-        }
-        // 主手已有武器（僵尸猪灵的金剑、溺尸的三叉戟等）时不覆盖
-        if (mob.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()
-                && random.nextDouble() * 100.0D < MobBuffConfig.zombieWeaponChance) {
-            mob.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
+        populateArmor(mob, random);
+        if (random.nextDouble() * 100.0D < MobBuffConfig.zombieWeaponChance) {
+            // 用户要求的是“至少铁剑”，因此普通僵尸/尸壳已有木剑、石剑时也替换掉。
+            ItemStack sword = new ItemStack(Items.IRON_SWORD);
+            sword.enchant(Enchantments.SHARPNESS, 1 + random.nextInt(3));
+            if (random.nextBoolean()) {
+                sword.enchant(Enchantments.FIRE_ASPECT, 1);
+            }
+            if (random.nextBoolean()) {
+                sword.enchant(Enchantments.KNOCKBACK, 1);
+            }
+            if (random.nextBoolean()) {
+                sword.enchant(ModEnchantments.PLUNDER.get(), 1);
+            }
+            mob.setItemSlot(EquipmentSlot.MAINHAND, sword);
+            mob.setDropChance(EquipmentSlot.MAINHAND, 0.15F);
         }
     }
 
-    /** 骷髅系：25% 概率穿甲（主手永远保留原版的弓） */
+    /** 骷髅系：保证完整盔甲，主手保留原版弓或专属武器。 */
     private static void buffSkeletonEquipment(Mob mob, RandomSource random) {
-        if (random.nextDouble() * 100.0D < MobBuffConfig.skeletonEquipChance) {
-            populateArmor(mob, random, MobBuffConfig.skeletonEquipPieceChance);
-        }
-    }
-
-    /**
-     * 按原版逻辑填充盔甲：
-     *   - 材质等级 i：先取 0~1，再三次 9.5% 概率升级，最高到钻石
-     *     （Mob.getEquipmentForSlot 只覆盖到钻石级，天然「不含下界合金」）
-     *   - 穿戴顺序 FEET → LEGS → CHEST → HEAD，与原版一致，
-     *     出现「只穿了靴子和护腿」这种半套装备的观感
-     *   - 只在槽位为空时填充，不会把原版已给的装备降级
-     */
-    private static void populateArmor(Mob mob, RandomSource random, double pieceChancePercent) {
-        // 从铁质起步，避免生成用户不希望出现的皮革装备。
-        int materialTier = 3;
-        for (int i = 0; i < 2; i++) {
-            if (random.nextFloat() < 0.095F) {
-                materialTier++;
+        populateArmor(mob, random);
+        ItemStack bow = mob.getItemBySlot(EquipmentSlot.MAINHAND);
+        if (bow.getItem() instanceof BowItem && random.nextDouble() < 0.30D) {
+            if (random.nextBoolean()) {
+                bow.enchant(ModEnchantments.ANCIENT_YUNLAI.get(), 1);
+            } else {
+                bow.enchant(ModEnchantments.SNIPER.get(), 1);
             }
         }
-        boolean firstSlot = true;
+    }
+
+
+    private static void populateArmor(Mob mob, RandomSource random) {
+        // Mob 的装备等级中 1 为金、3 为铁、4 为钻石；每个槽位独立抽取以支持所有混搭。
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             if (slot.getType() != EquipmentSlot.Type.ARMOR) {
                 continue;
             }
-            // 与原版一致：从第二件开始，每件都要过一次概率，失败就停止后续穿戴
-            if (!firstSlot && random.nextDouble() * 100.0D >= pieceChancePercent) {
-                break;
-            }
-            firstSlot = false;
-            if (!mob.getItemBySlot(slot).isEmpty()) {
-                continue;
-            }
+            int[] materialTiers = {1, 3, 4};
+            int materialTier = materialTiers[random.nextInt(materialTiers.length)];
             Item item = Mob.getEquipmentForSlot(slot, materialTier);
             if (item != null) {
                 mob.setItemSlot(slot, new ItemStack(item));

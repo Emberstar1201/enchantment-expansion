@@ -37,6 +37,9 @@ public class SwordOfTheFreeWill extends SwordItem {
 
     // NBT 标记键：用于标记该物品的附魔数据已初始化
     private static final String NBT_ENCH_INIT = "SOTFW_EnchInit";
+    protected boolean isEnhancedVariant() {
+        return false;
+    }
 
     // ================================================================
     // 自定义 Tier：基础伤害为 0，耐久很高但不可损坏
@@ -125,11 +128,13 @@ public class SwordOfTheFreeWill extends SwordItem {
         dawn.putShort("lvl", (short) 1);
         enchList.add(dawn);
 
-        // 星火不灭 I
-        CompoundTag eternalSpark = new CompoundTag();
-        eternalSpark.putString("id", "enchantment_expansion:eternal_spark");
-        eternalSpark.putShort("lvl", (short) 1);
-        enchList.add(eternalSpark);
+        // 星火不灭 I（强化后由「星火永燃」替代）
+        if (!isEnhancedVariant()) {
+            CompoundTag eternalSpark = new CompoundTag();
+            eternalSpark.putString("id", "enchantment_expansion:eternal_spark");
+            eternalSpark.putShort("lvl", (short) 1);
+            enchList.add(eternalSpark);
+        }
 
         tag.put("Enchantments", enchList);
         tag.putBoolean(NBT_ENCH_INIT, true);
@@ -151,7 +156,9 @@ public class SwordOfTheFreeWill extends SwordItem {
         map.put(Enchantments.MOB_LOOTING, 12);
         map.put(Enchantments.KNOCKBACK, 2);
         map.put(ModEnchantments.DAWN.get(), 1);
-        map.put(ModEnchantments.ETERNAL_SPARK.get(), 1);
+        if (!isEnhancedVariant()) {
+            map.put(ModEnchantments.ETERNAL_SPARK.get(), 1);
+        }
         return map;
     }
 
@@ -185,6 +192,7 @@ public class SwordOfTheFreeWill extends SwordItem {
     public boolean isFoil(ItemStack stack) {
         return true;
     }
+
 
     // ================================================================
     // 工具提示：显示内置附魔

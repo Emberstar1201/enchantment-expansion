@@ -45,22 +45,20 @@ public class MobBuffConfig {
             .defineInRange("zombie.maxHealth", 30.0D, 1.0D, 1024.0D);
 
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_EQUIP_CHANCE = BUILDER
-            .comment("僵尸系：生成时「拥有一整套装备」的总概率（百分比，默认 25.0）",
-                     "原版为 15% × 难度系数；此处直接替换为固定 25%")
-            .defineInRange("zombie.equipChance", 50.0D, 0.0D, 100.0D);
+            .comment("僵尸系：兼容旧配置项；指定强化僵尸始终生成完整盔甲")
+            .defineInRange("zombie.equipChance", 100.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_EQUIP_PIECE_CHANCE = BUILDER
-            .comment("僵尸系：逐件穿甲的概率（百分比，默认 25.0，与原版普通难度一致）",
-                     "材质等级仍沿用原版（皮革/金/锁链/铁/钻石），因此不会出现下界合金装备")
+            .comment("僵尸系：兼容旧配置项；指定强化僵尸四个盔甲槽位始终填充")
             .defineInRange("zombie.equipPieceChance", 100.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_WEAPON_CHANCE = BUILDER
-            .comment("僵尸系：主手为空时补一把武器（铁剑/铁锹）的概率（百分比，默认 25.0）",
-                     "僵尸猪灵、溺尸等已有专属武器的变种不会被覆盖")
-            .defineInRange("zombie.weaponChance", 25.0D, 0.0D, 100.0D);
+            .comment("普通僵尸与尸壳：装备附魔铁剑的概率（百分比，默认 75.0）",
+                     "僵尸猪灵和溺尸保留各自的专属武器逻辑")
+            .defineInRange("zombie.weaponChance", 75.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_DROP_CHANCE = BUILDER
-            .comment("僵尸系：身上装备的掉落概率（百分比，默认 15.0，原版为 8.5）",
+            .comment("僵尸系：身上装备和武器的掉落概率（百分比，默认 15.0）",
                      "这里指的是「被杀死后装备掉落的概率」，不是物品掉落概率")
             .defineInRange("zombie.equipmentDropChance", 15.0D, 0.0D, 100.0D);
 
@@ -68,23 +66,27 @@ public class MobBuffConfig {
             .comment("僵尸系：额外掉落铜锭的概率（百分比，默认 5.0，填 0 关闭）")
             .defineInRange("zombie.dropCopperIngotChance", 5.0D, 0.0D, 100.0D);
 
+    private static final ForgeConfigSpec.DoubleValue ZOMBIE_DIAMOND_CHANCE = BUILDER
+            .comment("僵尸系：额外掉落钻石的概率（百分比，默认 12.0，填 0 关闭）")
+            .defineInRange("zombie.dropDiamondChance", 12.0D, 0.0D, 100.0D);
+
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_GOLD_INGOT_CHANCE = BUILDER
-            .comment("僵尸系：额外掉落金锭的概率（百分比，默认 1.2，填 0 关闭）")
-            .defineInRange("zombie.dropGoldIngotChance", 1.2D, 0.0D, 100.0D);
+            .comment("僵尸系：额外掉落金锭的概率（百分比，默认 24.0，填 0 关闭）")
+            .defineInRange("zombie.dropGoldIngotChance", 24.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_GOLD_NUGGET_CHANCE = BUILDER
-            .comment("僵尸系：额外掉落金粒的概率（百分比，默认 2.5，填 0 关闭）")
-            .defineInRange("zombie.dropGoldNuggetChance", 2.5D, 0.0D, 100.0D);
+            .comment("僵尸系：额外掉落金粒的概率（百分比，默认 48.0，填 0 关闭）")
+            .defineInRange("zombie.dropGoldNuggetChance", 48.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_IRON_NUGGET_CHANCE = BUILDER
-            .comment("僵尸系：额外掉落铁粒的概率（百分比，默认 45.0，填 0 关闭）")
-            .defineInRange("zombie.dropIronNuggetChance", 45.0D, 0.0D, 100.0D);
+            .comment("僵尸系：额外掉落铁粒的概率（百分比，默认 90.0，填 0 关闭）")
+            .defineInRange("zombie.dropIronNuggetChance", 90.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_IRON_INGOT_CHANCE = BUILDER
             .comment("僵尸系：额外掉落铁锭的概率（百分比，默认 2.5）",
                      "原版僵尸战利品表本身已有约 2.5% 的铁锭，这里是额外追加一份，",
                      "因此实际铁锭掉率约为原版的两倍（「掉落铁锭的概率更高」）")
-            .defineInRange("zombie.dropIronIngotChance", 7.5D, 0.0D, 100.0D);
+            .defineInRange("zombie.dropIronIngotChance", 60.0D, 0.0D, 100.0D);
 
     // ================================================================
     // 二、骷髅系（骷髅 / 流浪者 / 凋灵骷髅）
@@ -98,16 +100,16 @@ public class MobBuffConfig {
             .defineInRange("skeleton.maxHealth", 30.0D, 1.0D, 1024.0D);
 
     private static final ForgeConfigSpec.DoubleValue SKELETON_EQUIP_CHANCE = BUILDER
-            .comment("骷髅系：生成时穿甲的总概率（百分比，默认 25.0，原版为 15%×难度系数）")
-            .defineInRange("skeleton.equipChance", 50.0D, 0.0D, 100.0D);
+            .comment("骷髅系：兼容旧配置项；指定强化骷髅始终生成完整盔甲")
+            .defineInRange("skeleton.equipChance", 100.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue SKELETON_EQUIP_PIECE_CHANCE = BUILDER
-            .comment("骷髅系：逐件穿甲的概率（百分比，默认 25.0）")
+            .comment("骷髅系：兼容旧配置项；指定强化骷髅四个盔甲槽位始终填充")
             .defineInRange("skeleton.equipPieceChance", 100.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue SKELETON_DROP_CHANCE = BUILDER
-            .comment("骷髅系：身上装备的掉落概率（百分比，默认 15.0，原版为 8.5）")
-            .defineInRange("skeleton.equipmentDropChance", 25.0D, 0.0D, 100.0D);
+            .comment("骷髅系：身上装备和武器的掉落概率（百分比，默认 15.0）")
+            .defineInRange("skeleton.equipmentDropChance", 15.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.IntValue SKELETON_BOW_DRAW_TICKS = BUILDER
             .comment("骷髅系：拉满弓所需 tick 数（默认 10，原版为 20；20 tick = 1 秒）",
@@ -153,6 +155,14 @@ public class MobBuffConfig {
     // ================================================================
     // 五、洞穴蜘蛛、溺尸、灾厄、幻翼与劫掠兽
     // ================================================================
+    private static final ForgeConfigSpec.IntValue GHAST_FIREBALL_INTERVAL = BUILDER
+            .comment("恶魂：火球发射间隔（tick，默认 24；原版约 60 tick）")
+            .defineInRange("ghast.fireballInterval", 24, 10, 200);
+
+    private static final ForgeConfigSpec.DoubleValue GHAST_FIREBALL_SPEED_MULTIPLIER = BUILDER
+            .comment("恶魂：火球飞行速度倍率（默认 0.5；数值越低飞得越慢）")
+            .defineInRange("ghast.fireballSpeedMultiplier", 0.5D, 0.1D, 1.0D);
+
     private static final ForgeConfigSpec.DoubleValue CAVE_SPIDER_HEALTH = BUILDER
             .comment("洞穴蜘蛛：最大生命值（默认 14.0）")
             .defineInRange("caveSpider.health", 14.0D, 1.0D, 1024.0D);
@@ -163,11 +173,11 @@ public class MobBuffConfig {
             .comment("洞穴蜘蛛：自然生成增强倍率（供生成相关兼容配置使用，默认 1.5）")
             .defineInRange("caveSpider.spawnMultiplier", 1.5D, 1.0D, 5.0D);
     private static final ForgeConfigSpec.DoubleValue DROWNED_TRIDENT_CHANCE = BUILDER
-            .comment("溺尸：空主手补充三叉戟的概率（默认 50%）")
-            .defineInRange("drowned.tridentChance", 50.0D, 0.0D, 100.0D);
+            .comment("溺尸：空主手补充三叉戟的概率（默认 75%）")
+            .defineInRange("drowned.tridentChance", 75.0D, 0.0D, 100.0D);
     private static final ForgeConfigSpec.DoubleValue DROWNED_TRIDENT_DROP_CHANCE = BUILDER
-            .comment("溺尸：三叉戟掉落概率（默认 15%）")
-            .defineInRange("drowned.tridentDropChance", 15.0D, 0.0D, 100.0D);
+            .comment("溺尸：三叉戟掉落概率（默认 75%）")
+            .defineInRange("drowned.tridentDropChance", 75.0D, 0.0D, 100.0D);
     private static final ForgeConfigSpec.DoubleValue PILLAGER_HEALTH = BUILDER.defineInRange("pillager.health", 32.0D, 1.0D, 1024.0D);
     private static final ForgeConfigSpec.DoubleValue PILLAGER_ARMOR = BUILDER.defineInRange("pillager.armor", 4.0D, 0.0D, 100.0D);
     private static final ForgeConfigSpec.DoubleValue VINDICATOR_HEALTH = BUILDER.defineInRange("vindicator.health", 32.0D, 1.0D, 1024.0D);
@@ -176,7 +186,9 @@ public class MobBuffConfig {
     private static final ForgeConfigSpec.DoubleValue EVOKER_ARMOR = BUILDER.defineInRange("evoker.armor", 3.0D, 0.0D, 100.0D);
     private static final ForgeConfigSpec.DoubleValue ILLAGER_EMERALD_CHANCE = BUILDER.defineInRange("illager.emeraldChance", 100.0D, 0.0D, 100.0D);
     private static final ForgeConfigSpec.IntValue ILLAGER_EMERALD_COUNT = BUILDER.defineInRange("illager.emeraldCount", 2, 1, 16);
-    private static final ForgeConfigSpec.DoubleValue ILLAGER_WEAPON_DROP_CHANCE = BUILDER.defineInRange("illager.weaponDropChance", 25.0D, 0.0D, 100.0D);
+    private static final ForgeConfigSpec.DoubleValue ILLAGER_WEAPON_DROP_CHANCE = BUILDER
+            .comment("灾厄村民武器掉落概率（默认 75%）")
+            .defineInRange("illager.weaponDropChance", 75.0D, 0.0D, 100.0D);
     private static final ForgeConfigSpec.DoubleValue PHANTOM_SIZE_MULTIPLIER = BUILDER.defineInRange("phantom.sizeMultiplier", 1.25D, 1.0D, 4.0D);
     private static final ForgeConfigSpec.DoubleValue PHANTOM_SPEED_MULTIPLIER = BUILDER.defineInRange("phantom.speedMultiplier", 1.35D, 1.0D, 5.0D);
     private static final ForgeConfigSpec.DoubleValue PHANTOM_MEMBRANE_DROP_CHANCE = BUILDER.defineInRange("phantom.membraneDropChance", 90.0D, 0.0D, 100.0D);
@@ -229,8 +241,8 @@ public class MobBuffConfig {
             .defineInRange("enderDragon.health", 1000.0D, 200.0D, 2048.0D);
 
     private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_ARMOR = BUILDER
-            .comment("末影龙：护甲值（默认 15.0）")
-            .defineInRange("enderDragon.armor", 15.0D, 0.0D, 100.0D);
+            .comment("末影龙：护甲值（默认 7.5）")
+            .defineInRange("enderDragon.armor", 7.5D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_LOW_HEALTH_DAMAGE_MULTIPLIER = BUILDER
             .comment("末影龙：低于 50% 生命值后的伤害倍率（默认 2.5，即伤害提升 150%）")
@@ -241,8 +253,8 @@ public class MobBuffConfig {
             .defineInRange("enderDragon.roarDamageSeconds", 5, 1, 30);
 
     private static final ForgeConfigSpec.IntValue ENDER_DRAGON_ATTACK_COOLDOWN = BUILDER
-            .comment("末影龙：主动攻击间隔（tick，默认 60；生命值低于 50% 时减半）")
-            .defineInRange("enderDragon.attackCooldown", 60, 20, 600);
+            .comment("末影龙：主动攻击间隔（tick，默认 120；生命值低于 50% 时减半）")
+            .defineInRange("enderDragon.attackCooldown", 120, 20, 600);
 
     private static final ForgeConfigSpec.IntValue ENDER_DRAGON_ALTAR_BREATH_SECONDS = BUILDER
             .comment("末影龙：首次降至半血时，祭坛附近龙息持续时间（秒，默认 3）")
@@ -302,12 +314,12 @@ public class MobBuffConfig {
             .defineInRange("experience.hostileBonusPercent", 450.0D, 0.0D, 10000.0D);
 
     private static final ForgeConfigSpec.IntValue ENDER_DRAGON_FIRST_EXPERIENCE = BUILDER
-            .comment("末影龙：首次击败经验值（默认 48000）")
-            .defineInRange("enderDragon.firstExperience", 48000, 0, 1000000);
+            .comment("末影龙：首次击败经验值（默认 56000）")
+            .defineInRange("enderDragon.firstExperience", 56000, 0, 1000000);
 
     private static final ForgeConfigSpec.IntValue ENDER_DRAGON_RESPAWN_EXPERIENCE = BUILDER
-            .comment("末影龙：重生后击败经验值（默认 24000）")
-            .defineInRange("enderDragon.respawnExperience", 24000, 0, 1000000);
+            .comment("末影龙：重生后击败经验值（默认 36000）")
+            .defineInRange("enderDragon.respawnExperience", 36000, 0, 1000000);
 
     // 配置 SPEC 实例（供 registerConfig 注册）
     static final ForgeConfigSpec SPEC = BUILDER.build();
@@ -334,6 +346,7 @@ public class MobBuffConfig {
         add(map, "zombie.weaponChance", ValueType.DOUBLE, ZOMBIE_WEAPON_CHANCE, 0.0D, 100.0D);
         add(map, "zombie.equipmentDropChance", ValueType.DOUBLE, ZOMBIE_DROP_CHANCE, 0.0D, 100.0D);
         add(map, "zombie.dropCopperIngotChance", ValueType.DOUBLE, ZOMBIE_COPPER_INGOT_CHANCE, 0.0D, 100.0D);
+        add(map, "zombie.dropDiamondChance", ValueType.DOUBLE, ZOMBIE_DIAMOND_CHANCE, 0.0D, 100.0D);
         add(map, "zombie.dropGoldIngotChance", ValueType.DOUBLE, ZOMBIE_GOLD_INGOT_CHANCE, 0.0D, 100.0D);
         add(map, "zombie.dropGoldNuggetChance", ValueType.DOUBLE, ZOMBIE_GOLD_NUGGET_CHANCE, 0.0D, 100.0D);
         add(map, "zombie.dropIronNuggetChance", ValueType.DOUBLE, ZOMBIE_IRON_NUGGET_CHANCE, 0.0D, 100.0D);
@@ -354,6 +367,8 @@ public class MobBuffConfig {
         add(map, "spider.webRadius", ValueType.INT, SPIDER_WEB_RADIUS, 1.0D, 16.0D);
         add(map, "spider.webCount", ValueType.INT, SPIDER_WEB_COUNT, 1.0D, 16.0D);
 
+        add(map, "ghast.fireballInterval", ValueType.INT, GHAST_FIREBALL_INTERVAL, 10.0D, 200.0D);
+        add(map, "ghast.fireballSpeedMultiplier", ValueType.DOUBLE, GHAST_FIREBALL_SPEED_MULTIPLIER, 0.1D, 1.0D);
         add(map, "caveSpider.health", ValueType.DOUBLE, CAVE_SPIDER_HEALTH, 1.0D, 1024.0D);
         add(map, "caveSpider.sizeMultiplier", ValueType.DOUBLE, CAVE_SPIDER_SIZE_MULTIPLIER, 1.0D, 4.0D);
         add(map, "caveSpider.spawnMultiplier", ValueType.DOUBLE, CAVE_SPIDER_SPAWN_MULTIPLIER, 1.0D, 5.0D);
@@ -569,6 +584,7 @@ public class MobBuffConfig {
     public static double zombieWeaponChance;
     public static double zombieEquipmentDropChance;
     public static double zombieDropCopperIngotChance;
+    public static double zombieDropDiamondChance;
     public static double zombieDropGoldIngotChance;
     public static double zombieDropGoldNuggetChance;
     public static double zombieDropIronNuggetChance;
@@ -589,6 +605,8 @@ public class MobBuffConfig {
     public static int spiderWebRadius;
     public static int spiderWebCount;
 
+    public static int ghastFireballInterval;
+    public static double ghastFireballSpeedMultiplier;
     public static double caveSpiderHealth;
     public static double caveSpiderSizeMultiplier;
     public static double caveSpiderSpawnMultiplier;
@@ -674,6 +692,7 @@ public class MobBuffConfig {
         zombieWeaponChance = ZOMBIE_WEAPON_CHANCE.get();
         zombieEquipmentDropChance = ZOMBIE_DROP_CHANCE.get();
         zombieDropCopperIngotChance = ZOMBIE_COPPER_INGOT_CHANCE.get();
+        zombieDropDiamondChance = ZOMBIE_DIAMOND_CHANCE.get();
         zombieDropGoldIngotChance = ZOMBIE_GOLD_INGOT_CHANCE.get();
         zombieDropGoldNuggetChance = ZOMBIE_GOLD_NUGGET_CHANCE.get();
         zombieDropIronNuggetChance = ZOMBIE_IRON_NUGGET_CHANCE.get();
@@ -694,6 +713,8 @@ public class MobBuffConfig {
         spiderWebRadius = SPIDER_WEB_RADIUS.get();
         spiderWebCount = SPIDER_WEB_COUNT.get();
 
+        ghastFireballInterval = GHAST_FIREBALL_INTERVAL.get();
+        ghastFireballSpeedMultiplier = GHAST_FIREBALL_SPEED_MULTIPLIER.get();
         caveSpiderHealth = CAVE_SPIDER_HEALTH.get();
         caveSpiderSizeMultiplier = CAVE_SPIDER_SIZE_MULTIPLIER.get();
         caveSpiderSpawnMultiplier = CAVE_SPIDER_SPAWN_MULTIPLIER.get();

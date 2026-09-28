@@ -61,6 +61,7 @@ import com.github.emberstar1201.enchantmentex.item.handler.ProtectedItemHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.StarEmbedHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.StarlightStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.SwordOfTheFreeWillHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.ResidualScytheHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.TerminalBookHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.VoidStarHandler;
 import com.github.emberstar1201.enchantmentex.client.handler.EnchantmentBookLookupHandler;
@@ -191,6 +192,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(YunLaiSwordmanshipHandler.class);
         MinecraftForge.EVENT_BUS.register(OceanStarHandler.class);
         MinecraftForge.EVENT_BUS.register(SwordOfTheFreeWillHandler.class);
+        MinecraftForge.EVENT_BUS.register(ResidualScytheHandler.class);
         MinecraftForge.EVENT_BUS.register(TerminalBookHandler.class);
         MinecraftForge.EVENT_BUS.register(ProtectedItemHandler.class);
         MinecraftForge.EVENT_BUS.register(StarEmbedHandler.class);

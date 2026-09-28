@@ -1,0 +1,32 @@
+{
+  "name": "人权剑·星火永燃",
+  "category": "enchantment_expansion:weapons",
+  "icon": "enchantment_expansion:sword_of_the_free_will_enhanced",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:sword_of_the_free_will_enhanced",
+      "title": "人权剑·星火永燃",
+      "text": "§l武器效果：§r$(br)护甲 +100、盔甲韧性 +25、伤害减免 25%，内置锋利 XII、亡灵杀手 XII、抢夺 XII、击退 II、拂晓 I。$(br2)§l被动「星火不灭」：§r$(br)抵挡一次致命伤害，冷却时间 300 秒。$(br2)§l技能「星火印记」：§r$(br)攻击命中目标时施加星火印记，并斩出蓝色火焰剑气；再次攻击带有自己印记的目标时，伤害提高 100%。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:sword_of_the_free_will",
+      "title": "铁砧左槽：人权剑",
+      "text": "将人权剑放入铁砧左侧。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:dawn_star",
+      "title": "铁砧右槽：晨曦之星",
+      "text": "将 1 个晨曦之星放入铁砧右侧。消耗 5 级经验。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:sword_of_the_free_will_enhanced",
+      "title": "铁砧输出：人权剑·星火永燃",
+      "text": "满足左人权剑、右晨曦之星的顺序后，铁砧会输出人权剑·星火永燃。§c§l重要提醒：升级完成后，人权剑上拂晓已经积累的等级会全部清空！§r"
+    }
+  ]
+}

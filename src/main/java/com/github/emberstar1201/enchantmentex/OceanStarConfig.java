@@ -64,23 +64,6 @@ public class OceanStarConfig {
             .comment("海洋之星：守卫者中立化（守卫者/远古守卫者不主动攻击持有者，但被玩家攻击后会正常反击，默认 true）")
             .define("oceanStar.enableGuardianNeutral", true);
 
-    // ================================================================
-    // 海洋神殿强制宝箱生成
-    // ================================================================
-    private static final ForgeConfigSpec.BooleanValue ENABLE_MONUMENT_CHEST_GENERATE = BUILDER
-            .comment("海洋之星：在海洋神殿强制生成宝箱（默认 true）",
-                    "原版海洋神殿本身没有宝箱；开启后，每个神殿实例生成时会在其顶部中央自动放置一个宝箱，",
-                    "宝箱内 100% 直接含有一个海洋之星，并保证『每个神殿实例仅一个，不随时间或区块刷新重复生成』",
-                    "（已存在的旧世界在玩家首次接近加载神殿区块时也会补上宝箱）。")
-            .define("oceanStar.enableMonumentChestGenerate", true);
-
-    private static final ForgeConfigSpec.BooleanValue ENABLE_MONUMENT_CHEST_LOOT = BUILDER
-            .comment("海洋之星：海洋神殿容器内容注入（默认 true）",
-                    "当容器本身处于海洋神殿结构内且该神殿尚未发放过海洋之星时，首次打开会 100% 放入一个。",
-                    "强制宝箱生成已关闭时，该机制可配合数据包/其他模组在神殿内放置的容器使用。",
-                    "无论哪种来源，均以『神殿实例』为唯一标识持久化去重，保证每神殿仅一个海洋之星。")
-            .define("oceanStar.enableMonumentChestLoot", true);
-
     // 配置 SPEC 实例（供 registerConfig 注册）
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -95,8 +78,6 @@ public class OceanStarConfig {
     public static double swimSpeedMultiplier;
     public static boolean enableOxygenImmunity;
     public static boolean enableGuardianNeutral;
-    public static boolean enableMonumentChestGenerate;
-    public static boolean enableMonumentChestLoot;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -117,7 +98,5 @@ public class OceanStarConfig {
         swimSpeedMultiplier = SWIM_SPEED_MULTIPLIER.get();
         enableOxygenImmunity = ENABLE_OXYGEN_IMMUNITY.get();
         enableGuardianNeutral = ENABLE_GUARDIAN_NEUTRAL.get();
-        enableMonumentChestGenerate = ENABLE_MONUMENT_CHEST_GENERATE.get();
-        enableMonumentChestLoot = ENABLE_MONUMENT_CHEST_LOOT.get();
     }
 }

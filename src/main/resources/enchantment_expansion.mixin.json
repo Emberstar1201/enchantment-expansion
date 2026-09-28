@@ -17,6 +17,8 @@
     "FoodDataLifeStarMixin",
     "CreeperSwellAccessor",
     "RangedBowAttackGoalMixin",
+    "GhastFireballGoalMixin",
+    "GhastFireballSpeedMixin",
     "RavagerCombatMixin",
     "EnderManHurtMixin"
   ],

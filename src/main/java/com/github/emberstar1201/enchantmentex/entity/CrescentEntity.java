@@ -2,6 +2,7 @@ package com.github.emberstar1201.enchantmentex.entity;
 
 import com.github.emberstar1201.enchantmentex.Config;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -35,6 +36,8 @@ import java.util.List;
 //   - TYPE_ANCIENT = 2：金色/青色月牙（古·云来剑法）
 // ========================================================================
 public class CrescentEntity extends Projectile {
+
+    public static final int TYPE_ETERNAL_SPARK = 3;
 
     private static final EntityDataAccessor<Integer> DATA_TYPE =
             SynchedEntityData.defineId(CrescentEntity.class, EntityDataSerializers.INT);
@@ -239,6 +242,18 @@ public class CrescentEntity extends Projectile {
         Vec3 particlePosition = center
                 .add(right.scale(rightOffset))
                 .add(localUp.scale(upOffset));
+
+        if (type == TYPE_ETERNAL_SPARK) {
+            level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                    particlePosition.x, particlePosition.y, particlePosition.z,
+                    2, 0.03, 0.03, 0.03, 0.01);
+            level.sendParticles(
+                    new DustParticleOptions(new Vector3f(0.05f, 0.35f, 1.0f), innerArc ? 0.65f : 0.9f),
+                    particlePosition.x, particlePosition.y, particlePosition.z,
+                    1, 0, 0, 0, 0
+            );
+            return;
+        }
 
         if (type == 1) {
             level.sendParticles(

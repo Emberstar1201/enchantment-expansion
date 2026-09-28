@@ -28,8 +28,8 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //      计算飞行距离 → 按距离缩放伤害。
 //
 // 伤害公式：
-//   每 10 格 +20%，上限 +100%（50 格满额）
-//   multiplier = 1.0 + min(distance / 10 * 0.2, 1.0)
+//   每 1 格 +4%，最高造成基础伤害的 200%（25 格满额）
+//   multiplier = 1.0 + min(distance * 0.04, 1.0)
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class SniperHandler {
@@ -41,10 +41,9 @@ public class SniperHandler {
     private static final String TAG_SNIPER_Y = "SniperOriginY";
     private static final String TAG_SNIPER_Z = "SniperOriginZ";
 
-    // 每 10 格 +20%，上限 +100%（50 格满额）
-    private static final double BLOCKS_PER_TIER = 10.0;
-    private static final double BONUS_PER_TIER = 0.20;
-    private static final double MAX_BONUS = 1.0; // +100%
+    // 每 1 格 +4%，最高造成基础伤害的 200%（25 格满额）
+    private static final double BONUS_PER_BLOCK = 0.04;
+    private static final double MAX_BONUS = 1.0; // 最终倍率上限为 2.0
 
     // ========================================================================
     // ① 箭生成时打标记 + 记录发射位置
@@ -110,7 +109,7 @@ public class SniperHandler {
         double distance = origin.distanceTo(hitPos);
 
         // 计算伤害倍率
-        double bonus = Math.min(distance / BLOCKS_PER_TIER * BONUS_PER_TIER, MAX_BONUS);
+        double bonus = Math.min(distance * BONUS_PER_BLOCK, MAX_BONUS);
         if (bonus <= 0.001) return;
 
         double multiplier = 1.0 + bonus;
@@ -120,8 +119,9 @@ public class SniperHandler {
         if (source.getEntity() instanceof ServerPlayer sp) {
             sp.displayClientMessage(
                     net.minecraft.network.chat.Component.literal(
-                            "§a§l狙击 §r§7距离 " + String.format("%.1f", distance) + " 格 §b×"
-                                    + String.format("%.2f", multiplier)),
+                            "§a§l狙击 §r§7距离 " + String.format("%.1f", distance)
+                                    + " 格 §b伤害 +" + String.format("%.0f%%", bonus * 100.0)
+                                    + " ×" + String.format("%.2f", multiplier)),
                     true);
         }
     }

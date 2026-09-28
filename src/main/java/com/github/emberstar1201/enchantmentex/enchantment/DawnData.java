@@ -64,6 +64,25 @@ public class DawnData {
         entity.getPersistentData().put(TAG_ROOT, data);
     }
 
+    /** 清空所有拂晓成长数据，但保留其他状态 */
+    public static void clearEffectiveKills(LivingEntity entity) {
+        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
+        data.remove(KEY_KILLS);
+        entity.getPersistentData().put(TAG_ROOT, data);
+    }
+
+    /** 清除物品上的拂晓成长数据 */
+    public static void clearItemKills(ItemStack stack) {
+        if (!stack.hasTag()) {
+            return;
+        }
+        CompoundTag root = stack.getTag();
+        root.remove(TAG_ROOT);
+        if (root.isEmpty()) {
+            stack.setTag(null);
+        }
+    }
+
     /** 清空所有数据 */
     public static void clear(LivingEntity entity) {
         entity.getPersistentData().remove(TAG_ROOT);

@@ -13,6 +13,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.DragonFireball;
+import net.minecraft.world.item.ItemStack;
+
+import com.github.emberstar1201.enchantmentex.item.ModItems;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -181,7 +184,14 @@ public final class EnderDragonBuffHandler {
             return;
         }
 
-        Player target = level.getNearestPlayer(dragon, 64.0D);
+        Player target = level.getEntitiesOfClass(
+                        Player.class,
+                        dragon.getBoundingBox().inflate(64.0D),
+                        player -> !player.isCreative() && !isEndStarNeutral(player))
+                .stream()
+                .min((first, second) -> Double.compare(
+                        dragon.distanceToSqr(first), dragon.distanceToSqr(second)))
+                .orElse(null);
         if (target == null) {
             return;
         }
@@ -213,6 +223,20 @@ public final class EnderDragonBuffHandler {
                     DRAGON_CHARGE_COOLDOWN,
                     getAttackCooldown(dragon, true) * 2);
         }
+    }
+
+    private static boolean isEndStarNeutral(Player player) {
+        if (player.getMainHandItem().is(ModItems.END_STAR.get())
+                || player.getOffhandItem().is(ModItems.END_STAR.get())) {
+            return true;
+        }
+        for (ItemStack armorPiece : player.getArmorSlots()) {
+            if (armorPiece.hasTag()
+                    && "end_star".equals(armorPiece.getTag().getString("EmbeddedStar"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static int getAttackCooldown(EnderDragon dragon, boolean aggressivePhase) {

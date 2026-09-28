@@ -1,0 +1,19 @@
+{
+  "name": "Oblivion Scythe",
+  "category": "enchantment_expansion:weapons",
+  "icon": "enchantment_expansion:residual_scythe",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:residual_scythe",
+      "title": "Oblivion Scythe",
+      "text": "§lWeapon Stats: §r$(br)Base attack damage 15, attack speed 2.5, durability 4025.$(br2)§lActive Skill: §r$(br)Right-click to fire a straight particle blade 16 blocks long, dealing 1.25x normal attack damage. The blade has a 2.5-second cooldown. Each consecutive hit adds +1 base damage, up to 30; resets after more than 2 seconds between hits."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Crafting Recipe",
+      "recipe": "enchantment_expansion:residual_scythe"
+    }
+  ]
+}

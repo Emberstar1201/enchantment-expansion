@@ -1,0 +1,19 @@
+{
+  "name": "湮滅之鐮",
+  "category": "enchantment_expansion:weapons",
+  "icon": "enchantment_expansion:residual_scythe",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:residual_scythe",
+      "title": "湮滅之鐮",
+      "text": "§l武器屬性：§r$(br)基礎攻擊傷害 15，攻擊速度 2.5，耐久 4025。$(br2)§l主動技能：§r$(br)右鍵釋放直線粒子劍氣，射程 16 格，造成正常攻擊 1.25 倍傷害。劍氣冷卻 2.5 秒。連續命中時每次基礎傷害 +1，最高 30；間隔超過 2 秒後重置。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "合成配方",
+      "recipe": "enchantment_expansion:residual_scythe"
+    }
+  ]
+}

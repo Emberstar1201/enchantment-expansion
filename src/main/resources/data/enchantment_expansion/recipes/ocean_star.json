@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "psp",
+    "s#s",
+    "psp"
+  ],
+  "key": {
+    "p": {
+      "item": "minecraft:prismarine_shard"
+    },
+    "s": {
+      "item": "minecraft:nautilus_shell"
+    },
+    "#": {
+      "item": "minecraft:conduit"
+    }
+  },
+  "result": {
+    "item": "enchantment_expansion:ocean_star",
+    "count": 1
+  }
+}

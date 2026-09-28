@@ -1,7 +1,9 @@
 package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.EnchantmentExpansion;
+import com.github.emberstar1201.enchantmentex.enchantment.DawnData;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.item.SwordOfTheFreeWill;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -58,6 +60,22 @@ public final class EnhancementScrollHandler {
     public static void onAnvilUpdate(AnvilUpdateEvent event) {
         ItemStack left = event.getLeft();
         ItemStack right = event.getRight();
+
+        // 固定顺序：第一个槽位放人权剑，第二个槽位放晨曦之星。
+        if (left.getItem() == ModItems.SWORD_OF_THE_FREE_WILL.get()
+                && right.getItem() == ModItems.DAWN_STAR.get()) {
+            ItemStack result = new ItemStack(
+                    ModItems.SWORD_OF_THE_FREE_WILL_ENHANCED.get(), left.getCount());
+            if (left.hasTag()) {
+                result.setTag(left.getTag().copy());
+            }
+            DawnData.clearItemKills(result);
+
+            event.setOutput(result);
+            event.setCost(5);
+            event.setMaterialCost(1);
+            return;
+        }
 
         // 判断哪个是卷轴、哪个是附魔物品（不限制左右顺序）
         ItemStack scroll;

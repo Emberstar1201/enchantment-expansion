@@ -1,0 +1,32 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:iron_sword",
+      "nbt": "{Enchantments:[{id:\"minecraft:sharpness\",lvl:1s}]}"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.dawn_freedom.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.dawn_freedom.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "enchantment_expansion:dawn_star",
+  "criteria": {
+    "dawn_level_50": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "dawn_level_50"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  }
+}

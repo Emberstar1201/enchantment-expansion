@@ -1,0 +1,40 @@
+{
+  "display": {
+    "icon": {
+      "item": "enchantment_expansion:sword_of_the_free_will_enhanced"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.eternal_spark.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.eternal_spark.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "enchantment_expansion:we_fall_we_remain",
+  "criteria": {
+    "has_enhanced_sword": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "enchantment_expansion:sword_of_the_free_will_enhanced"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_enhanced_sword"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  }
+}

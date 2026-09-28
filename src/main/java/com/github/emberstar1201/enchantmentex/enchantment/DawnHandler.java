@@ -1,10 +1,14 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
 import com.github.emberstar1201.enchantmentex.Config;
+import com.github.emberstar1201.enchantmentex.item.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -53,6 +57,9 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID)
 public class DawnHandler {
+
+    private static final ResourceLocation DAWN_FREEDOM_ADVANCEMENT =
+            new ResourceLocation(MODID, "dawn_freedom");
 
     // ========================================================================
     // 固定 UUID 用于 AttributeModifier（避免重复叠加）
@@ -115,6 +122,7 @@ public class DawnHandler {
         // 将最新击杀数写入武器的 NBT（ItemStack NBT 会自动同步到客户端）
         double kills = DawnData.getEffectiveKills(player);
         DawnData.setItemKills(weapon, kills);
+        awardDawnFreedomIfReady(player, weapon);
 
         // ========================================================================
         // 刺破长夜 · 连击爆发：击杀连击累计 + 阈值触发
@@ -179,6 +187,17 @@ public class DawnHandler {
                         victim.getX(), victim.getY(), victim.getZ(),
                         20, splashRadius, 1.0, splashRadius, 0.1);
             }
+        }
+    }
+
+    private static void awardDawnFreedomIfReady(Player player, ItemStack weapon) {
+        if (!(player instanceof ServerPlayer serverPlayer)
+                || DawnData.getLevel(DawnData.getItemKills(weapon)) < 50) return;
+
+        Advancement advancement = serverPlayer.server.getAdvancements()
+                .getAdvancement(DAWN_FREEDOM_ADVANCEMENT);
+        if (advancement != null) {
+            serverPlayer.getAdvancements().award(advancement, "dawn_level_50");
         }
     }
 
@@ -601,6 +620,11 @@ public class DawnHandler {
 
         ItemStack from = event.getFrom();
         ItemStack to = event.getTo();
+
+        if (to.getItem() == ModItems.SWORD_OF_THE_FREE_WILL_ENHANCED.get()) {
+            DawnData.clearEffectiveKills(player);
+            DawnData.clearItemKills(to);
+        }
 
         boolean hadEnchant = EnchantmentHelper.getItemEnchantmentLevel(
                 ModEnchantments.DAWN.get(), from) > 0;

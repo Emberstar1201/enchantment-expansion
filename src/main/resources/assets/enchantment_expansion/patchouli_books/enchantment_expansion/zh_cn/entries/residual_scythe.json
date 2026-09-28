@@ -1,0 +1,19 @@
+{
+  "name": "湮灭之镰",
+  "category": "enchantment_expansion:weapons",
+  "icon": "enchantment_expansion:residual_scythe",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:residual_scythe",
+      "title": "湮灭之镰",
+      "text": "§l武器属性：§r$(br)基础攻击伤害 15，攻击速度 2.5，耐久 4025。$(br2)§l主动技能：§r$(br)右键释放直线粒子剑气，射程 16 格，造成正常攻击 1.25 倍伤害。剑气冷却 2.5 秒。连续命中时每次基础伤害 +1，最高 30；间隔超过 2 秒后重置。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "合成配方",
+      "recipe": "enchantment_expansion:residual_scythe"
+    }
+  ]
+}

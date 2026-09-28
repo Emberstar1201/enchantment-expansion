@@ -68,8 +68,7 @@ public class TouhouMaidEnchantmentCompat3 {
     private static final String TAG_SNIPER_X = "EEMaidSniperX";
     private static final String TAG_SNIPER_Y = "EEMaidSniperY";
     private static final String TAG_SNIPER_Z = "EEMaidSniperZ";
-    private static final double SNIPER_BLOCKS_PER_TIER = 10.0;
-    private static final double SNIPER_BONUS_PER_TIER = 0.20;
+    private static final double SNIPER_BONUS_PER_BLOCK = 0.04;
     private static final double SNIPER_MAX_BONUS = 1.0;
 
     // --------------------------- 难度馈赠 UUID（女仆独立） ---------------------------
@@ -154,7 +153,7 @@ public class TouhouMaidEnchantmentCompat3 {
         );
         Vec3 hit = arrow.position();
         double distance = origin.distanceTo(hit);
-        double bonus = Math.min(distance / SNIPER_BLOCKS_PER_TIER * SNIPER_BONUS_PER_TIER, SNIPER_MAX_BONUS);
+        double bonus = Math.min(distance * SNIPER_BONUS_PER_BLOCK, SNIPER_MAX_BONUS);
         if (bonus <= 0.001) return;
 
         event.setAmount((float) (event.getAmount() * (1.0 + bonus)));

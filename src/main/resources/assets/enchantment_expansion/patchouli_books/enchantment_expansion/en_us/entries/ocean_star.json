@@ -8,7 +8,12 @@
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:ocean_star",
       "title": "Ocean Star",
-      "text": "§lAcquisition: §r Obtained from the chest atop an ocean monument; each monument generates exactly one, and it always spawns.$(br2)§lEffect: §r$(br)Active while held: immune to the underwater mining penalty, with underwater mining speed increased to 1.25×; immune to water current slowdown and water current push; no need to breathe underwater and immune to drowning damage; guardians and elder guardians will not actively attack the holder, but will fight back normally if attacked."
+      "text": "§lAcquisition: §rCraft it using the recipe on the next page.$(br2)§lEffect: §rActive while held: immune to the underwater mining penalty, with underwater mining speed increased to 1.25×; immune to water current slowdown and water current push; no need to breathe underwater and immune to drowning damage; guardians and elder guardians will not actively attack the holder, but will fight back normally if attacked."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Crafting Recipe",
+      "recipe": "enchantment_expansion:ocean_star"
     }
   ]
 }
