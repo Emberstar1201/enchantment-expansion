@@ -69,7 +69,8 @@ public final class EnhancementScrollHandler {
             if (left.hasTag()) {
                 result.setTag(left.getTag().copy());
             }
-            DawnData.clearItemKills(result);
+            // 进阶为强化剑时保留拂晓成长（不再清空），
+            // 否则强化后 [Lv.X] 归零、击杀累积无法体现
 
             event.setOutput(result);
             event.setCost(5);

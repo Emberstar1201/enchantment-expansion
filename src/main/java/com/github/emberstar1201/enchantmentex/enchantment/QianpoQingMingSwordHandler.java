@@ -5,7 +5,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -43,15 +42,9 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class QianpoQingMingSwordHandler {
 
-    // NBT 标签：用于在调用 hurt() 前标记，
-    // 防止递归触发 LivingHurtEvent 再次进入此方法
-    private static final String TAG_APPLYING_QIANPO = "QianpoQingMingApplying";
-
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
-        // ★ 递归保护：如果已经在处理"千破"魔法伤害，立即返回
         LivingEntity target = event.getEntity();
-        if (target.getPersistentData().getBoolean(TAG_APPLYING_QIANPO)) return;
 
         // 仅服务端处理（真实伤害需要改血量，粒子+音效也是服务端广播）
         if (target.level().isClientSide()) return;
@@ -88,32 +81,16 @@ public class QianpoQingMingSwordHandler {
         }
 
         // =================================================================
-        // ★ 核心：魔法伤害（无视护甲，受保护附魔和抗性提升影响） ★
+        // ★ 核心：附加魔法伤害（叠加到本次事件最终伤害上） ★
         // =================================================================
-        // 使用 DamageSource.magic() 创建魔法伤害类型，
-        // 魔法伤害无视盔甲值（Armor），但会被保护附魔（Protection）和
-        // 抗性提升（Resistance）效果减免。
+        // Forge 的 LivingHurtEvent 在护甲/保护减伤之后触发，这里把千破伤害
+        // 直接加到 event 最终值上，不会再过一遍护甲 → 等效"无视护甲的额外
+        // 魔法伤害"，且完全避开原版无敌帧（invulnerableTime）。
         //
-        // 先在目标 NBT 上标记"正在应用千破魔法伤害"，防止 hurt() 触发的
-        // LivingHurtEvent 再次进入此方法形成递归
-        target.getPersistentData().putBoolean(TAG_APPLYING_QIANPO, true);
-
-        try {
-            // 创建魔法伤害来源（发射者为攻击者）
-            DamageSource magicDamage = target.damageSources().magic();
-            // 直接调用 hurt() 应用伤害，这会自动处理：
-            //   - 受伤动画（hurtDuration/hurtTime）
-            //   - 击退方向（setLastHurtByMob）
-            //   - 死亡流程（die()）
-            target.hurt(magicDamage, extraDamage);
-        } finally {
-            // 无论是否抛异常，必须清除标记防止卡死
-            target.getPersistentData().remove(TAG_APPLYING_QIANPO);
-        }
-
-        // 注意：不修改 event.setAmount()！
-        // 玩家原始攻击伤害仍然正常走盔甲/保护减伤流程，
-        // 千破的 extraDamage 是"叠加"在上面的独立魔法伤害，完全符合要求
+        // 之前用 target.hurt(DamageSource.magic(), extraDamage) 嵌套结算，
+        // 会与本次物理攻击的无敌帧互相污染：魔伤被削成 1，或把物理伤害挤掉，
+        // 导致打末影龙等高血 Boss 时血条几乎不动（玩家实测只掉一滴）。
+        event.setAmount(event.getAmount() + extraDamage);
     }
 
     // ========================================================================

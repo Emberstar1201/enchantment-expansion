@@ -1,0 +1,40 @@
+{
+  "display": {
+    "icon": {
+      "item": "enchantment_expansion:residual_scythe"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.residual_scythe.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.residual_scythe.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "minecraft:adventure/root",
+  "criteria": {
+    "has_residual_scythe": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "enchantment_expansion:residual_scythe"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_residual_scythe"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  }
+}

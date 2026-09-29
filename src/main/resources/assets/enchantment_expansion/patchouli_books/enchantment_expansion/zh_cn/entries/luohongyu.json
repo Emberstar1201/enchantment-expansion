@@ -1,0 +1,19 @@
+{
+  "name": "洛红雨",
+  "category": "enchantment_expansion:weapons",
+  "icon": "enchantment_expansion:luohongyu",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:luohongyu",
+      "title": "洛红雨",
+      "text": "§l武器属性：§r$(br)攻击伤害 20，攻击速度 1.65。$(br2)§l自带附魔：§r$(br)千破·青溟剑 V。$(br2)§l命中效果：§r$(br)被此剑击中的生物获得凋灵 III 和虚弱 III，持续 5 秒。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "合成配方",
+      "recipe": "enchantment_expansion:luohongyu"
+    }
+  ]
+}

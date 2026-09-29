@@ -621,10 +621,9 @@ public class DawnHandler {
         ItemStack from = event.getFrom();
         ItemStack to = event.getTo();
 
-        if (to.getItem() == ModItems.SWORD_OF_THE_FREE_WILL_ENHANCED.get()) {
-            DawnData.clearEffectiveKills(player);
-            DawnData.clearItemKills(to);
-        }
+        // 移除原“强化剑进主手即清空拂晓成长”的逻辑：
+        // 强化剑与普通剑共用同一套拂晓成长数据（getEffectiveKills / getItemKills），
+        // 每次装备强化剑把成长清零会让击杀累积反复归 0，导致 [Lv.X] 升不上去。
 
         boolean hadEnchant = EnchantmentHelper.getItemEnchantmentLevel(
                 ModEnchantments.DAWN.get(), from) > 0;

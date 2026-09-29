@@ -1,0 +1,19 @@
+{
+  "name": "Luohongyu",
+  "category": "enchantment_expansion:weapons",
+  "icon": "enchantment_expansion:luohongyu",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:luohongyu",
+      "title": "Luohongyu",
+      "text": "§lWeapon Stats: §r$(br)Attack Damage 20, Attack Speed 1.65.$(br2)§lBuilt-in Enchantment: §r$(br)Qianpo Qingming Sword V.$(br2)§lOn Hit: §r$(br)Creatures struck by this sword receive Wither III and Weakness III for 5 seconds."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Crafting Recipe",
+      "recipe": "enchantment_expansion:luohongyu"
+    }
+  ]
+}

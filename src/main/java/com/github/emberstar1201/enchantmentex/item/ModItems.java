@@ -75,6 +75,9 @@ public class ModItems {
     public static final RegistryObject<ResidualScytheItem> RESIDUAL_SCYTHE =
             ITEMS.register("residual_scythe", ResidualScytheItem::new);
 
+    public static final RegistryObject<LuohongyuItem> LUOHONGYU =
+            ITEMS.register("luohongyu", LuohongyuItem::new);
+
     // ========================================================================
     // 【海洋之星】（Ocean star）
     //   在海洋神殿结构内的宝箱中获得（每神殿仅一个，100%生成）
@@ -283,6 +286,7 @@ public class ModItems {
                 event.accept(STARLIGHT_STAR);
                 event.accept(SWORD_OF_THE_FREE_WILL);
                 event.accept(RESIDUAL_SCYTHE);
+                event.accept(LUOHONGYU);
                 event.accept(DAWN_STAR);
                 event.accept(ETERNAL_TOTEM);
                 event.accept(ENHANCEMENT_SCROLL);

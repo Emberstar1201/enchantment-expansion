@@ -492,9 +492,16 @@ public class SwordOfTheFreeWillHandler {
                             spawnGoldenLightningParticles(serverLevel,
                                     monster.getX(), monster.getY(), monster.getZ());
                         }
-                        // 额外魔法伤害（只对目标怪物，不波及其他实体）
-                        monster.hurt(monster.level().damageSources().magic(),
-                                (float) Config.swordLightningDamage);
+
+                        // ★ 额外魔法伤害（只对目标怪物，不波及其他实体）：
+                        //   改为直接叠加到本次事件最终伤害上，而非嵌套 target.hurt(magic)。
+                        //   原嵌套写法会在本次物理攻击的无敌帧里再结算一次魔法伤害，
+                        //   导致闪电魔法伤害被削成 1、或挤掉该刀的物理伤害（同千破原问题）。
+                        //   Forge 的 LivingHurtEvent 在护甲/保护减伤之后触发，
+                        //   这里加上的部分不再过护甲 → 等效"无视护甲的额外魔法伤害"，
+                        //   且完全避开无敌帧污染。
+                        event.setAmount(event.getAmount()
+                                + (float) Config.swordLightningDamage);
                         monster.setRemainingFireTicks(40);
                     }
                 }
