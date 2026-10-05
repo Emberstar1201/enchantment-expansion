@@ -3,7 +3,6 @@ package com.github.emberstar1201.enchantmentex.entity;
 import com.github.emberstar1201.enchantmentex.EnchantmentExpansion;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -56,6 +55,15 @@ public class ModEntities {
     //    clientTrackingRange(16) → 与原版闪电一致
     //    updateInterval(MAX)  → 服务器几乎不推送状态更新（视觉由客户端模拟）
     // ================================================================
+    public static final RegistryObject<EntityType<AnnihilationOrbEntity>> ANNIHILATION_ORB =
+            ENTITY_TYPES.register("annihilation_orb",
+                    () -> EntityType.Builder.<AnnihilationOrbEntity>of(
+                                    AnnihilationOrbEntity::new, MobCategory.MISC)
+                            .sized(0.55F, 0.55F)
+                            .clientTrackingRange(10)
+                            .updateInterval(1)
+                            .build("annihilation_orb"));
+
     public static final RegistryObject<EntityType<CustomLightningEntity>> CUSTOM_LIGHTNING =
             ENTITY_TYPES.register("custom_lightning",
                     () -> EntityType.Builder.<CustomLightningEntity>of(
@@ -64,6 +72,16 @@ public class ModEntities {
                             .clientTrackingRange(16)
                             .updateInterval(Integer.MAX_VALUE)
                             .build("custom_lightning"));
+
+    public static final RegistryObject<EntityType<ZombieGirlEntity>> ZOMBIE_GIRL =
+            ENTITY_TYPES.register("zombie_girl", () -> EntityType.Builder.<ZombieGirlEntity>of(
+                            ZombieGirlEntity::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).clientTrackingRange(8).build("zombie_girl"));
+
+    public static final RegistryObject<EntityType<DrownedGirlEntity>> DROWNED_GIRL =
+            ENTITY_TYPES.register("drowned_girl", () -> EntityType.Builder.<DrownedGirlEntity>of(
+                            DrownedGirlEntity::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).clientTrackingRange(8).build("drowned_girl"));
 
     // 在主类构造函数中调用的注册方法
     public static void register(IEventBus eventBus) {

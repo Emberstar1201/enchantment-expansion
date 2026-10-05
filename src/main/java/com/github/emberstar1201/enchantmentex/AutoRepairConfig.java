@@ -3,6 +3,7 @@ package com.github.emberstar1201.enchantmentex;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraft.util.RandomSource;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 // ========================================================================
@@ -18,25 +19,45 @@ public class AutoRepairConfig {
             .comment("自动修复：附魔总开关")
             .define("autoRepair.enabled", true);
 
-    private static final ForgeConfigSpec.IntValue LEVEL_1_INTERVAL_TICKS = BUILDER
-            .comment("自动修复 I：每次恢复 1 点耐久的间隔（tick，默认 100 = 5秒）")
-            .defineInRange("autoRepair.level1IntervalTicks", 100, 1, 72000);
+    private static final ForgeConfigSpec.IntValue REPAIR_INTERVAL_TICKS = BUILDER
+            .comment("自动修复：所有等级每次修复的间隔（tick，默认 100 = 5秒）")
+            .defineInRange("autoRepair.intervalTicks", 100, 1, 72000);
 
-    private static final ForgeConfigSpec.IntValue LEVEL_2_INTERVAL_TICKS = BUILDER
-            .comment("自动修复 II：每次恢复 1 点耐久的间隔（tick，默认 80 = 4秒）")
-            .defineInRange("autoRepair.level2IntervalTicks", 80, 1, 72000);
+    private static final ForgeConfigSpec.IntValue LEVEL_1_MIN_AMOUNT = BUILDER
+            .comment("自动修复 I：每次随机恢复的最小耐久值（默认 1）")
+            .defineInRange("autoRepair.level1MinAmount", 1, 1, 100);
 
-    private static final ForgeConfigSpec.IntValue LEVEL_3_INTERVAL_TICKS = BUILDER
-            .comment("自动修复 III：每次恢复 1 点耐久的间隔（tick，默认 60 = 3秒）")
-            .defineInRange("autoRepair.level3IntervalTicks", 60, 1, 72000);
+    private static final ForgeConfigSpec.IntValue LEVEL_1_MAX_AMOUNT = BUILDER
+            .comment("自动修复 I：每次随机恢复的最大耐久值（默认 3）")
+            .defineInRange("autoRepair.level1MaxAmount", 3, 1, 100);
+
+    private static final ForgeConfigSpec.IntValue LEVEL_2_MIN_AMOUNT = BUILDER
+            .comment("自动修复 II：每次随机恢复的最小耐久值（默认 5）")
+            .defineInRange("autoRepair.level2MinAmount", 5, 1, 100);
+
+    private static final ForgeConfigSpec.IntValue LEVEL_2_MAX_AMOUNT = BUILDER
+            .comment("自动修复 II：每次随机恢复的最大耐久值（默认 7）")
+            .defineInRange("autoRepair.level2MaxAmount", 7, 1, 100);
+
+    private static final ForgeConfigSpec.IntValue LEVEL_3_MIN_AMOUNT = BUILDER
+            .comment("自动修复 III：每次随机恢复的最小耐久值（默认 10）")
+            .defineInRange("autoRepair.level3MinAmount", 10, 1, 100);
+
+    private static final ForgeConfigSpec.IntValue LEVEL_3_MAX_AMOUNT = BUILDER
+            .comment("自动修复 III：每次随机恢复的最大耐久值（默认 12）")
+            .defineInRange("autoRepair.level3MaxAmount", 12, 1, 100);
 
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // 运行时缓存值
     private static boolean enabled = true;
-    private static int level1IntervalTicks = 100;
-    private static int level2IntervalTicks = 80;
-    private static int level3IntervalTicks = 60;
+    private static int repairIntervalTicks = 100;
+    private static int level1MinAmount = 1;
+    private static int level1MaxAmount = 3;
+    private static int level2MinAmount = 5;
+    private static int level2MaxAmount = 7;
+    private static int level3MinAmount = 10;
+    private static int level3MaxAmount = 12;
 
     @SubscribeEvent
     static void onLoad(ModConfigEvent event) {
@@ -46,24 +67,40 @@ public class AutoRepairConfig {
         }
 
         enabled = ENABLED.get();
-        level1IntervalTicks = LEVEL_1_INTERVAL_TICKS.get();
-        level2IntervalTicks = LEVEL_2_INTERVAL_TICKS.get();
-        level3IntervalTicks = LEVEL_3_INTERVAL_TICKS.get();
+        repairIntervalTicks = REPAIR_INTERVAL_TICKS.get();
+        level1MinAmount = LEVEL_1_MIN_AMOUNT.get();
+        level1MaxAmount = LEVEL_1_MAX_AMOUNT.get();
+        level2MinAmount = LEVEL_2_MIN_AMOUNT.get();
+        level2MaxAmount = LEVEL_2_MAX_AMOUNT.get();
+        level3MinAmount = LEVEL_3_MIN_AMOUNT.get();
+        level3MaxAmount = LEVEL_3_MAX_AMOUNT.get();
     }
 
     public static boolean isEnabled() {
         return enabled;
     }
 
-    /**
-     * 根据附魔等级返回恢复间隔（tick）。
-     * 等级超出范围时按最近等级的间隔处理。
-     */
-    public static int getIntervalTicks(int level) {
-        return switch (level) {
-            case 1 -> level1IntervalTicks;
-            case 2 -> level2IntervalTicks;
-            default -> level <= 0 ? level1IntervalTicks : level3IntervalTicks;
-        };
+    public static int getIntervalTicks() {
+        return repairIntervalTicks;
+    }
+
+    public static int getRepairAmount(int level, RandomSource random) {
+        int min;
+        int max;
+        switch (level) {
+            case 1 -> {
+                min = level1MinAmount;
+                max = level1MaxAmount;
+            }
+            case 2 -> {
+                min = level2MinAmount;
+                max = level2MaxAmount;
+            }
+            default -> {
+                min = level3MinAmount;
+                max = level3MaxAmount;
+            }
+        }
+        return min + random.nextInt(max - min + 1);
     }
 }

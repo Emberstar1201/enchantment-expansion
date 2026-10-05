@@ -6,7 +6,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
@@ -58,11 +57,12 @@ public class ChainArrowHandler {
         CompoundTag tag = arrow.getPersistentData();
         if (tag.contains(TAG_CHAIN_LEVEL)) return;
 
-        // 仅玩家射出的箭才标记
-        if (!(arrow.getOwner() instanceof Player player)) return;
+        // 玩家与驯服生物（丧尸娘等）射出的箭都标记；
+        // LivingEntity 通用判定使模组弓附魔对任何持弓生物生效
+        if (!(arrow.getOwner() instanceof LivingEntity shooter)) return;
 
         // 检查主/副手弓弩上的附魔等级
-        int level = getChainLevel(player.getMainHandItem(), player.getOffhandItem());
+        int level = getChainLevel(shooter.getMainHandItem(), shooter.getOffhandItem());
         if (level <= 0) return;
 
         tag.putInt(TAG_CHAIN_LEVEL, level);

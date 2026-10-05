@@ -20,7 +20,10 @@
     "GhastFireballGoalMixin",
     "GhastFireballSpeedMixin",
     "RavagerCombatMixin",
-    "EnderManHurtMixin"
+    "EnderManHurtMixin",
+    "NearestAttackableTargetGoalAccessor",
+    "IronGolemTargetMixin",
+    "SnowGolemTargetMixin"
   ],
   "client": [
     "ClientPacketListenerTotemMixin"

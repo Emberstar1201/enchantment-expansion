@@ -241,8 +241,8 @@ public class MobBuffConfig {
             .defineInRange("enderDragon.health", 1000.0D, 200.0D, 2048.0D);
 
     private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_ARMOR = BUILDER
-            .comment("末影龙：护甲值（默认 7.5）")
-            .defineInRange("enderDragon.armor", 7.5D, 0.0D, 100.0D);
+            .comment("末影龙：护甲值（默认 20.0）")
+            .defineInRange("enderDragon.armor", 20.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_LOW_HEALTH_DAMAGE_MULTIPLIER = BUILDER
             .comment("末影龙：低于 50% 生命值后的伤害倍率（默认 2.5，即伤害提升 150%）")
@@ -272,8 +272,8 @@ public class MobBuffConfig {
             .defineInRange("wither.health", 800.0D, 300.0D, 4096.0D);
 
     private static final ForgeConfigSpec.DoubleValue WITHER_ARMOR = BUILDER
-            .comment("凋零：护甲值（默认 14.0）")
-            .defineInRange("wither.armor", 14.0D, 0.0D, 100.0D);
+            .comment("凋零：护甲值（默认 20.0）")
+            .defineInRange("wither.armor", 20.0D, 0.0D, 100.0D);
 
     private static final ForgeConfigSpec.DoubleValue WITHER_LOW_HEALTH_DAMAGE_REDUCTION = BUILDER
             .comment("凋零：低于 50% 生命值后的普通伤害减免比例（默认 0.2）",

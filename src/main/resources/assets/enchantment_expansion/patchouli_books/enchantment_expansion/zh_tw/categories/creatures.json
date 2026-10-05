@@ -1,0 +1,6 @@
+{
+  "name": "生物",
+  "description": "本分類記載模組中新增的生物，包括她們的種族、習性、出沒方式與不為人知的來歷。",
+  "icon": "enchantment_expansion:zombie_girl_spawn_egg",
+  "sortnum": 3
+}

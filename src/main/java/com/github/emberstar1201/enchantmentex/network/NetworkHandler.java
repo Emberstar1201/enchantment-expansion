@@ -129,5 +129,12 @@ public class NetworkHandler {
                 SandevistanStatePacket::new,
                 SandevistanStatePacket::handle
         );
+        CHANNEL.registerMessage(
+                packetId++,
+                AnnihilationOrbPacket.class,
+                AnnihilationOrbPacket::encode,
+                AnnihilationOrbPacket::new,
+                AnnihilationOrbPacket::handle
+        );
     }
 }

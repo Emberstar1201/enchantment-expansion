@@ -9,16 +9,19 @@ import net.minecraft.world.item.ItemStack;
 // 拂晓重制 - 数据管理工具类
 //
 // 【原理】
-//   成长数据同时存储在两个地方：
-//     1. 实体 PersistentData（服务器端持久化，不自动同步到客户端）
-//     2. 武器物品 NBT（自动同步到客户端，用于 Tooltip 显示）
+//   拂晓成长数据只存储在武器物品 NBT，避免同一玩家的多把武器共享等级：
+//     1. 武器物品 NBT（服务器持久化并自动同步到客户端，用于 Tooltip 显示）
+//     2. 实体 PersistentData 仅保存连击、伪暴击等实体状态，不保存武器成长
 //
-//   NBT 结构（两者一致）：DawnData: { effectiveKills: <double> }
+//   NBT 结构：DawnData: { effectiveKills: <double> }
 //
 // 【数据流】
-//   击杀时 → 写入 PersistentData + 同步到武器 NBT
-//   换武器时 → 从 PersistentData 复制到武器 NBT
+//   击杀时 → 读取并更新当前武器 NBT
+//   换武器时 → 保留新武器自己的 NBT，不再从玩家数据覆盖
 //   Tooltip → 从武器 NBT 读取（客户端能看到最新数据）
+//
+//   兼容旧版本：旧版玩家 PersistentData 中遗留的 effectiveKills 只会在首次
+//   访问一把尚无成长数据的拂晓武器时迁移一次，随后删除共享键。
 //
 // 【为什么参数类型是 LivingEntity 而不是 Player】
 //   车万女仆（EntityMaid）同样是 LivingEntity，Forge 也为它提供了
@@ -51,17 +54,35 @@ public class DawnData {
     // 实体 PersistentData 存取（服务器端持久化）
     // ========================================================================
 
-    /** 获取累计有效击杀数（从实体 PersistentData） */
+    /**
+     * 获取旧版实体共享击杀数，仅供存档迁移使用。
+     * 新逻辑禁止把它作为武器的实际成长数据来源。
+     */
     public static double getEffectiveKills(LivingEntity entity) {
         return entity.getPersistentData().getCompound(TAG_ROOT).getDouble(KEY_KILLS);
     }
 
-    /** 增加有效击杀数 */
-    public static void addEffectiveKills(LivingEntity entity, double amount) {
-        CompoundTag data = entity.getPersistentData().getCompound(TAG_ROOT);
-        double current = data.getDouble(KEY_KILLS);
-        data.putDouble(KEY_KILLS, Math.max(0, current + amount));
-        entity.getPersistentData().put(TAG_ROOT, data);
+    /** 旧版兼容：读取当前实体上遗留的共享击杀数并迁移到当前武器一次。 */
+    public static void migrateLegacyKills(LivingEntity entity, ItemStack stack) {
+        if (hasItemKills(stack)) {
+            return;
+        }
+
+        CompoundTag entityData = entity.getPersistentData().getCompound(TAG_ROOT);
+        if (!entityData.contains(KEY_KILLS)) {
+            return;
+        }
+
+        setItemKills(stack, Math.max(0.0D, entityData.getDouble(KEY_KILLS)));
+        entityData.remove(KEY_KILLS);
+        entity.getPersistentData().put(TAG_ROOT, entityData);
+    }
+
+    /** 判断物品是否已经拥有独立的拂晓成长数据（包括明确的 0 级数据）。 */
+    public static boolean hasItemKills(ItemStack stack) {
+        return stack.hasTag()
+                && stack.getTag().contains(TAG_ROOT, CompoundTag.TAG_COMPOUND)
+                && stack.getTag().getCompound(TAG_ROOT).contains(KEY_KILLS);
     }
 
     /** 清空所有拂晓成长数据，但保留其他状态 */
@@ -186,9 +207,12 @@ public class DawnData {
     // 武器 ItemStack NBT 存取（自动同步到客户端，用于 Tooltip 显示）
     // ========================================================================
 
-    /** 从武器 NBT 获取击杀数（客户端 Tooltip 使用） */
+    /** 从武器 NBT 获取击杀数（客户端 Tooltip 使用）；没有数据时按 0 处理。 */
     public static double getItemKills(ItemStack stack) {
-        return stack.getOrCreateTag().getCompound(TAG_ROOT).getDouble(KEY_KILLS);
+        if (!hasItemKills(stack)) {
+            return 0.0D;
+        }
+        return stack.getTag().getCompound(TAG_ROOT).getDouble(KEY_KILLS);
     }
 
     /** 将击杀数写入武器 NBT */
@@ -208,18 +232,25 @@ public class DawnData {
         return (int) Math.floor(kills);
     }
 
+    private static double levelGrowth(double kills, double base, double perLevel) {
+        return base + Math.max(0.0D, Math.floor(kills) - 1.0D) * perLevel;
+    }
+
     /** 伤害加成百分比 */
     public static double getDamageBonusPercent(double kills) {
-        return Math.min(kills * Config.dawnDamagePerKill, Config.dawnDamageMax);
+        if (kills < 1.0D) return 0.0D;
+        return Math.min(levelGrowth(kills, 50.0D, Config.dawnDamagePerKill), Config.dawnDamageMax);
     }
 
     /** 暴击率百分比 */
     public static double getCritRatePercent(double kills) {
-        return Math.min(kills * Config.dawnCritRatePerKill, Config.dawnCritRateMax);
+        if (kills < 1.0D) return 0.0D;
+        return Math.min(levelGrowth(kills, 5.0D, 0.25D), Config.dawnCritRateMax);
     }
 
     /** 暴击伤害百分比 */
     public static double getCritDamagePercent(double kills) {
-        return Math.min(kills * Config.dawnCritDamagePerKill, Config.dawnCritDamageMax);
+        if (kills < 1.0D) return 0.0D;
+        return Math.min(levelGrowth(kills, 75.0D, Config.dawnCritDamagePerKill), Config.dawnCritDamageMax);
     }
 }

@@ -7,8 +7,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
@@ -90,6 +93,23 @@ public class VoidStarHandler {
         double voidThreshold = serverPlayer.level().getMinBuildHeight() - VOID_TRIGGER_OFFSET;
         if (serverPlayer.getY() < voidThreshold) {
             teleportToSpawn(serverPlayer);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || event.getServer().getTickCount() % 40 != 0) return;
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            for (ServerPlayer player : level.players()) {
+                if (!isHoldingOrWearingVoidStar(player)) continue;
+                AABB area = new AABB(
+                        player.getX() - 18.0D, player.getY() - 18.0D, player.getZ() - 18.0D,
+                        player.getX() + 18.0D, player.getY() + 18.0D, player.getZ() + 18.0D);
+                for (Mob mob : level.getEntitiesOfClass(Mob.class, area,
+                        entity -> entity instanceof Enemy)) {
+                    mob.hurt(level.damageSources().fellOutOfWorld(), 1.0F);
+                }
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 {
-  "name": "Sword of the Free Will: Eternal Starfire",
+  "name": "Starfire Sword",
   "category": "enchantment_expansion:weapons",
   "icon": "enchantment_expansion:sword_of_the_free_will_enhanced",
   "sortnum": 1,
@@ -7,25 +7,25 @@
     {
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:sword_of_the_free_will_enhanced",
-      "title": "Sword of the Free Will: Eternal Starfire",
-      "text": "§lWeapon Effects: §r$(br)Armor +100, Armor Toughness +25, 25% damage reduction, with built-in Sharpness XII, Smite XII, Looting XII, Knockback II, and Dawn I.$(br2)§lPassive \"Eternal Spark\": §r$(br)Prevents one fatal hit, with a 300-second cooldown.$(br2)§lSkill \"Starfire Mark\": §r$(br)Attacks mark the target and release a blue flame sword wave; attacking the same target again while your mark remains increases the damage by 100%."
+      "title": "Starfire Sword",
+      "text": "§lWeapon Effects§r$(br)Armor +100$(br)Toughness +25$(br)Damage reduction 25%.$(br2)§lBuilt-in Enchantments§r$(br)Sharpness XII$(br)Smite XII$(br)Looting XII$(br)Knockback II$(br)Dawn I.$(br2)§lEternal Spark§r$(br)Prevents one fatal hit. Cooldown: 300 seconds.$(br2)§lStarfire Mark§r$(br)Hits mark targets and release a blue flame wave. Hitting the marked target again deals 100% more damage."
     },
     {
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:sword_of_the_free_will",
-      "title": "Anvil Left Slot: Sword of the Free Will",
+      "title": "Step 1: Add the Base Sword",
       "text": "Place the Sword of the Free Will in the left anvil slot."
     },
     {
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:dawn_star",
-      "title": "Anvil Right Slot: Dawn Star",
+      "title": "Step 2: Add the Dawn Star",
       "text": "Place 1 Dawn Star in the right anvil slot. The upgrade costs 5 experience levels."
     },
     {
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:sword_of_the_free_will_enhanced",
-      "title": "Anvil Output: Eternal Starfire",
+      "title": "Step 3: Upgrade Complete",
       "text": "With the Sword of the Free Will on the left and the Dawn Star on the right, the anvil outputs the Eternal Starfire variant. §c§lImportant: all accumulated Dawn levels on the sword are cleared after the upgrade!§r"
     }
   ]

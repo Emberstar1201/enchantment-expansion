@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 // ========================================================================
-// 【生命之星】饥饿/饱和度下降速度 −50%  Mixin（玩家侧入口）
+// 【生命之星】饥饿/饱和度下降速度 −90%  Mixin（玩家侧入口）
 //
 // 为什么必须用 Mixin：
 //   原版的饥饿消耗统一走 Player#causeFoodExhaustion(float)
@@ -39,7 +39,7 @@ public class PlayerFoodExhaustionMixin {
         }
 
         // 手持（主/副手）或盔甲内嵌生命之星 → 消耗减半
-        self.getFoodData().addExhaustion(amount * 0.5F);
+        self.getFoodData().addExhaustion(amount * 0.1F);
         ci.cancel(); // 取消原方法，避免再加满一份
     }
 }

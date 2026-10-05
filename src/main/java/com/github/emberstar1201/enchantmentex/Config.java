@@ -310,8 +310,8 @@ public class Config {
             .defineInRange("dawn.damageMax", 200.0, 0.0, 10000.0);
 
     private static final ForgeConfigSpec.DoubleValue DAWN_CRIT_RATE_PER_KILL = BUILDER
-            .comment("拂晓重制：每击杀暴击率加成百分比（默认 0.2 = +0.2%/杀）")
-            .defineInRange("dawn.critRatePerKill", 0.2, 0.0, 100.0);
+            .comment("拂晓重制：每击杀暴击率加成百分比（默认 0.25 = +0.25%/杀）")
+            .defineInRange("dawn.critRatePerKill", 0.25, 0.0, 100.0);
 
     private static final ForgeConfigSpec.DoubleValue DAWN_CRIT_RATE_MAX = BUILDER
             .comment("拂晓重制：暴击率上限百分比（默认 55% = 275杀达上限）")
@@ -326,8 +326,8 @@ public class Config {
             .defineInRange("dawn.critDamageMax", 100.0, 0.0, 10000.0);
 
     private static final ForgeConfigSpec.DoubleValue DAWN_ATTACK_RANGE = BUILDER
-            .comment("拂晓重制：攻击距离加成（格，默认 2.5）")
-            .defineInRange("dawn.attackRange", 2.5, 0.0, 20.0);
+            .comment("拂晓重制：攻击距离加成（格，默认 4）")
+            .defineInRange("dawn.attackRange", 4.0, 0.0, 20.0);
 
     private static final ForgeConfigSpec.DoubleValue DAWN_BOSS_MULTIPLIER_MIN = BUILDER
             .comment("拂晓重制：Boss击杀成长倍率最小值（默认 1.5）")

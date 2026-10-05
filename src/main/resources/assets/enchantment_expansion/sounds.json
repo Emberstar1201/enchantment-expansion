@@ -1,0 +1,26 @@
+{
+  "husk_girl.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.enchantment_expansion.husk_girl.idle",
+    "sounds": [
+      "enchantment_expansion:husk_girl_idle_1",
+      "enchantment_expansion:husk_girl_idle_2",
+      "enchantment_expansion:husk_girl_idle_3"
+    ]
+  },
+  "husk_girl.hust": {
+    "category": "neutral",
+    "subtitle": "subtitles.enchantment_expansion.husk_girl.hurt",
+    "sounds": [
+      "enchantment_expansion:husk_girl_hust_1",
+      "enchantment_expansion:husk_girl_hust_2"
+    ]
+  },
+  "husk_girl.farewell": {
+    "category": "neutral",
+    "subtitle": "subtitles.enchantment_expansion.husk_girl.death",
+    "sounds": [
+      "enchantment_expansion:husk_girl_farewell_1"
+    ]
+  }
+}

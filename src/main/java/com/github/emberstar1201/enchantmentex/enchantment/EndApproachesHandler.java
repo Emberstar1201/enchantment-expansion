@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
+
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -66,7 +67,6 @@ public class EndApproachesHandler {
     // 固定 UUID：终末将至攻速修饰符
     private static final UUID END_ATTACK_SPEED_UUID =
             UUID.fromString("e8b1c7d2-3f4a-5b6c-8d9e-0f1a2b3c4d5e");
-
     // 要塞图书馆战利品表 ID
     private static final ResourceLocation STRONGHOLD_LIBRARY =
             ResourceLocation.parse("minecraft:chests/stronghold_library");

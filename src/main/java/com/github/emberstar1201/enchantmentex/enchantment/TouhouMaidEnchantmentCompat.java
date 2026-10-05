@@ -116,9 +116,10 @@ public class TouhouMaidEnchantmentCompat {
             CURRENT_AUTO_REPAIR_KEYS.add(key);
 
             int ticks = AUTO_REPAIR_ACCUM.getOrDefault(key, 0) + 1;
-            int interval = AutoRepairConfig.getIntervalTicks(level);
+            int interval = AutoRepairConfig.getIntervalTicks();
             if (ticks >= interval) {
-                stack.setDamageValue(stack.getDamageValue() - 1);
+                int amount = AutoRepairConfig.getRepairAmount(level, maid.getRandom());
+                stack.setDamageValue(Math.max(0, stack.getDamageValue() - amount));
                 ticks = 0;
             }
             AUTO_REPAIR_ACCUM.put(key, ticks);
@@ -216,9 +217,10 @@ public class TouhouMaidEnchantmentCompat {
                         + livingAttacker.level().random.nextDouble()
                         * (Config.dawnBossMultiplierMax - Config.dawnBossMultiplierMin);
             }
-            DawnData.addEffectiveKills(owner, growth);
-            // 同步到女仆手中的武器 NBT，使 Tooltip 立即可见（NBT 会自动同步客户端）
-            DawnData.setItemKills(weapon, DawnData.getEffectiveKills(owner));
+            // 女仆也按手中这把武器独立成长，不能写入主人共享 PersistentData。
+            DawnData.migrateLegacyKills(owner != null ? owner : livingAttacker, weapon);
+            double kills = DawnData.getItemKills(weapon) + growth;
+            DawnData.setItemKills(weapon, kills);
         }
 
         // ========================================================================
@@ -360,10 +362,10 @@ public class TouhouMaidEnchantmentCompat {
         }
     }
 
-    /** 女仆拂晓成长来源：主人在线时读主人，否则退回武器 NBT 上已同步的数值 */
+    /** 女仆拂晓成长来源：始终读取当前手中武器的独立 NBT 数据。 */
     private static double resolveDawnKills(LivingEntity maid, ItemStack weapon) {
         Player owner = resolveMaidOwner(maid);
-        if (owner != null) return DawnData.getEffectiveKills(owner);
+        DawnData.migrateLegacyKills(owner != null ? owner : maid, weapon);
         return DawnData.getItemKills(weapon);
     }
 

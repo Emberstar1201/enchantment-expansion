@@ -50,7 +50,9 @@ import com.github.emberstar1201.enchantmentex.enchantment.SwiftCrossbowHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.WindRippleHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiArcheryHandler;
 import com.github.emberstar1201.enchantmentex.enchantment.YunLaiSwordmanshipHandler;
+import com.github.emberstar1201.enchantmentex.entity.FriendlyGirlPeacefulSpawnHandler;
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
+import com.github.emberstar1201.enchantmentex.entity.ModMenuTypes;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.item.handler.EnhancementScrollHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.EternalTotemHandler;
@@ -96,6 +98,10 @@ public class EnchantmentExpansion {
         ModItems.register(modEventBus);
         // 3. 实体注册器（琉璃冰魄箭实体等）
         ModEntities.register(modEventBus);
+        // 3.2 音效注册器（丧尸娘 / 溺尸娘共用的闲置、受伤、死亡语音）
+        com.github.emberstar1201.enchantmentex.sound.ModSounds.register(modEventBus);
+        // 3.1 容器菜单类型注册器（丧尸娘背包界面）
+        ModMenuTypes.register(modEventBus);
         // 4. 配方序列化器注册器（生命之星：9 种不同的花）
         ModRecipes.register(modEventBus);
 
@@ -203,6 +209,8 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(MaidStarHandler.class);
         // 虚空之星：免疫摔落/虚空伤害 + 坠入虚空传送回出生点
         MinecraftForge.EVENT_BUS.register(VoidStarHandler.class);
+        // 终界之星：飞行、减伤、虚空拦截与 3 秒虚空救援
+        MinecraftForge.EVENT_BUS.register(com.github.emberstar1201.enchantmentex.item.handler.EndStarHandler.class);
         // 星辉之星：夜间移速加成 + 夜视 + 经验掉落翻倍
         MinecraftForge.EVENT_BUS.register(StarlightStarHandler.class);
         // 永恒图腾：致命伤抵挡 + 回满血 + 消耗耐久
@@ -242,6 +250,8 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(TouhouMaidEnchantmentCompat4.class);
         // 原版怪物强化：血量 / 装备 / 额外掉落 / 小僵尸碰撞箱 / 蜘蛛结网
         MinecraftForge.EVENT_BUS.register(MobBuffHandler.class);
+        // 友好丧尸娘：和平难度下保留 MONSTER 分类，同时执行受限的专属自然补刷
+        MinecraftForge.EVENT_BUS.register(FriendlyGirlPeacefulSpawnHandler.class);
         // 凋零强化：属性 / 半血减伤 / 母弹分裂 / 死亡爆炸与经验
         MinecraftForge.EVENT_BUS.register(WitherBuffHandler.class);
         // 末影龙强化：血量 / 护甲 / 主动攻击 / 吼叫 / 半血机制
@@ -264,7 +274,13 @@ public class EnchantmentExpansion {
         // ================================================================
         if (FMLEnvironment.dist == Dist.CLIENT) {
             modEventBus.addListener(this::onRegisterEntityRenderers);
+            // 丧尸娘玩家皮肤 UV 模型层（主体 + 盔甲内外层）
+            modEventBus.addListener(this::onRegisterLayerDefinitions);
         }
+        // 实体默认属性注册（含丧尸娘：将僵尸增援概率清零，被攻击时不会召唤僵尸）
+        modEventBus.addListener(this::onEntityAttributeCreation);
+        // 实体自然生成位置规则注册（丧尸娘：按怪物规则在地表黑暗处生成）
+        modEventBus.addListener(this::onSpawnPlacementRegister);
     }
 
     // ========================================================================
@@ -275,8 +291,62 @@ public class EnchantmentExpansion {
                 com.github.emberstar1201.enchantmentex.entity.client.GlacialArrowRenderer::new);
         event.registerEntityRenderer(ModEntities.CRESCENT.get(),
                 com.github.emberstar1201.enchantmentex.entity.client.CrescentRenderer::new);
+        event.registerEntityRenderer(ModEntities.ANNIHILATION_ORB.get(),
+                com.github.emberstar1201.enchantmentex.entity.client.AnnihilationOrbRenderer::new);
         // 自定义闪电实体：沿用原版闪电渲染器（保证视觉效果保持一致）
         event.registerEntityRenderer(ModEntities.CUSTOM_LIGHTNING.get(),
                 net.minecraft.client.renderer.entity.LightningBoltRenderer::new);
+        // 丧尸娘：玩家皮肤 UV 模型（HumanoidMobRenderer），不再用僵尸模型
+        event.registerEntityRenderer(ModEntities.ZOMBIE_GIRL.get(),
+                com.github.emberstar1201.enchantmentex.entity.client.ZombieGirlRenderer::new);
+        event.registerEntityRenderer(ModEntities.DROWNED_GIRL.get(),
+                com.github.emberstar1201.enchantmentex.entity.client.DrownedGirlRenderer::new);
+    }
+
+    // ========================================================================
+    // 注册实体模型层定义（客户端专用）
+    // ========================================================================
+    private void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        // 主体：Alex 细手玩家皮肤 UV（64x64）。
+        // 不注册任何盔甲模型层——丧尸娘穿戴盔甲不显示外观，只保留装备属性。
+        event.registerLayerDefinition(
+                com.github.emberstar1201.enchantmentex.entity.client.ZombieGirlLayers.MAIN,
+                com.github.emberstar1201.enchantmentex.entity.client.ZombieGirlModel::createBodyLayer);
+    }
+
+    // ========================================================================
+    // 注册实体默认属性
+    // ========================================================================
+    private void onEntityAttributeCreation(
+            net.minecraftforge.event.entity.EntityAttributeCreationEvent event) {
+        // 基础属性沿用僵尸；额外把「召唤增援」属性压到 0
+        event.put(ModEntities.ZOMBIE_GIRL.get(),
+                net.minecraft.world.entity.monster.Zombie.createAttributes()
+                        .add(net.minecraft.world.entity.ai.attributes.Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D)
+                        .build());
+        event.put(ModEntities.DROWNED_GIRL.get(),
+                net.minecraft.world.entity.monster.Drowned.createAttributes().build());
+    }
+
+    // ========================================================================
+    // 注册实体自然生成位置规则
+    // ========================================================================
+    private void onSpawnPlacementRegister(
+            net.minecraftforge.event.entity.SpawnPlacementRegisterEvent event) {
+        // 普通丧尸娘：刷怪权重与原版僵尸一致（95），非和平难度走原版夜晚/暗处生成；
+        // 白天露天按 80% 概率门放行（有效权重略低于夜晚）；和平难度由专属补刷器处理。
+        event.register(ModEntities.ZOMBIE_GIRL.get(),
+                net.minecraft.world.entity.SpawnPlacements.Type.ON_GROUND,
+                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                FriendlyGirlPeacefulSpawnHandler::checkZombieGirlSpawnRules,
+                net.minecraftforge.event.entity.SpawnPlacementRegisterEvent.Operation.REPLACE);
+
+        // 溺尸娘：水深、亮度、河流 1/15、普通水域 1/40 均复刻原版溺尸，
+        // 仅去掉和平难度阻断，并由和平补刷器在 MONSTER 刷怪循环关闭时补刷。
+        event.register(ModEntities.DROWNED_GIRL.get(),
+                net.minecraft.world.entity.SpawnPlacements.Type.IN_WATER,
+                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                FriendlyGirlPeacefulSpawnHandler::checkDrownedGirlSpawnRules,
+                net.minecraftforge.event.entity.SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

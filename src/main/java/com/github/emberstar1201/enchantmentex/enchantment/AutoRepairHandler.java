@@ -17,7 +17,7 @@ import java.util.List;
 // 监听 ServerTickEvent，每个 END 阶段：
 //   1. 遍历当前服务器所有玩家
 //   2. 检查其手持 / 穿戴 / 副手物品是否带自动修复附魔
-//   3. 按等级累加 tick 计数，达到间隔后恢复 1 点耐久
+//   3. 按等级累加 tick 计数，每 5 秒随机恢复对应区间的耐久
 //
 // 本 Handler 不使用 PlayerTickEvent，以覆盖多人服务端所有玩家，
 // 同时避免依赖客户端 tick 导致的非同步问题。
@@ -70,11 +70,11 @@ public class AutoRepairHandler {
                 currentKeys.add(key);
 
                 int ticks = ACCUMULATED_TICKS.getOrDefault(key, 0) + 1;
-                int interval = AutoRepairConfig.getIntervalTicks(level);
+                int interval = AutoRepairConfig.getIntervalTicks();
 
                 if (ticks >= interval) {
-                    // 达到间隔，恢复 1 点耐久
-                    stack.setDamageValue(stack.getDamageValue() - 1);
+                    int amount = AutoRepairConfig.getRepairAmount(level, player.getRandom());
+                    stack.setDamageValue(Math.max(0, stack.getDamageValue() - amount));
                     ticks = 0;
                 }
 

@@ -1,6 +1,8 @@
 package com.github.emberstar1201.enchantmentex;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
@@ -18,6 +20,7 @@ import net.minecraft.world.entity.monster.CaveSpider;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.Husk;
+import net.minecraft.world.entity.monster.Illusioner;
 import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Evoker;
@@ -40,7 +43,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.registries.Registries;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
@@ -89,6 +95,8 @@ public final class MobBuffHandler {
     private static final UUID RAVAGER_HEALTH_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f10-000000000010");
     private static final UUID RAVAGER_SPEED_UUID = UUID.fromString("a1b2c3d4-1111-4a01-9f11-000000000011");
 
+    private static final ResourceLocation WOODLAND_MANSION = ResourceLocation.withDefaultNamespace("woodland_mansion");
+    private static final String MANSION_ILLUSIONER_TAG = "enchantment_expansion_mansion_illusioner";
     private static final String HEALTH_MODIFIER_NAME = "enchantment_expansion:mob_buff_health";
     private static final String SPEED_MODIFIER_NAME = "enchantment_expansion:mob_buff_speed";
 
@@ -102,7 +110,8 @@ public final class MobBuffHandler {
     // ====================================================================
     @SubscribeEvent
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
-        if (!MobBuffConfig.enabled) {
+        if (event.getEntity() instanceof Illusioner illusioner && !isInsideWoodlandMansion(illusioner)) {
+            event.setCanceled(true);
             return;
         }
         // ---- 苦力怕：蓄力更久 ----
@@ -135,6 +144,12 @@ public final class MobBuffHandler {
         }
         if (!(event.getEntity() instanceof Mob mob)) {
             return;
+        }
+        if (!MobBuffConfig.enabled) {
+            return;
+        }
+        if (mob instanceof Evoker && event.getLevel() instanceof ServerLevel serverLevel) {
+            spawnMansionIllusioner(serverLevel, mob);
         }
 
         RandomSource random = mob.getRandom();
@@ -256,6 +271,16 @@ public final class MobBuffHandler {
         }
         LivingEntity killed = event.getEntity();
         RandomSource random = killed.getRandom();
+        if (killed instanceof Illusioner illusioner && isInsideWoodlandMansion(illusioner)) {
+            event.getDrops().clear();
+            addFixedDrop(event, illusioner, Items.BOW, 1);
+            addFixedDrop(event, illusioner, Items.ARROW, 8 + random.nextInt(9));
+            ItemStack invisibilityPotion = new ItemStack(Items.POTION);
+            invisibilityPotion.getOrCreateTag().putString("Potion", "minecraft:invisibility");
+            addFixedDrop(event, illusioner, invisibilityPotion);
+            addFixedDrop(event, illusioner, Items.EMERALD, 1 + random.nextInt(3));
+            return;
+        }
         if (killed instanceof Zombie zombie) {
             addExtraDrop(event, zombie, Items.COPPER_INGOT, MobBuffConfig.zombieDropCopperIngotChance, random);
             addExtraDrop(event, zombie, Items.DIAMOND, MobBuffConfig.zombieDropDiamondChance, random);
@@ -295,6 +320,13 @@ public final class MobBuffHandler {
         }
 
         LivingEntity killed = event.getEntity();
+        if (killed instanceof Illusioner illusioner && isInsideWoodlandMansion(illusioner)) {
+            int originalExperience = event.getDroppedExperience();
+            if (originalExperience > 0) {
+                event.setDroppedExperience((int) Math.min(Integer.MAX_VALUE, (long) originalExperience * 3L));
+            }
+            return;
+        }
         if (killed instanceof WitherBoss || killed instanceof EnderDragon
                 || !(killed instanceof Enemy || killed instanceof NeutralMob)) {
             return;
@@ -497,6 +529,59 @@ public final class MobBuffHandler {
             speed.addPermanentModifier(new AttributeModifier(
                     modifierId, SPEED_MODIFIER_NAME, amount, AttributeModifier.Operation.MULTIPLY_BASE));
         }
+    }
+
+    private static StructureStart getWoodlandMansionStart(ServerLevel level, BlockPos pos) {
+        ResourceKey<Structure> mansionKey = ResourceKey.create(Registries.STRUCTURE, WOODLAND_MANSION);
+        Structure mansion = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(mansionKey);
+        if (mansion == null) {
+            return null;
+        }
+        StructureStart start = level.structureManager().getStructureWithPieceAt(pos, mansion);
+        return start.isValid() ? start : null;
+    }
+
+    private static boolean isInsideWoodlandMansion(LivingEntity entity) {
+        return entity.level() instanceof ServerLevel level
+                && getWoodlandMansionStart(level, entity.blockPosition()) != null;
+    }
+
+    private static void spawnMansionIllusioner(ServerLevel level, Mob evoker) {
+        if (!isInsideWoodlandMansion(evoker)) {
+            return;
+        }
+        StructureStart mansion = getWoodlandMansionStart(level, evoker.blockPosition());
+        if (mansion == null) {
+            return;
+        }
+        net.minecraft.world.level.levelgen.structure.BoundingBox bounds = mansion.getBoundingBox();
+        net.minecraft.world.phys.AABB mansionBounds = new net.minecraft.world.phys.AABB(
+                bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX() + 1.0D, bounds.maxY() + 1.0D,
+                bounds.maxZ() + 1.0D);
+        boolean alreadyPresent = level.getEntitiesOfClass(Illusioner.class, mansionBounds, Mob::isAlive).stream()
+                .anyMatch(MobBuffHandler::isInsideWoodlandMansion);
+        if (alreadyPresent) {
+            return;
+        }
+        Illusioner illusioner = net.minecraft.world.entity.EntityType.ILLUSIONER.create(level);
+        if (illusioner == null) {
+            return;
+        }
+        illusioner.moveTo(evoker.getX() + 1.5D, evoker.getY(), evoker.getZ() + 1.5D,
+                level.random.nextFloat() * 360.0F, 0.0F);
+        illusioner.getPersistentData().putBoolean(MANSION_ILLUSIONER_TAG, true);
+        illusioner.finalizeSpawn(level, level.getCurrentDifficultyAt(illusioner.blockPosition()),
+                net.minecraft.world.entity.MobSpawnType.STRUCTURE, null, null);
+        level.addFreshEntity(illusioner);
+    }
+
+    private static void addFixedDrop(LivingDropsEvent event, LivingEntity killed, Item item, int count) {
+        addFixedDrop(event, killed, new ItemStack(item, count));
+    }
+
+    private static void addFixedDrop(LivingDropsEvent event, LivingEntity killed, ItemStack stack) {
+        event.getDrops().add(new ItemEntity(killed.level(), killed.getX(), killed.getY() + 0.3D,
+                killed.getZ(), stack));
     }
 
     /** 按百分比概率追加一件掉落物 */

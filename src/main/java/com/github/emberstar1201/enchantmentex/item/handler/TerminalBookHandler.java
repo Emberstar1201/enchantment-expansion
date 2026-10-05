@@ -32,12 +32,18 @@ public final class TerminalBookHandler {
             return;
         }
 
+        Item guideBook = ForgeRegistries.ITEMS.getValue(new ResourceLocation(PATCHOULI_MOD_ID, "guide_book"));
+        if (guideBook == null) {
+            return;
+        }
+
         if (player.getPersistentData().getBoolean(BOOK_GIVEN_TAG)) {
             return;
         }
 
-        Item guideBook = ForgeRegistries.ITEMS.getValue(new ResourceLocation(PATCHOULI_MOD_ID, "guide_book"));
-        if (guideBook == null) {
+        // 兼容旧存档：即使玩家的领取标记丢失，只要背包里已有本模组终界之书，也不再重复发放。
+        if (hasTerminalBook(player, guideBook)) {
+            player.getPersistentData().putBoolean(BOOK_GIVEN_TAG, true);
             return;
         }
 
@@ -45,11 +51,39 @@ public final class TerminalBookHandler {
         // Patchouli 1.20.1 要求书籍 ID 直接放在带命名空间的 NBT 键中。
         tag.putString(PATCHOULI_BOOK_TAG, BOOK_ID);
 
+        // 先标记再发放：即使发放过程中服务器异常，下次登录也不会重复领取。
+        // 标记保存在玩家 ForgeData 中，跨重登、跨死亡（Forge 会在重生时复制）均保留。
+        player.getPersistentData().putBoolean(BOOK_GIVEN_TAG, true);
+
         ItemStack book = new ItemStack(guideBook);
         book.setTag(tag);
         if (!player.getInventory().add(book)) {
             player.drop(book, false);
         }
-        player.getPersistentData().putBoolean(BOOK_GIVEN_TAG, true);
+    }
+
+    private static boolean hasTerminalBook(ServerPlayer player, Item guideBook) {
+        for (ItemStack stack : player.getInventory().items) {
+            if (isTerminalBook(stack, guideBook)) {
+                return true;
+            }
+        }
+        for (ItemStack stack : player.getInventory().armor) {
+            if (isTerminalBook(stack, guideBook)) {
+                return true;
+            }
+        }
+        for (ItemStack stack : player.getInventory().offhand) {
+            if (isTerminalBook(stack, guideBook)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isTerminalBook(ItemStack stack, Item guideBook) {
+        return stack.is(guideBook)
+                && stack.hasTag()
+                && BOOK_ID.equals(stack.getTag().getString(PATCHOULI_BOOK_TAG));
     }
 }

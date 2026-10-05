@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Auto Repair",
-      "text": "§lMax Level: §r III$(br2)§lApplicable to: §r Any damageable item$(br2)§lEffect: §r While held or worn, auto-restores durability: 1 point every 5s (I) / 4s (II) / 3s (III).$(br2)§lObtaining: §r Treasure-only, found in structure loot chests"
+      "text": "§lMax Level: §r III$(br2)§lApplicable to: §r Any damageable item$(br2)§lEffect: §r While held or worn, durability is restored every 5s: I restores 1-3 points, II restores 5-7 points, and III restores 10-12 points.$(br2)§lObtaining: §r Treasure-only, found in structure loot chests"
     }
   ]
 }

@@ -6,9 +6,13 @@ import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -27,6 +31,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -104,6 +110,11 @@ public class EndStarHandler {
     // PersistentData 键：记录玩家上一 tick 是否处于"手持终界之星"状态
     // 用于检测"手持/放下"的状态切换，避免每 tick 重复设置 abilities
     private static final String LAST_HOLDING_ENDSTAR_KEY = "end_star_holding_last";
+    private static final String TEMPORARY_MAYFLY_KEY = "end_star_temporary_mayfly";
+    private static final String PREVIOUS_MAYFLY_KEY = "end_star_previous_mayfly";
+    private static final String PREVIOUS_FLYING_KEY = "end_star_previous_flying";
+    private static final String VOID_RESCUE_TICKS_KEY = "end_star_void_rescue_ticks";
+    private static final int VOID_RESCUE_DELAY_TICKS = 60;
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -114,42 +125,42 @@ public class EndStarHandler {
 
         Player player = event.player;
 
-        // 判断玩家是否正在手持终界之星（主手 或 副手 均可）
+        // 统一判断：手持或盔甲嵌入终界之星均视为生效。
         boolean isHoldingEndStar = isHoldingEndStar(player);
 
-        // ================================================================
-        // 效果 1：创造模式飞行（可通过配置开关）
-        // ================================================================
-        if (Config.enableEndStarFlight) {
-            // 上一 tick 状态（用于检测边缘切换）
-            boolean wasHolding = player.getPersistentData()
-                    .getBoolean(LAST_HOLDING_ENDSTAR_KEY);
-
-            // 【关键约束】创造模式下的玩家原本就具有 mayfly=true，
-            //  但不能在放下终界之星时把创造模式的飞行关了！
-            //  → 仅在"生存/冒险模式"的玩家中控制 mayfly 开关
-            if (!player.isCreative() && !player.isSpectator()) {
-                if (isHoldingEndStar) {
-                    // 手持：打开 mayfly
-                    if (!player.getAbilities().mayfly) {
-                        player.getAbilities().mayfly = true;
-                        player.onUpdateAbilities();  // 同步到客户端
-                    }
-                } else {
-                    // 放下：关闭 mayfly，并立即禁止飞行（已经在飞的强制落地）
-                    if (player.getAbilities().mayfly) {
-                        player.getAbilities().mayfly = false;
-                        player.getAbilities().flying = false;   // 立即退出飞行
-                        player.onUpdateAbilities();
-                    }
+        // 创造和旁观模式的飞行由原版管理，不应恢复成先前生存模式保存的值。
+        if (player.isCreative() || player.isSpectator()) {
+            player.getPersistentData().putBoolean(LAST_HOLDING_ENDSTAR_KEY, false);
+            player.getPersistentData().remove(TEMPORARY_MAYFLY_KEY);
+            player.getPersistentData().remove(PREVIOUS_MAYFLY_KEY);
+            player.getPersistentData().remove(PREVIOUS_FLYING_KEY);
+        } else {
+            boolean wasHolding = player.getPersistentData().getBoolean(LAST_HOLDING_ENDSTAR_KEY);
+            boolean flightAllowed = Config.enableEndStarFlight;
+            if (flightAllowed && isHoldingEndStar && !wasHolding) {
+                player.getPersistentData().putBoolean(PREVIOUS_MAYFLY_KEY, player.getAbilities().mayfly);
+                player.getPersistentData().putBoolean(PREVIOUS_FLYING_KEY, player.getAbilities().flying);
+                player.getPersistentData().putBoolean(TEMPORARY_MAYFLY_KEY, !player.getAbilities().mayfly);
+            }
+            if (flightAllowed && isHoldingEndStar && !player.getAbilities().mayfly) {
+                player.getAbilities().mayfly = true;
+                player.onUpdateAbilities();
+            } else if ((!flightAllowed || !isHoldingEndStar) && wasHolding) {
+                if (player.getPersistentData().getBoolean(TEMPORARY_MAYFLY_KEY)) {
+                    player.getAbilities().mayfly = player.getPersistentData().getBoolean(PREVIOUS_MAYFLY_KEY);
+                    player.getAbilities().flying = player.getPersistentData().getBoolean(PREVIOUS_FLYING_KEY);
+                    player.onUpdateAbilities();
                 }
+                player.getPersistentData().remove(TEMPORARY_MAYFLY_KEY);
+                player.getPersistentData().remove(PREVIOUS_MAYFLY_KEY);
+                player.getPersistentData().remove(PREVIOUS_FLYING_KEY);
             }
+            player.getPersistentData().putBoolean(LAST_HOLDING_ENDSTAR_KEY, flightAllowed && isHoldingEndStar);
+        }
 
-            // 更新上一 tick 状态
-            if (isHoldingEndStar != wasHolding) {
-                player.getPersistentData()
-                        .putBoolean(LAST_HOLDING_ENDSTAR_KEY, isHoldingEndStar);
-            }
+        // 虚空救援只在服务端运行：低于 -60 开始缓慢上升和 3 秒倒计时，避免客户端位置回弹。
+        if (!player.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
+            handleVoidRescue(serverPlayer, isHoldingEndStar);
         }
 
         // ================================================================
@@ -235,8 +246,8 @@ public class EndStarHandler {
         //   Level.addParticle() 只在客户端生效，服务端调用无效
         // ================================================================
         if (player.level().isClientSide() && player.tickCount % 4 == 0) {
-            // 效果 4：手持时玩家周围粒子
-            if (isHoldingEndStar) {
+            // 低于 -60 格时生成向上粒子，作为虚空庇护的客户端视觉反馈。
+            if (isHoldingEndStar && player.getY() <= -60.0D) {
                 spawnEnchantParticlesAroundEntity(player.getX(),
                         player.getY() + player.getBbHeight() * 0.5,
                         player.getZ(),
@@ -375,6 +386,86 @@ public class EndStarHandler {
         }
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onVoidAttack(LivingAttackEvent event) {
+        if (event.getEntity() instanceof Player player
+                && !player.level().isClientSide()
+                && isHoldingEndStar(player)
+                && player.getY() <= -40.0D
+                && event.getSource().is(DamageTypes.FELL_OUT_OF_WORLD)) {
+            // 在伤害事件最早阶段取消，避免客户端收到受伤动画或红屏反馈。
+            event.setCanceled(true);
+        }
+    }
+
+    // 作为 LivingAttackEvent 的兜底：某些模组可能直接触发后续伤害事件。
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onVoidDamage(LivingHurtEvent event) {
+        if (event.getEntity() instanceof Player player
+                && !player.level().isClientSide()
+                && isHoldingEndStar(player)
+                && player.getY() <= -40.0D
+                && event.getSource().is(DamageTypes.FELL_OUT_OF_WORLD)) {
+            event.setCanceled(true);
+        }
+    }
+
+    private static void handleVoidRescue(ServerPlayer player, boolean holdingEndStar) {
+        if (!holdingEndStar) {
+            // 放下终界之星后取消未完成的救援，避免重新持有时接着旧倒计时传送。
+            player.getPersistentData().remove(VOID_RESCUE_TICKS_KEY);
+            return;
+        }
+
+        CompoundTag data = player.getPersistentData();
+        int remaining = data.getInt(VOID_RESCUE_TICKS_KEY);
+        if (player.getY() < -60.0D) {
+            // 只施加向上的小速度，不授予飞行权限，避免切换物品后残留飞行状态。
+            player.setDeltaMovement(player.getDeltaMovement().x,
+                    Math.max(player.getDeltaMovement().y, 0.12D),
+                    player.getDeltaMovement().z);
+            if (remaining <= 0) {
+                remaining = VOID_RESCUE_DELAY_TICKS;
+                data.putInt(VOID_RESCUE_TICKS_KEY, remaining);
+                player.sendSystemMessage(Component.translatable(
+                        "message.enchantment_expansion.end_star.void_rescue_start"));
+            }
+        }
+
+        // 倒计时只在持续处于 Y < -60 时推进；离开虚空区域则暂停，避免误传送。
+        if (player.getY() < -60.0D && remaining > 0) {
+            remaining--;
+            if (remaining <= 0) {
+                teleportToRespawn(player);
+                data.remove(VOID_RESCUE_TICKS_KEY);
+            } else {
+                data.putInt(VOID_RESCUE_TICKS_KEY, remaining);
+            }
+        }
+    }
+
+    private static void teleportToRespawn(ServerPlayer player) {
+        MinecraftServer server = player.getServer();
+        if (server == null) return;
+
+        ServerLevel targetLevel = player.getRespawnPosition() == null
+                ? server.overworld()
+                : server.getLevel(player.getRespawnDimension());
+        if (targetLevel == null) targetLevel = server.overworld();
+
+        BlockPos targetPos = player.getRespawnPosition();
+        if (targetPos == null) targetPos = targetLevel.getSharedSpawnPos();
+
+        player.stopRiding();
+        player.resetFallDistance();
+        player.setDeltaMovement(Vec3.ZERO);
+        player.teleportTo(targetLevel,
+                targetPos.getX() + 0.5D, targetPos.getY(), targetPos.getZ() + 0.5D,
+                player.getYRot(), player.getXRot());
+        player.sendSystemMessage(Component.translatable(
+                "message.enchantment_expansion.end_star.void_rescue_teleported"));
+    }
+
     // ========================================================================
     // 效果 2 + 3：限伤 + 伤害减免 + 伤害加成（LivingHurtEvent）
     //
@@ -447,6 +538,8 @@ public class EndStarHandler {
         // --------------------------------------------------------------
         if (attacker == null
                 || victim == attacker  // 排除自伤
+                || (attacker instanceof Player player
+                    && player.getMainHandItem().is(ModItems.RESIDUAL_SCYTHE.get()))
                 || !Config.enableEndStarDamageBonus
                 || !isHoldingEndStar(attacker)) {
             return;
@@ -505,6 +598,28 @@ public class EndStarHandler {
         }
 
         event.setAmount(oldAmount * multiplier);
+    }
+
+    public static float applyDamageBonus(LivingEntity attacker, LivingEntity target, float amount) {
+        if (target == attacker || !Config.enableEndStarDamageBonus || !isHoldingEndStar(attacker)) {
+            return amount;
+        }
+
+        int bonusTier;
+        if (attacker instanceof Player playerAttacker) {
+            bonusTier = Math.floorDiv(playerAttacker.experienceLevel, 10);
+        } else if (TLMSafe.isTouhouMaid(attacker)) {
+            int maidExperience = TLMSafe.getMaidExperience(attacker);
+            if (maidExperience < 0) {
+                return amount;
+            }
+            bonusTier = Math.floorDiv(maidExperience, Math.max(1, Config.endStarMaidXpPerTier));
+        } else {
+            return amount;
+        }
+
+        int bonusPercent = Math.min(bonusTier * 100, Config.endStarMaxBonusPercent);
+        return bonusPercent > 0 ? amount * (1.0F + bonusPercent / 100.0F) : amount;
     }
 
     // ========================================================================

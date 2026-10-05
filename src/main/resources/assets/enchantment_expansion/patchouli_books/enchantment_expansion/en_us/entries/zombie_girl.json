@@ -1,0 +1,19 @@
+{
+  "name": "Zombie Girl",
+  "category": "enchantment_expansion:creatures",
+  "icon": "enchantment_expansion:zombie_girl_spawn_egg",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "enchantment_expansion:zombie_girl",
+      "title": "Zombie Girl",
+      "text": "§lRace:§r A true undead being — she is fully immune to poison and takes bonus damage from the Smite enchantment; yet she never lost her spark of life: healing potions mend her wounds, while harming potions hurt her as they would any living soul.$(br)§lAllegiance:§r Friendly. She will never attack players or villagers, and she will not hesitate to draw her blade against zombies, skeletons and other kin still enslaved by their hunger. Zombie Girls and Drowned Girls will never harm one another, either.$(br)They are far from alone, too — they have companions of many differing appearances, and the Drowned Girl who dwells in the water is also one of their kin."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The Undead of Peace",
+      "text": "§lPeaceful difficulty:§r When the world turns peaceful, the law that purges monsters casts every undead out of existence — yet it cannot touch them. Neither Zombie Girls nor Drowned Girls are removed on peaceful difficulty.$(br)§lWhereabouts:§r Sunlight does not burn them. On any difficulty you may meet them in open ground by day or in shadow and night alike — they appear about as often as ordinary zombies, just a touch less frequently in daylight than after dark. The Drowned Girl still haunts rivers and oceans, and fears the sun no more than the night.$(br2)§lWhy are they friendly?§r It is said they were girls woken by the undead plague on the night starlight fell from the End. The risen should know only hunger, but that starlight kept a shard of their living souls. When the world became peaceful and the wrath that drove the dead dispersed, they remembered they had once been human — and so chose to guard, with immortal hands, the lives still walking in the sun."
+    }
+  ]
+}

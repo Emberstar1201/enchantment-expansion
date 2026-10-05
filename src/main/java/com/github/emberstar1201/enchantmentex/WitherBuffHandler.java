@@ -2,6 +2,7 @@ package com.github.emberstar1201.enchantmentex;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -30,6 +31,7 @@ public final class WitherBuffHandler {
     private static final String CHILD_TAG = "EEWitherSkullChild";
     private static final String DEATH_HANDLED_TAG = "EEWitherDeathHandled";
     private static final String FLIGHT_TICKS_TAG = "EEWitherFlightTicks";
+    private static final String SHIELD_TICKS_TAG = "EEWitherShieldTicks";
 
     private WitherBuffHandler() {
     }
@@ -41,6 +43,9 @@ public final class WitherBuffHandler {
         }
         if (event.getEntity() instanceof WitherBoss wither) {
             AttributeInstance health = wither.getAttribute(Attributes.MAX_HEALTH);
+            if (!event.loadedFromDisk() || !wither.getPersistentData().contains(SHIELD_TICKS_TAG)) {
+                wither.getPersistentData().putInt(SHIELD_TICKS_TAG, 600);
+            }
             if (health != null) {
                 health.removeModifier(HEALTH_MODIFIER_ID);
                 double delta = MobBuffConfig.witherHealth - health.getBaseValue();
@@ -71,10 +76,15 @@ public final class WitherBuffHandler {
         if (!enabled()) {
             return;
         }
-        if (event.getEntity() instanceof WitherBoss wither
-                && wither.getHealth() <= wither.getMaxHealth() * 0.5F
-                && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) {
-            event.setAmount(event.getAmount() * (float) (1.0D - MobBuffConfig.witherLowHealthDamageReduction));
+        if (event.getEntity() instanceof WitherBoss wither) {
+            boolean bypassesReduction = event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)
+                    || event.getSource().is(DamageTypes.FELL_OUT_OF_WORLD);
+            if (!bypassesReduction && wither.getPersistentData().getInt(SHIELD_TICKS_TAG) > 0) {
+                event.setAmount(event.getAmount() * 0.5F);
+            }
+            if (!bypassesReduction && wither.getHealth() <= wither.getMaxHealth() * 0.5F) {
+                event.setAmount(event.getAmount() * (float) (1.0D - MobBuffConfig.witherLowHealthDamageReduction));
+            }
         }
         if (event.getSource().getEntity() instanceof WitherSkull) {
             event.setAmount(event.getAmount() * (float) MobBuffConfig.witherSkullDamageMultiplier);
@@ -83,7 +93,20 @@ public final class WitherBuffHandler {
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !enabled() || !MobBuffConfig.witherMotherSkullEnabled) {
+        if (event.phase != TickEvent.Phase.END || !enabled()) {
+            return;
+        }
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof WitherBoss wither) {
+                    int shield = wither.getPersistentData().getInt(SHIELD_TICKS_TAG);
+                    if (shield > 0) {
+                        wither.getPersistentData().putInt(SHIELD_TICKS_TAG, shield - 1);
+                    }
+                }
+            }
+        }
+        if (!MobBuffConfig.witherMotherSkullEnabled) {
             return;
         }
         for (ServerLevel level : event.getServer().getAllLevels()) {

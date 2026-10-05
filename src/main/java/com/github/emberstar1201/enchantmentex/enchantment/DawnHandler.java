@@ -115,12 +115,11 @@ public class DawnHandler {
         }
 
         // ========================================================================
-        // 写入 PersistentData（服务器持久化）+ 同步到武器 NBT（客户端显示）
+        // 读取并更新当前武器自己的 NBT。
+        // 每把拂晓武器必须独立成长，不能再使用玩家 PersistentData 作为共享计数器。
         // ========================================================================
-        DawnData.addEffectiveKills(player, baseGrowth);
-
-        // 将最新击杀数写入武器的 NBT（ItemStack NBT 会自动同步到客户端）
-        double kills = DawnData.getEffectiveKills(player);
+        DawnData.migrateLegacyKills(player, weapon);
+        double kills = DawnData.getItemKills(weapon) + baseGrowth;
         DawnData.setItemKills(weapon, kills);
         awardDawnFreedomIfReady(player, weapon);
 
@@ -257,8 +256,9 @@ public class DawnHandler {
                 ModEnchantments.DAWN.get(), weapon);
         if (enchantLevel <= 0) return;
 
-        // 读取成长数据
-        double kills = DawnData.getEffectiveKills(player);
+        // 读取当前主手武器自己的成长数据，不能读取玩家共享 PersistentData
+        DawnData.migrateLegacyKills(player, weapon);
+        double kills = DawnData.getItemKills(weapon);
         double critDamage = DawnData.getCritDamagePercent(kills);
 
         // ========================================================================
@@ -631,17 +631,15 @@ public class DawnHandler {
                 ModEnchantments.DAWN.get(), to) > 0;
 
         if (hasEnchant && !hadEnchant) {
-            // 刚装备上拂晓武器 → 从 PersistentData 复制数据到武器 NBT + 应用 modifier
-            double kills = DawnData.getEffectiveKills(player);
-            DawnData.setItemKills(to, kills);
+            // 刚装备上拂晓武器：只迁移旧版共享数据，不覆盖武器已有的独立成长
+            DawnData.migrateLegacyKills(player, to);
             applyAllModifiers(player);
         } else if (!hasEnchant && hadEnchant) {
             // 卸下拂晓武器 → 移除所有 modifier
             removeAllModifiers(player);
         } else if (hasEnchant && hadEnchant) {
-            // 换另一把拂晓武器 → 从 PersistentData 复制到新武器 + 刷新 modifier
-            double kills = DawnData.getEffectiveKills(player);
-            DawnData.setItemKills(to, kills);
+            // 换另一把拂晓武器：保留新武器自己的成长，只刷新 modifier
+            DawnData.migrateLegacyKills(player, to);
             removeAllModifiers(player);
             applyAllModifiers(player);
         }

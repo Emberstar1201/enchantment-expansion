@@ -125,17 +125,17 @@ public class AncientYunLaiHandler {
             return;
         }
 
-        // 获取箭矢的发射者（owner），必须是玩家
-        if (!(arrow.getOwner() instanceof Player player)) {
+        // 获取箭矢的发射者：玩家与驯服生物（丧尸娘等）均可
+        if (!(arrow.getOwner() instanceof LivingEntity shooter)) {
             return;
         }
 
-        // 获取玩家主手使用的弓（即发射这支箭时用的弓）
-        // 注意：玩家在箭发射后的短暂时间内主手仍持有弓，此事件在服务端和客户端都会触发
-        ItemStack bow = player.getMainHandItem();
+        // 获取射手主手使用的弓（即发射这支箭时用的弓）
+        // 注意：射手在箭发射后的短暂时间内主手仍持有弓，此事件在服务端和客户端都会触发
+        ItemStack bow = shooter.getMainHandItem();
         if (!(bow.getItem() instanceof BowItem)) {
-            // 如果主手不是弓，尝试检查玩家"使用中"的物品（某些极端情况）
-            bow = player.getUseItem();
+            // 如果主手不是弓，尝试检查"使用中"的物品（某些极端情况）
+            bow = shooter.getUseItem();
             if (!(bow.getItem() instanceof BowItem)) {
                 return;
             }

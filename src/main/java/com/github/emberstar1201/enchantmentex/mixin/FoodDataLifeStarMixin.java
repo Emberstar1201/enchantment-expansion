@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 // ========================================================================
-// 【生命之星】饥饿/饱和度下降速度 −50%  Mixin（自然回血侧）
+// 【生命之星】饥饿/饱和度下降速度 −90%  Mixin（自然回血侧）
 //
 // 原版自然回血写在 FoodData#tick(Player) 内部，直接调用
 // FoodData#addExhaustion，不经过 Player#causeFoodExhaustion，
@@ -47,7 +47,7 @@ public class FoodDataLifeStarMixin {
     private float enchantmentEx$halveRegenExhaustion(float amount) {
         Player player = this.enchantmentEx$lifeStarTickPlayer;
         if (player != null && LifeStarHandler.isHoldingOrWearingLifeStar(player)) {
-            return amount * 0.5F;
+            return amount * 0.1F;
         }
         return amount;
     }

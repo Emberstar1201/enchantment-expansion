@@ -62,19 +62,19 @@ public class AutoRepairLootHandler {
             return null;
         }
 
-        // 末地城与古代城市权重略高，以反映高价值宝藏定位
-        int weight = (END_CITY.equals(table) || ANCIENT_CITY.equals(table)) ? 4 : 2;
+        // 末地城与古代城市开出概率略高，以反映高价值宝藏定位。
+        // 注意：池内只有附魔书条目时，条目权重只决定 I/II/III 级的选择比例，
+        // 是否掉落必须通过 rolls 的小数部分（概率）控制。
+        float chance = (END_CITY.equals(table) || ANCIENT_CITY.equals(table)) ? 0.25F : 0.15F;
 
         // 附魔书的等级池：I 级 60%，II 级 30%，III 级 10%
-        // 为简单起见，直接生成 I 级（用户可通过铁砧合并升级）
-        // 这里仍通过权重随机 I~III，以支持开箱体验
         CompoundTag i = bookTag(enchId.toString(), 1);
         CompoundTag ii = bookTag(enchId.toString(), 2);
         CompoundTag iii = bookTag(enchId.toString(), 3);
 
         return LootPool.lootPool()
                 .name("auto_repair_enchanted_book")
-                .setRolls(ConstantValue.exactly(1.0F))
+                .setRolls(ConstantValue.exactly(chance))
                 .add(LootItem.lootTableItem(Items.ENCHANTED_BOOK)
                         .apply(SetNbtFunction.setTag(i))
                         .setWeight(6))

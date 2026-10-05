@@ -5,16 +5,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
@@ -23,12 +23,9 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // 【生命之星】事件处理器
 //
 // 核心效果（手持 + 盔甲嵌入均生效）：
-//   1. 生命值上限：20 → 50 (增加 30 点)
-//   2. 回血速度：×2 倍（自然恢复加速）
-//   3. 饥饿值与饱和度下降速度 −50%
-//      · 移动/跳跃/挖掘/攻击等消耗 → 由 PlayerFoodExhaustionMixin 把参数减半
-//      · 原版自然回血消耗的饱和度 → 由 FoodDataLifeStarMixin 把参数减半
-//      · 本类追加的 ×2 回血所消耗的饱和度 → 在 applyRegenerationBoost 中直接 ×0.5
+//   1. 生命值上限：20 → 100（增加 80 点，生命之星生效时）
+//   2. 饥饿值与饱和度消耗减少 90%
+//   3. 受伤后生命值低于 50% 时，触发 180 秒冷却并获得生命恢复 IV
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class LifeStarHandler {
@@ -36,11 +33,10 @@ public class LifeStarHandler {
     // 属性修饰符 UUID
     private static final UUID MAX_HEALTH_UUID = 
             UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-    private static final UUID REGENERATION_UUID = 
-            UUID.fromString("f1e2d3c4-b5a6-7890-abcd-ef9876543210");
-
-    // 回血加成的独立计时器（每玩家一个，复刻原版 FoodData.tickTimer 的节奏）
-    private static final Map<UUID, Integer> REGEN_TIMER = new HashMap<>();
+    private static final String REGEN_TIMER_TAG = "enchantment_expansion_life_star_regen_timer";
+    private static final String PASSIVE_COOLDOWN_TAG = "enchantment_expansion_life_star_passive_cooldown";
+    private static final int PASSIVE_COOLDOWN_TICKS = 3600;
+    private static final int PASSIVE_REGENERATION_TICKS = 200;
 
     // ========================================================================
     // 【PlayerTickEvent】检查手持/穿戴状态，应用属性修饰符
@@ -58,18 +54,23 @@ public class LifeStarHandler {
         //   导致客户端血条仍显示 20 上限（10 颗心），看起来像"效果没生效"。
         if (player.level().isClientSide()) return;
 
+        int cooldown = player.getPersistentData().getInt(PASSIVE_COOLDOWN_TAG);
+        if (cooldown > 0) {
+            player.getPersistentData().putInt(PASSIVE_COOLDOWN_TAG, cooldown - 1);
+        }
+
         boolean hasLifeStar = isHoldingOrWearingLifeStar(player);
 
         if (hasLifeStar) {
-            // 应用生命值上限修饰符（+30）
+            // 应用生命值上限修饰符（+80）
             AttributeInstance maxHealthAttr = player.getAttribute(Attributes.MAX_HEALTH);
             if (maxHealthAttr != null) {
                 if (maxHealthAttr.getModifier(MAX_HEALTH_UUID) == null) {
                     maxHealthAttr.addPermanentModifier(new AttributeModifier(
-                            MAX_HEALTH_UUID, "LifeStar Max Health", 30.0,
+                            MAX_HEALTH_UUID, "LifeStar Max Health", 80.0,
                             AttributeModifier.Operation.ADDITION));
                     // 治疗满血（同步新上限）
-                    player.setHealth((float) Math.min(player.getHealth() + 30, maxHealthAttr.getValue()));
+                    player.setHealth((float) Math.min(player.getHealth() + 80, maxHealthAttr.getValue()));
                 }
             }
 
@@ -118,8 +119,7 @@ public class LifeStarHandler {
         int foodLevel = food.getFoodLevel();
         float saturation = food.getSaturationLevel();
 
-        UUID id = player.getUUID();
-        int timer = REGEN_TIMER.getOrDefault(id, 0) + 1;
+        int timer = player.getPersistentData().getInt(REGEN_TIMER_TAG) + 1;
 
         if (foodLevel >= 20 && saturation > 0.0F) {
             // 对应原版分支 ①：每 10 tick 追加一次等量治疗
@@ -128,16 +128,16 @@ public class LifeStarHandler {
                 player.heal(satCost / 6.0F);
                 // 【平衡】与原版同等消耗饱和度。若不消耗，加成部分等于"免费回血"，
                 //        实际强度会远超 ×2，属于严重超模。
-                // 【饥饿减缓】回血所消耗的饱和度同样享受 −50%
-                food.addExhaustion(satCost * 0.5F);
+                // 【饥饿减缓】回血所消耗的饱和度同样享受 −90%
+                food.addExhaustion(satCost * 0.1F);
                 timer = 0;
             }
         } else if (foodLevel >= 18) {
             // 对应原版分支 ②：每 80 tick 追加一次等量治疗
             if (timer >= 80) {
                 player.heal(1.0F);
-                // 【饥饿减缓】回血所消耗的饱和度同样享受 −50%（原版 6.0 → 3.0）
-                food.addExhaustion(3.0F);
+                // 【饥饿减缓】回血所消耗的饱和度同样享受 −90%
+                food.addExhaustion(0.6F);
                 timer = 0;
             }
         } else {
@@ -145,15 +145,30 @@ public class LifeStarHandler {
             timer = 0;
         }
 
-        REGEN_TIMER.put(id, timer);
+        player.getPersistentData().putInt(REGEN_TIMER_TAG, timer);
     }
 
-    // ========================================================================
-    // 【PlayerLoggedOutEvent】清理回血计时器，避免玩家退出后残留数据
-    // ========================================================================
     @SubscribeEvent
-    public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        REGEN_TIMER.remove(event.getEntity().getUUID());
+    public static void onLivingDamage(LivingDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)
+                || player.level().isClientSide()
+                || event.isCanceled()
+                || !isHoldingOrWearingLifeStar(player)
+                || event.getAmount() <= 0.0F) {
+            return;
+        }
+        float healthAfterDamage = player.getHealth() - event.getAmount();
+        int cooldown = player.getPersistentData().getInt(PASSIVE_COOLDOWN_TAG);
+        if (healthAfterDamage < player.getMaxHealth() * 0.5F && cooldown <= 0) {
+            player.addEffect(new MobEffectInstance(
+                    MobEffects.REGENERATION,
+                    PASSIVE_REGENERATION_TICKS,
+                    3,
+                    false,
+                    true,
+                    true));
+            player.getPersistentData().putInt(PASSIVE_COOLDOWN_TAG, PASSIVE_COOLDOWN_TICKS);
+        }
     }
 
     // ========================================================================

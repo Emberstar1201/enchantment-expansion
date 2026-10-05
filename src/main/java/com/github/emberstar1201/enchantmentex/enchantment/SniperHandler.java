@@ -4,7 +4,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
@@ -56,15 +55,17 @@ public class SniperHandler {
         CompoundTag tag = arrow.getPersistentData();
         if (tag.contains(TAG_SNIPER)) return; // 防重复
 
-        if (!(arrow.getOwner() instanceof Player player)) return;
+        // 玩家与驯服生物（丧尸娘等）射出的箭都标记；
+        // LivingEntity 通用判定使模组弓附魔对任何持弓生物生效
+        if (!(arrow.getOwner() instanceof LivingEntity shooter)) return;
 
         // 检查主/副手弓弩上的狙击附魔
-        int level = getSniperLevel(player.getMainHandItem(), player.getOffhandItem());
+        int level = getSniperLevel(shooter.getMainHandItem(), shooter.getOffhandItem());
         if (level <= 0) return;
 
         // 写入标记 + 发射者眼睛位置
         tag.putBoolean(TAG_SNIPER, true);
-        Vec3 eye = player.getEyePosition();
+        Vec3 eye = shooter.getEyePosition();
         tag.putDouble(TAG_SNIPER_X, eye.x);
         tag.putDouble(TAG_SNIPER_Y, eye.y);
         tag.putDouble(TAG_SNIPER_Z, eye.z);

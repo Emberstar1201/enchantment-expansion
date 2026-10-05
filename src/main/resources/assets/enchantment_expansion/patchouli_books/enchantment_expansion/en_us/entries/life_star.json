@@ -8,12 +8,12 @@
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:life_star",
       "title": "Life Star",
-      "text": "§lAcquisition: §r Crafted at a crafting table with 9 dandelions.$(br2)§lEffect: §r$(br)Active while held or embedded in armor: max health increases from 20 to 50; regeneration speed is doubled; hunger and saturation drain 50% slower (including the saturation consumed by fast regeneration)."
+      "text": "§c§lAcquisition: §r Place a Golden Apple in the center, with 4 dandelions and 4 glistering melon slices around it.$(br2)§lEffect: §r$(br)Active while held or embedded in armor: max health increases to 100; healing speed is equivalent to Regeneration IV; hunger and saturation drain is reduced by 90%; Disciplinary Flash: when health reaches 50%, immediately restore 33% of max health."
     },
     {
       "type": "patchouli:crafting",
       "recipe": "enchantment_expansion:life_star",
-      "text": "Note: fill all 9 crafting slots with dandelions."
+      "text": "Recipe: place a Golden Apple in the center, surrounded by 4 dandelions and 4 glistering melon slices."
     }
   ]
 }

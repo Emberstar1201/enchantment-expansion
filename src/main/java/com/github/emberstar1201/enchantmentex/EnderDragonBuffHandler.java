@@ -10,6 +10,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.DragonFireball;
@@ -34,6 +37,7 @@ public final class EnderDragonBuffHandler {
     private static final String ROAR_COOLDOWN = "enchantment_expansion_dragon_roar_cooldown";
     private static final String DRAGON_FIREBALL_COOLDOWN = "enchantment_expansion_dragon_fireball_cooldown";
     private static final String DRAGON_CHARGE_COOLDOWN = "enchantment_expansion_dragon_charge_cooldown";
+    private static final int DRAGON_FIREBALL_INTERVAL = 200; // 土球固定约 10 秒发射一次
     private static final String PENDING_EXPERIENCE = "enchantment_expansion_pending_experience";
 
     private EnderDragonBuffHandler() {
@@ -85,8 +89,26 @@ public final class EnderDragonBuffHandler {
     public static void onDragonDamage(LivingDamageEvent event) {
         if (!MobBuffConfig.enabled || !MobBuffConfig.enderDragonEnabled
                 || event.getEntity().level().isClientSide()
-                || !(event.getSource().getEntity() instanceof EnderDragon dragon)) {
+                || !(event.getEntity() instanceof EnderDragon dragon)) {
             return;
+        }
+        if (event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)
+                || event.getSource().is(DamageTypes.FELL_OUT_OF_WORLD)) {
+            return;
+        }
+        // 只统计末影龙附近实际存在的水晶；世界边界包围盒会导致扫描范围异常，无法可靠反映场上水晶数量。
+        // 水晶只要在末地当前世界边界内就生效，不能限制在龙身边 64 格。
+        var border = dragon.level().getWorldBorder();
+        AABB endWorldArea = new AABB(
+                border.getMinX(), -3.0E7D, border.getMinZ(),
+                border.getMaxX(), 3.0E7D, border.getMaxZ());
+        int crystals = dragon.level().getEntitiesOfClass(
+                EndCrystal.class,
+                endWorldArea,
+                Entity::isAlive).size();
+        crystals = Math.min(crystals, 8);
+        if (crystals > 0) {
+            event.setAmount(event.getAmount() * (1.0F - crystals * 0.1F));
         }
         if (dragon.getHealth() <= dragon.getMaxHealth() * 0.5F) {
             event.setAmount(event.getAmount()
@@ -196,6 +218,12 @@ public final class EnderDragonBuffHandler {
             return;
         }
 
+        if (dragon.getPhaseManager().getCurrentPhase().getPhase() == EnderDragonPhase.SITTING_FLAMING
+                || dragon.getPhaseManager().getCurrentPhase().getPhase() == EnderDragonPhase.SITTING_SCANNING) {
+            // 祭坛停靠期间交给原版阶段 AI，避免自定义攻击打断停靠。
+            return;
+        }
+
         if (dragon.getPersistentData().getInt(DRAGON_FIREBALL_COOLDOWN) <= 0) {
             Vec3 direction = target.getEyePosition()
                     .subtract(dragon.getEyePosition())
@@ -210,7 +238,7 @@ public final class EnderDragonBuffHandler {
             level.addFreshEntity(fireball);
             dragon.getPersistentData().putInt(
                     DRAGON_FIREBALL_COOLDOWN,
-                    getAttackCooldown(dragon, true));
+                    DRAGON_FIREBALL_INTERVAL);
         }
 
         if (dragon.getPersistentData().getInt(DRAGON_CHARGE_COOLDOWN) <= 0

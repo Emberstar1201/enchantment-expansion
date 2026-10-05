@@ -8,7 +8,7 @@
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:dawn_star",
       "title": "Dawn Star",
-      "text": "§lAcquisition: §r First complete the advancement 'Though We Fall, We Remain'. Then, holding a weapon enchanted with Dawn, slay another Wither between sunset and sunrise (the whole night). The Dawn Star drops on the ground alongside the Wither's loot; picking it up lights up the advancement 'So-Called Dawn, At Last Set Free'.$(br2)§lEffect: §r$(br)Active while held or embedded in armor (embedding into armor does not weaken it): killing hostile mobs builds 'Morning Light' — +0.25 charge per kill, or +2 if your main-hand weapon is enchanted with Dawn, up to 10. When Morning Light reaches 10, 'Dawn' triggers automatically."
+      "text": "§c§lAcquisition: §r Complete the 'Though We Fall, We Remain' advancement, then kill a Wither at night while holding a Dawn-enchanted weapon. The Dawn Star drops with the Wither's loot.$(br2)§lEffect: §r$(br)Active while held or embedded in armor: killing hostile mobs builds Morning Light; a Dawn-enchanted main-hand weapon builds it faster. At 10 charges, 'Dawn' activates."
     },
     {
       "type": "patchouli:text",

@@ -1,5 +1,7 @@
 package com.github.emberstar1201.enchantmentex.util;
 
+import com.github.emberstar1201.enchantmentex.entity.DrownedGirlEntity;
+import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.animal.IronGolem;
@@ -41,7 +43,8 @@ public final class AllyFilter {
      *    无论主人是谁，"有主"即视为玩家伙伴；
      * 3. 村民与流浪商人（AbstractVillager 及其子类）；
      * 4. 原版友好傀儡（铁傀儡、雪傀儡）；
-     * 5. 车万女仆模组（touhou_little_maid 命名空间）的全部实体。
+     * 5. 车万女仆模组（touhou_little_maid 命名空间）的全部实体；
+     * 6. 丧尸娘 / 溺尸娘（无论是否已被驯服）—— 模组特色生物，AOE 不应波及。
      */
     public static boolean isFriendly(LivingEntity entity) {
         // 1. 玩家（含攻击者本人，由调用方按需另行排除）
@@ -67,7 +70,11 @@ public final class AllyFilter {
 
         // 5. 第三方友方实体（车万女仆等）—— 命名空间软兼容
         var typeId = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        return typeId != null
-                && NAMESPACE_TOUHOU_MAID.equals(typeId.getNamespace());
+        if (typeId != null && NAMESPACE_TOUHOU_MAID.equals(typeId.getNamespace())) {
+            return true;
+        }
+
+        // 6. 模组特色生物：丧尸娘与溺尸娘（驯服与否均视为友方）
+        return entity instanceof ZombieGirlEntity || entity instanceof DrownedGirlEntity;
     }
 }

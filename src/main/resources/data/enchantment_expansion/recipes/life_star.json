@@ -2,13 +2,19 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "###",
-    "###",
-    "###"
+    "DGD",
+    "GAG",
+    "DGD"
   ],
   "key": {
-    "#": {
+    "D": {
       "item": "minecraft:dandelion"
+    },
+    "G": {
+      "item": "minecraft:glistering_melon_slice"
+    },
+    "A": {
+      "item": "minecraft:golden_apple"
     }
   },
   "result": {

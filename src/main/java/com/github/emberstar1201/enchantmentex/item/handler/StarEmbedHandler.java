@@ -7,12 +7,9 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.AnvilUpdateEvent;
+import net.minecraftforge.event.entity.player.AnvilRepairEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-
-import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
-
 // ========================================================================
 // 【星星嵌入系统】铁砧合并处理器
 //
@@ -48,14 +45,24 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //                              / "void_star" / "starlight_star" / "dawn_star"
 //   - "EmbedCost" → 整数，表示此次嵌入的铁砧花费（仅记录，不实际扣除）
 // ========================================================================
-@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class StarEmbedHandler {
 
     @SubscribeEvent
     public static void onAnvilUpdate(AnvilUpdateEvent event) {
         ItemStack input = event.getLeft();      // 盔甲（铁砧第1位）
         ItemStack material = event.getRight();  // 星星（铁砧第2位）
-        
+
+        // 左槽放已嵌入星星的盔甲、右槽留空：进入取出模式。
+        if (isArmorWithEmbeddedStar(input) && material.isEmpty()) {
+            ItemStack result = input.copy();
+            result.removeTagKey("EmbeddedStar");
+            result.removeTagKey("EmbedCost");
+            event.setOutput(result);
+            event.setCost(5);
+            event.setMaterialCost(0);
+            return;
+        }
+
         // 校验：第1位必须是盔甲，第2位必须是星星
         if (!isArmor(input) || !isStar(material)) {
             return;
@@ -109,6 +116,31 @@ public class StarEmbedHandler {
         event.setMaterialCost(0);  // 星星不被消耗
     }
 
+    // 取出模式完成后，将星星返还给玩家；背包已满时掉落在脚下。
+    @SubscribeEvent
+    public static void onAnvilRepair(AnvilRepairEvent event) {
+        ItemStack result = event.getOutput();
+        ItemStack input = event.getLeft();
+        if (!isArmor(result) || result.hasTag() && result.getTag().contains("EmbeddedStar")) {
+            return;
+        }
+
+
+        if (!isArmorWithEmbeddedStar(input)) {
+            return;
+        }
+
+        ItemStack star = starForType(input.getTag().getString("EmbeddedStar"));
+        if (star.isEmpty()) {
+            return;
+        }
+
+        Player player = event.getEntity();
+        if (!player.addItem(star)) {
+            player.drop(star, false);
+        }
+    }
+
     // ========================================================================
     // 【ItemTooltipEvent】在盔甲物品提示中显示已嵌入的星星信息
     //
@@ -124,9 +156,28 @@ public class StarEmbedHandler {
         StarEmbedUtils.appendEmbeddedStarInfo(stack, event.getToolTip());
     }
 
-    // ================================================================
+    private static boolean isArmorWithEmbeddedStar(ItemStack stack) {
+        return isArmor(stack)
+                && stack.hasTag()
+                && stack.getTag().contains("EmbeddedStar")
+                && !stack.getTag().getString("EmbeddedStar").isEmpty();
+    }
+
+    private static ItemStack starForType(String starType) {
+        return switch (starType) {
+            case "end_star" -> new ItemStack(ModItems.END_STAR.get());
+            case "ocean_star" -> new ItemStack(ModItems.OCEAN_STAR.get());
+            case "life_star" -> new ItemStack(ModItems.LIFE_STAR.get());
+            case "void_star" -> new ItemStack(ModItems.VOID_STAR.get());
+            case "starlight_star" -> new ItemStack(ModItems.STARLIGHT_STAR.get());
+            case "dawn_star" -> new ItemStack(ModItems.DAWN_STAR.get());
+            default -> ItemStack.EMPTY;
+        };
+    }
+
+    // ========================================================================
     // 工具方法：判断物品是否为盔甲
-    // ================================================================
+    // ========================================================================
     private static boolean isArmor(ItemStack stack) {
         return stack.getItem() instanceof ArmorItem;
     }

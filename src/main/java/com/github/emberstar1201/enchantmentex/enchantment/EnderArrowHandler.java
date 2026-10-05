@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
@@ -46,12 +45,12 @@ public class EnderArrowHandler {
 
         CompoundTag tag = arrow.getPersistentData();
         if (tag.contains(TAG_ENDER_ARROW)
-                || !(arrow.getOwner() instanceof Player player)) {
+                || !(arrow.getOwner() instanceof LivingEntity shooter)) {
             return;
         }
 
-        if (getEnderArrowLevel(player.getMainHandItem(), player.getOffhandItem()) > 0) {
-            // 标记写入箭本身，避免玩家在箭飞行期间切换武器而丢失效果。
+        if (getEnderArrowLevel(shooter.getMainHandItem(), shooter.getOffhandItem()) > 0) {
+            // 标记写入箭本身，避免射手在箭飞行期间切换武器而丢失效果。
             tag.putBoolean(TAG_ENDER_ARROW, true);
         }
     }
@@ -66,17 +65,19 @@ public class EnderArrowHandler {
         if (level.isClientSide()
                 || !EnderArrowConfig.isEnabled()
                 || !arrow.getPersistentData().getBoolean(TAG_ENDER_ARROW)
-                || !(arrow.getOwner() instanceof ServerPlayer player)
+                || !(arrow.getOwner() instanceof LivingEntity shooter)
                 || !(level instanceof ServerLevel serverLevel)) {
             return;
         }
 
         long now = serverLevel.getGameTime();
-        long cooldownEnd = COOLDOWN_END_TICKS.getOrDefault(player.getUUID(), 0L);
+        long cooldownEnd = COOLDOWN_END_TICKS.getOrDefault(shooter.getUUID(), 0L);
         if (now < cooldownEnd) {
             long remainingSeconds = (long) Math.ceil((cooldownEnd - now) / 20.0);
-            player.displayClientMessage(Component.literal(
-                    "§5末影箭冷却中：" + remainingSeconds + " 秒"), true);
+            if (shooter instanceof ServerPlayer player) {
+                player.displayClientMessage(Component.literal(
+                        "§5末影箭冷却中：" + remainingSeconds + " 秒"), true);
+            }
             return;
         }
 
@@ -89,21 +90,21 @@ public class EnderArrowHandler {
         }
 
         serverLevel.sendParticles(ParticleTypes.PORTAL,
-                player.getX(), player.getY() + 1.0, player.getZ(),
+                shooter.getX(), shooter.getY() + 1.0, shooter.getZ(),
                 32, 0.35, 0.7, 0.35, 0.15);
-        serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+        serverLevel.playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(),
+                SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.NEUTRAL, 1.0F, 1.0F);
 
-        // 直接调用玩家传送不会附带末影珍珠伤害。
-        player.teleportTo(destination.x, destination.y, destination.z);
+        // 直接调用传送不会附带末影珍珠伤害；生物使用通用传送方法。
+        shooter.teleportTo(destination.x, destination.y, destination.z);
 
         serverLevel.sendParticles(ParticleTypes.PORTAL,
                 destination.x, destination.y + 1.0, destination.z,
                 32, 0.35, 0.7, 0.35, 0.15);
         serverLevel.playSound(null, destination.x, destination.y, destination.z,
-                SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+                SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.NEUTRAL, 1.0F, 1.0F);
 
-        COOLDOWN_END_TICKS.put(player.getUUID(), now + EnderArrowConfig.getCooldownTicks());
+        COOLDOWN_END_TICKS.put(shooter.getUUID(), now + EnderArrowConfig.getCooldownTicks());
     }
 
     private static int getEnderArrowLevel(ItemStack mainHand, ItemStack offHand) {

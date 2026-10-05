@@ -1,9 +1,11 @@
 package com.github.emberstar1201.enchantmentex.item;
 
 import com.github.emberstar1201.enchantmentex.EnchantmentExpansion;
+import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -255,6 +257,21 @@ public class ModItems {
     );
 
     // ========================================================================
+    // 【丧尸娘刷怪蛋】
+    //   ForgeSpawnEggItem：底色为僵尸绿，点缀色为肤色；
+    //   实体类型直接引用 ModEntities.ZOMBIE_GIRL。
+    // ========================================================================
+    public static final RegistryObject<ForgeSpawnEggItem> ZOMBIE_GIRL_SPAWN_EGG =
+            ITEMS.register("zombie_girl_spawn_egg",
+                    () -> new ForgeSpawnEggItem(ModEntities.ZOMBIE_GIRL,
+                            0x5A7D44, 0xC4AFA0, new Item.Properties()));
+
+    public static final RegistryObject<ForgeSpawnEggItem> DROWNED_GIRL_SPAWN_EGG =
+            ITEMS.register("drowned_girl_spawn_egg",
+                    () -> new ForgeSpawnEggItem(ModEntities.DROWNED_GIRL,
+                            0x2F6D72, 0xC4AFA0, new Item.Properties()));
+
+    // ========================================================================
     // 注册方法：在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     // ========================================================================
     public static void register(IEventBus eventBus) {
@@ -290,6 +307,11 @@ public class ModItems {
                 event.accept(DAWN_STAR);
                 event.accept(ETERNAL_TOTEM);
                 event.accept(ENHANCEMENT_SCROLL);
+            }
+            // 刷怪蛋标签页
+            if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
+                event.accept(ZOMBIE_GIRL_SPAWN_EGG);
+                event.accept(DROWNED_GIRL_SPAWN_EGG);
             }
         }
     }
