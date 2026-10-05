@@ -2,6 +2,10 @@
 
 > 由 AI 和朋友一起手搓的 Minecraft 附魔扩展模组。
 
+<span style="color:red">**⚠️ 特殊提醒（免责声明）：丧尸娘的受伤音频极度社死，请不要在公共场合播放！若真的要玩，请戴好耳机！**</span>
+
+<span style="color:red">**⚠️ WARNING (Disclaimer): The Zombie Girl's hurt sound is EXTREMELY embarrassing. Do NOT play it out loud in public! If you really want to play, please wear headphones!**</span>
+
 ---
 
 ## ✨ 与我互动
