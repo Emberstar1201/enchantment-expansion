@@ -14,15 +14,14 @@ import net.minecraft.world.inventory.Slot;
  * 槽位坐标直接遍历菜单中的 {@link Slot}，与服务端菜单定义天然保持一致，
  * 避免新增资源文件与坐标错位。
  *
- * 界面布局（176 × 178）：
+ * 界面布局（176 × 268）：
  * <pre>
- *   y = 6   标题「丧尸娘背包」
- *   y = 20  6 个装备槽（头 / 胸 / 腿 / 脚 / 主手 / 副手）
- *   y = 44  生肉背包标签
- *   y = 44 / 62  16 格生肉背包（每行 8 格，仅生肉可放入）
- *   y = 86  玩家背包标签
- *   y = 96 / 114 / 132  玩家背包 27 格
- *   y = 152 玩家快捷栏 9 格
+ *   y = 6    标题「丧尸娘背包」
+ *   y = 18   6 个装备槽（头 / 胸 / 腿 / 脚 / 主手 / 副手）
+ *   y = 38 起 64 格随身背包（8 列 × 8 行，任意物品可放入），最后一行 y = 162
+ *   y = 180  玩家背包标签
+ *   y = 190 / 208 / 226  玩家背包 27 格
+ *   y = 244  玩家快捷栏 9 格
  * </pre>
  */
 public class ZombieGirlInventoryScreen extends AbstractContainerScreen<ZombieGirlInventoryMenu> {
@@ -32,14 +31,13 @@ public class ZombieGirlInventoryScreen extends AbstractContainerScreen<ZombieGir
     private static final int COLOR_BORDER = 0xFF555555;
     private static final int COLOR_SLOT_BORDER = 0xFF8B8B8B;
     private static final int COLOR_SLOT_INSIDE = 0xFF373737;
-    private static final int COLOR_LABEL = 0x404040;
 
     public ZombieGirlInventoryScreen(ZombieGirlInventoryMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 178;
-        // 玩家背包标签位于生肉背包与玩家槽位之间（默认值 imageHeight - 94 会与生肉槽重叠）
-        this.inventoryLabelY = 86;
+        this.imageHeight = 268;
+        // 玩家背包标签位于 64 格随身背包与玩家槽位之间（首行玩家槽 y=190，标签 y=180）
+        this.inventoryLabelY = 180;
     }
 
     @Override
@@ -71,11 +69,8 @@ public class ZombieGirlInventoryScreen extends AbstractContainerScreen<ZombieGir
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        // 标题与玩家背包标签沿用默认绘制
+        // 标题与玩家背包标签沿用默认绘制；
+        // 背包已放开为任意物品，不再需要旧的「生肉背包」分区标签。
         super.renderLabels(graphics, mouseX, mouseY);
-        // 生肉背包小标签（x = 8 位于装备槽左侧空白区，y = 33 位于装备行与生肉行之间）
-        graphics.drawString(this.font,
-                Component.translatable("container.enchantment_expansion.zombie_girl_meat_inventory"),
-                8, 33, COLOR_LABEL, false);
     }
 }

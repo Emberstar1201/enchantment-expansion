@@ -1,0 +1,19 @@
+{
+  "name": "Drowned Girl",
+  "category": "enchantment_expansion:creatures",
+  "icon": "enchantment_expansion:drowned_girl_spawn_egg",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "enchantment_expansion:drowned_girl",
+      "title": "Drowned Girl",
+      "text": "§lRace:§r Undead. Kin to the Zombie Girl — immune to poison, takes bonus damage from Smite; healing potions mend her, harming potions hurt her as normal.$(br)§lAllegiance:§r Friendly. She never attacks players or villagers, and hunts the drowned, skeletons and other kin ruled by instinct; she and Zombie Girls will never harm one another.$(br)She dwells in rivers and oceans, surfacing by day and night alike, and has never feared the sun. She is not purged on peaceful difficulty."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The Drowned",
+      "text": "They are kin to the Zombie Girls, but they walked another path — awakened by the End's starlight in the cold, lightless deep.$(br)The sea forgives no one. They learned to breathe underwater, to swim like fish, and to pin their enemies to the abyss with a trident.$(br2)Yet they never forgot who they were. The Drowned Girls are quieter than their sisters on land, as if the silence of the sea had seeped into their bones. They will not resist a player's blade, for the sea taught them one thing: to sink is also a way home."
+    }
+  ]
+}

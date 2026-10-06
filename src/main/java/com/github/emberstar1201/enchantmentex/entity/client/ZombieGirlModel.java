@@ -21,17 +21,30 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
  *
  * 关键点：
  *   1. Alex 皮肤手臂宽度为 3 像素（classic 是 4 像素），手臂根部 Y 偏移 2.5。
- *   2. 夹克 / 袖子 / 裤腿第二层全部作为「活动部件的子部件」挂在
- *      body / right_arm / left_arm / right_leg / left_leg 下，
- *      会随父部件一起旋转，僵尸前伸 / 走路摆臂时不会脱离手臂。
+ *   2. 头发 / 夹克 / 袖子 / 裤腿第二层全部作为「活动部件的子部件」挂在
+ *      head / body / right_arm / left_arm / right_leg / left_leg 下，
+ *      会随父部件一起旋转，僵尸前伸 / 走路摆臂时不会脱离；幼体分头、身两遍
+ *      渲染（AgeableListModel）时，头发也能正确罩在被放大的头上。
  *   3. 不包含任何盔甲几何：丧尸娘 / 溺尸娘穿戴盔甲时只享受装备属性
  *      （护甲、韧性、击退抗性，由装备槽自动结算），不显示盔甲外观，
  *      渲染器也不注册盔甲渲染层。
  */
 public class ZombieGirlModel<T extends Mob> extends HumanoidModel<T> {
 
+    /**
+     * 真正的头发第二层。
+     *
+     * <p>父类 HumanoidModel 构造器硬性要求根节点下存在名为 "hat" 的部件
+     * （{@code root.getChild("hat")}），但幼体渲染时 AgeableListModel 把根 hat
+     * 归入「身体遍」（0.5 倍、降到胸口位置），头发会脱离被放大的头部。
+     * 因此网格里根 hat 只是一个空占位，真正的头发方块挂在 head 下作为子部件，
+     * 由这里的引用控制显隐。</p>
+     */
+    private final net.minecraft.client.model.geom.ModelPart hair;
+
     public ZombieGirlModel(net.minecraft.client.model.geom.ModelPart root) {
         super(root);
+        this.hair = this.head.getChild("hat");
     }
 
     /** 主体层定义：Alex 细手玩家皮肤 UV，64x64。 */
@@ -64,14 +77,15 @@ public class ZombieGirlModel<T extends Mob> extends HumanoidModel<T> {
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount,
                           float ageInTicks, float netHeadYaw, float headPitch) {
         super.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-        // 皮肤第二层（hat，即头发）按实体类型分别处理：
+        // 头发第二层（head 的子部件）按实体类型分别处理：
         //   溺尸娘游泳 / 举矛动作中头部大幅倾斜，头发必然穿模，始终隐藏；
         //   普通丧尸娘：盔甲不渲染外观，不存在头盔穿模问题，头发始终显示。
+        // 注意不能再操作 this.hat —— 它现在是根节点上的空占位部件。
         if (entity instanceof DrownedGirlEntity) {
-            this.hat.visible = false;
+            this.hair.visible = false;
             animateDrownedPose(ageInTicks);
         } else {
-            this.hat.visible = true;
+            this.hair.visible = true;
             AnimationUtils.animateZombieArms(this.leftArm, this.rightArm,
                     entity.isAggressive(), this.attackTime, ageInTicks);
         }
@@ -105,10 +119,23 @@ public class ZombieGirlModel<T extends Mob> extends HumanoidModel<T> {
      * (CubeDeformation, slim=true) 保持一致。
      */
     private static LayerDefinition createLayer(CubeDeformation deformation) {
-        // 基础人形：head(0,0) / hat(32,0，head 的子部件) / body(16,16) / right_leg(0,16)
+        // 基础人形：head(0,0) / hat(32,0) / body(16,16) / right_leg(0,16)
         MeshDefinition mesh = HumanoidModel.createMesh(deformation, 0.0F);
         PartDefinition root = mesh.getRoot();
+        PartDefinition head = root.getChild("head");
         PartDefinition body = root.getChild("body");
+
+        // —— 头发第二层 ——
+        // 原版 mesh 的 hat 挂在根节点；AgeableListModel 幼体渲染时把根 hat 当作
+        // 「身体部件」以 0.5 倍渲染在胸口高度，导致小丧尸娘头上没有第二层。
+        // 处理：根 hat 替换为空 CubeListBuilder 占位（HumanoidModel 构造器会
+        // root.getChild("hat")，不能缺失），真正的头发方块改为 head 的子部件：
+        // 成体随头部转动，幼体则随「头部遍」以 0.75 倍正确罩在放大的头上。
+        root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+        head.addOrReplaceChild("hat",
+                CubeListBuilder.create().texOffs(32, 0)
+                        .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, deformation.extend(0.5F)),
+                PartPose.ZERO);
 
         // —— Alex 细手臂（3 像素宽，根部 Y=2.5），标准 12 像素长度 ——
         // 右臂 UV(40,16)：x 起点 -2

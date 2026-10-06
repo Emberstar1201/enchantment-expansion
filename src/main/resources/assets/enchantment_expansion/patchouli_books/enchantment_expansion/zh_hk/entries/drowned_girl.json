@@ -1,0 +1,19 @@
+{
+  "name": "溺屍娘",
+  "category": "enchantment_expansion:creatures",
+  "icon": "enchantment_expansion:drowned_girl_spawn_egg",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "enchantment_expansion:drowned_girl",
+      "title": "溺屍娘",
+      "text": "§l種族：§r亡靈生物。同喪屍娘同源，免疫中毒，受「亡靈殺手」額外傷害；治療藥水有效，傷害藥水如常生效。$(br)§l陣營：§r友好。絕唔會攻擊玩家同村民，主動獵殺溺屍、骷髏等被本能支配嘅同類；同喪屍娘之間永遠唔會互傷。$(br)佢哋棲身喺河流同海洋，無論日頭夜晚都會出沒，而且從嚟唔怕日光。和平難度下唔會被清除。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "溺亡者",
+      "text": "佢哋係喪屍娘嘅同族，卻選擇咗另一條路——喺冰冷嘅水底被終界星輝喚醒。$(br)大海冇寬恕過任何人。佢哋學識咗喺水中呼吸，學識咗似魚咁游動，亦學識咗用三叉戟將敵人釘喺深淵之中。$(br2)但佢哋從未忘記自己係邊個。溺屍娘比陸上嘅族人更沉默，彷彿大海嘅寂靜已經滲入咗骨髓。佢哋唔會反抗玩家嘅刀刃，因為大海教識咗佢哋一件事：沉沒，都係一種歸途。"
+    }
+  ]
+}

@@ -8,12 +8,12 @@
       "type": "patchouli:entity",
       "entity": "enchantment_expansion:zombie_girl",
       "title": "Zombie Girl",
-      "text": "§lRace:§r A true undead being — she is fully immune to poison and takes bonus damage from the Smite enchantment; yet she never lost her spark of life: healing potions mend her wounds, while harming potions hurt her as they would any living soul.$(br)§lAllegiance:§r Friendly. She will never attack players or villagers, and she will not hesitate to draw her blade against zombies, skeletons and other kin still enslaved by their hunger. Zombie Girls and Drowned Girls will never harm one another, either.$(br)They are far from alone, too — they have companions of many differing appearances, and the Drowned Girl who dwells in the water is also one of their kin."
+      "text": "§lRace:§r Undead. Immune to poison, takes bonus damage from Smite; yet healing potions still mend her wounds, and harming potions hurt her as normal.$(br)§lAllegiance:§r Friendly. She never attacks players or villagers, and draws her blade against zombies, skeletons and other kin ruled by hunger. She and Drowned Girls will never harm one another.$(br)She is not purged on peaceful difficulty, and sunlight does not burn her. You may meet her in the open by day, or in darkness and night — about as often as ordinary zombies, just a little less often in daylight."
     },
     {
       "type": "patchouli:text",
-      "title": "The Undead of Peace",
-      "text": "§lPeaceful difficulty:§r When the world turns peaceful, the law that purges monsters casts every undead out of existence — yet it cannot touch them. Neither Zombie Girls nor Drowned Girls are removed on peaceful difficulty.$(br)§lWhereabouts:§r Sunlight does not burn them. On any difficulty you may meet them in open ground by day or in shadow and night alike — they appear about as often as ordinary zombies, just a touch less frequently in daylight than after dark. The Drowned Girl still haunts rivers and oceans, and fears the sun no more than the night.$(br2)§lWhy are they friendly?§r It is said they were girls woken by the undead plague on the night starlight fell from the End. The risen should know only hunger, but that starlight kept a shard of their living souls. When the world became peaceful and the wrath that drove the dead dispersed, they remembered they had once been human — and so chose to guard, with immortal hands, the lives still walking in the sun."
+      "title": "A Waking Nightmare",
+      "text": "They are undead like zombies and skeletons, yet they loathe their own kind — loathe those walking corpses that surrendered to bloodlust and became pure monsters.$(br)They know full well that they, too, are monsters. Their living memories were preserved beneath the End's starlight, and that is the cruelest torment of all: they remember being human, and can never go back.$(br2)When you raise a weapon against her, she will not fight back. To her, death is not an end but a release — release from a body that is not hers, and from a self-loathing without end."
     }
   ]
 }

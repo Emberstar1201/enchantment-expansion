@@ -18,33 +18,34 @@ import net.minecraft.world.item.ShieldItem;
  *
  * 槽位布局：
  * <pre>
- *   0 ~ 5    丧尸娘真实装备槽（头 / 胸 / 腿 / 脚 / 主手 / 副手），
- *            直接读写 LivingEntity 装备槽，穿上盔甲后护甲等属性由原版实时计算；
- *   6 ~ 21   16 格生肉背包，只接受生肉类物品（见 ZombieGirlEntity#isRawMeat）；
- *   22 ~ 48  玩家背包 27 格；
- *   49 ~ 57  玩家快捷栏 9 格。
+ *   0 ~ 5     丧尸娘真实装备槽（头 / 胸 / 腿 / 脚 / 主手 / 副手），
+ *             直接读写 LivingEntity 装备槽，穿上盔甲后护甲等属性由原版实时计算；
+ *   6 ~ 69    64 格随身背包（8 列 × 8 行），接受任意物品；
+ *             生肉会被丧尸娘自动取食回血，星星（终界之星等）放入即可获得被动效果；
+ *   70 ~ 96   玩家背包 27 格；
+ *   97 ~ 105  玩家快捷栏 9 格。
  * </pre>
  *
- * 主人拥有完整管理权限：装备和生肉都可以普通点击取放，也可以使用 Shift 快速移动。
- * 生肉槽仍然只接受生肉，装备槽仍然按头胸腿脚、主手和副手分别限制物品类型。
+ * 主人拥有完整管理权限：装备和背包物品都可以普通点击取放，也可以使用 Shift 快速移动。
+ * 背包槽接受任意物品，装备槽仍然按头胸腿脚、主手和副手分别限制物品类型。
  * 菜单直接操作实体持有的真实装备槽与 SimpleContainer，关闭界面时无需额外同步；
- * 生肉背包随实体 NBT 持久化。
+ * 随身背包随实体 NBT 持久化。
  */
 public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
 
     /** 装备槽数量：头、胸、腿、脚、主手、副手。 */
     public static final int EQUIPMENT_SLOT_COUNT = 6;
-    /** 生肉背包格数。 */
-    public static final int MEAT_SLOT_COUNT = 16;
-    /** 玩家背包起始下标（6 + 16 = 22）。 */
-    public static final int PLAYER_INVENTORY_START = EQUIPMENT_SLOT_COUNT + MEAT_SLOT_COUNT;
-    /** 玩家快捷栏起始下标（22 + 27 = 49）。 */
+    /** 随身背包格数（8 列 × 8 行）。 */
+    public static final int BACKPACK_SLOT_COUNT = 64;
+    /** 玩家背包起始下标（6 + 64 = 70）。 */
+    public static final int PLAYER_INVENTORY_START = EQUIPMENT_SLOT_COUNT + BACKPACK_SLOT_COUNT;
+    /** 玩家快捷栏起始下标（70 + 27 = 97）。 */
     public static final int PLAYER_HOTBAR_START = PLAYER_INVENTORY_START + 27;
-    /** 全部槽位总数（49 + 9 = 58）。 */
+    /** 全部槽位总数（97 + 9 = 106）。 */
     public static final int MENU_SLOT_COUNT = PLAYER_HOTBAR_START + 9;
 
-    /** 生肉槽在下标区间中的起止（左闭右开）。 */
-    private static final int MEAT_SLOT_END = PLAYER_INVENTORY_START;
+    /** 背包槽在下标区间中的起止（左闭右开）。 */
+    private static final int BACKPACK_SLOT_END = PLAYER_INVENTORY_START;
 
     /** 当前打开的丧尸娘实体。 */
     private final ZombieGirlEntity zombieGirl;
@@ -54,46 +55,46 @@ public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
         // 装备槽直接映射实体槽位，Slot 父类要求一个 Container，传入永不使用的空实现容器
         Container dummyContainer = new SimpleContainer(EQUIPMENT_SLOT_COUNT);
 
-        // ---- 第一行：6 个装备槽（水平居中，x 起始 34），y = 20 ----
+        // ---- 第一行：6 个装备槽（水平居中，x 起始 34），y = 18 ----
         this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.HEAD,
-                dummyContainer, 0, 34, 20));
+                dummyContainer, 0, 34, 18));
         this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.CHEST,
-                dummyContainer, 1, 34 + 18, 20));
+                dummyContainer, 1, 34 + 18, 18));
         this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.LEGS,
-                dummyContainer, 2, 34 + 36, 20));
+                dummyContainer, 2, 34 + 36, 18));
         this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.FEET,
-                dummyContainer, 3, 34 + 54, 20));
+                dummyContainer, 3, 34 + 54, 18));
         this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.MAINHAND,
-                dummyContainer, 4, 34 + 72, 20));
+                dummyContainer, 4, 34 + 72, 18));
         this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.OFFHAND,
-                dummyContainer, 5, 34 + 90, 20));
+                dummyContainer, 5, 34 + 90, 18));
 
-        // ---- 第二、三行：16 格生肉背包（每行 8 格），y = 44 / 62 ----
-        for (int i = 0; i < MEAT_SLOT_COUNT; i++) {
+        // ---- 64 格随身背包（8 列 × 8 行），y = 38 起 ----
+        for (int i = 0; i < BACKPACK_SLOT_COUNT; i++) {
             int column = i % 8;
             int row = i / 8;
-            this.addSlot(new MeatSlot(zombieGirl.getMeatInventory(), i,
-                    8 + column * 18, 44 + row * 18));
+            this.addSlot(new BackpackSlot(zombieGirl.getMeatInventory(), i,
+                    8 + column * 18, 38 + row * 18));
         }
 
-        // ---- 玩家背包 27 格（3 行 × 9 列），y = 96 起 ----
+        // ---- 玩家背包 27 格（3 行 × 9 列），y = 190 起 ----
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 this.addSlot(new Slot(playerInventory, column + row * 9 + 9,
-                        8 + column * 18, 96 + row * 18));
+                        8 + column * 18, 190 + row * 18));
             }
         }
-        // ---- 玩家快捷栏 9 格，y = 152 ----
+        // ---- 玩家快捷栏 9 格，y = 244 ----
         for (int column = 0; column < 9; column++) {
-            this.addSlot(new Slot(playerInventory, column, 8 + column * 18, 152));
+            this.addSlot(new Slot(playerInventory, column, 8 + column * 18, 244));
         }
     }
 
     /**
      * Shift + 左键快速移动。
-     * 实体侧槽位（0 ~ 21）可以转移回玩家背包；
-     * 玩家背包内：生肉优先送入生肉背包，装备 / 武器 / 盾牌送入对应实体装备槽，
-     * 其它物品不允许 Shift。
+     * 实体侧槽位（0 ~ 69，装备 + 随身背包）可以转移回玩家背包；
+     * 玩家背包内：装备 / 武器 / 盾牌优先送入对应实体装备槽，
+     * 其余所有物品（生肉、星星、杂物等）送入 64 格随身背包。
      */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
@@ -104,21 +105,25 @@ public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
         ItemStack current = sourceSlot.getItem();
         ItemStack remainder = current.copy();
 
-        // 从丧尸娘槽位 Shift 取出：装备和生肉都转回主人背包。
+        // 从丧尸娘槽位 Shift 取出：装备和背包物品都转回主人背包 / 快捷栏。
         if (index < PLAYER_INVENTORY_START) {
             if (!this.moveItemStackTo(remainder, PLAYER_INVENTORY_START, MENU_SLOT_COUNT, true)) {
                 return ItemStack.EMPTY;
             }
-        } else if (ZombieGirlEntity.isRawMeat(remainder)) {
-            // 生肉 → 16 格生肉背包
-            if (!this.moveItemStackTo(remainder, EQUIPMENT_SLOT_COUNT, MEAT_SLOT_END, false)) {
-                return ItemStack.EMPTY;
-            }
         } else {
-            // 装备 / 武器 / 盾牌 → 对应的唯一实体装备槽
-            int targetIndex = resolveEquipmentSlotIndex(remainder);
-            if (targetIndex < 0
-                    || !this.moveItemStackTo(remainder, targetIndex, targetIndex + 1, false)) {
+            // 玩家侧 Shift：先尝试送入对应装备槽（可装备的物品），
+            // 未能送入或还有剩余数量时，全部进入 64 格随身背包。
+            boolean movedAny = false;
+            int equipmentIndex = resolveEquipmentSlotIndex(remainder);
+            if (equipmentIndex >= 0
+                    && this.moveItemStackTo(remainder, equipmentIndex, equipmentIndex + 1, false)) {
+                movedAny = true;
+            }
+            if (!remainder.isEmpty()
+                    && this.moveItemStackTo(remainder, EQUIPMENT_SLOT_COUNT, BACKPACK_SLOT_END, false)) {
+                movedAny = true;
+            }
+            if (!movedAny) {
                 return ItemStack.EMPTY;
             }
         }
@@ -251,20 +256,22 @@ public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
     }
 
     /**
-     * 16 格生肉背包槽位：只接受生肉，主人可以自由存取。
+     * 随身背包槽位：接受任意物品，主人可以自由存取。
+     * 生肉放入后会被丧尸娘在低血量时自动取食；星星等物品放入即视为携带，
+     * 对应被动效果由各星星 Handler 扫描背包后施加。
      */
-    private static class MeatSlot extends Slot {
+    private static class BackpackSlot extends Slot {
 
-        MeatSlot(Container container, int index, int x, int y) {
+        BackpackSlot(Container container, int index, int x, int y) {
             super(container, index, x, y);
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return ZombieGirlEntity.isRawMeat(stack);
+            return true;
         }
 
-        /** 主人可以自由拿取背包中的生肉。 */
+        /** 主人可以自由拿取背包中的物品。 */
         @Override
         public boolean mayPickup(Player player) {
             return true;

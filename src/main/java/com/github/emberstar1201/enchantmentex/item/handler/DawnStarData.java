@@ -176,6 +176,12 @@ public class DawnStarData {
                 }
             }
         }
+        // 丧尸娘：64 格随身背包里的晨曦之星与手持等效。
+        if (entity instanceof com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity zombieGirl
+                && zombieGirl.hasItemInBackpack(
+                        com.github.emberstar1201.enchantmentex.item.ModItems.DAWN_STAR.get())) {
+            return true;
+        }
         return false;
     }
 
@@ -204,6 +210,12 @@ public class DawnStarData {
                 applyLore(stack, lore);
             }
         }
+        // 丧尸娘：背包中的晨曦之星同样同步 lore
+        if (entity instanceof com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity zombieGirl) {
+            for (ItemStack stack : zombieGirl.getBackpackItems()) {
+                applyLore(stack, lore);
+            }
+        }
     }
 
     /** 把当前晨光层数/状态写入指定物品（用于刚发放、尚未进入背包的星星） */
@@ -223,6 +235,14 @@ public class DawnStarData {
         }
         if (TLMSafe.isTouhouMaid(entity)) {
             for (ItemStack stack : TLMSafe.collectMaidBaubles(entity)) {
+                if (needsRefresh(stack)) {
+                    return true;
+                }
+            }
+        }
+        // 丧尸娘：背包中刚放入、尚未写 lore 的晨曦之星
+        if (entity instanceof com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity zombieGirl) {
+            for (ItemStack stack : zombieGirl.getBackpackItems()) {
                 if (needsRefresh(stack)) {
                     return true;
                 }

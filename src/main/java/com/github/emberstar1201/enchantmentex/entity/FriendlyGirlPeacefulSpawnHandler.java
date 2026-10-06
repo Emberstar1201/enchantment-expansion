@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * <p>两种实体仍保留 {@link MobCategory#MONSTER}，以继续使用原版怪物容量、刷新距离和生成类别。
  * 处理器有两种模式（见 {@link Mode}）：和平难度下原版 MONSTER 刷怪循环整体关闭，
  * 由 PEACEFUL 模式高频补刷且个体持久化；简单/普通/困难难度下原版自然刷怪照常运行，
- * BOOST 模式每隔 20 秒绕过权重池与全局怪物上限直接补少量个体（不持久化），
+ * BOOST 模式每隔 10 秒绕过权重池与全局怪物上限直接补少量个体（不持久化），
  * 保证玩家在任意难度都能稳定遇到友好亡灵。两种模式都不会打开全局怪物开关，
  * 也不会让僵尸、骷髅等原版怪物在和平难度出现。</p>
  *
@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>补刷出的个体一律 {@code setPersistenceRequired()}：友好亡灵不按怪物规则随机消失，
  * 否则玩家离开 32~128 格后她会被立刻 despawn，永远在视野之外生死循环；密度由每玩家
- * 64 格 8 只的局部上限控制。</p>
+ * 64 格 12 只的局部上限控制。</p>
  */
 public final class FriendlyGirlPeacefulSpawnHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger("enchantment_expansion-friend-spawn");
@@ -48,23 +48,24 @@ public final class FriendlyGirlPeacefulSpawnHandler {
     /**
      * 友好亡灵的两种定期补量模式。
      *
-     * @param intervalTicks 两次补量的间隔（tick，20t=1秒）
-     * @param minChunkDist  候选区块距玩家的最近区块数
-     * @param maxChunkDist  候选区块距玩家的最远区块数
-     * @param candidates    每周期尝试多少个不同方向的候选区块
-     * @param localCap      玩家 64 格内两种友好实体的数量上限
-     * @param persistent    补出的个体是否持久化（和平为 true；非和平为 false，按怪物规则自然消失）
-     * @param label         日志中的模式名
+     * @param intervalTicks     两次补量的间隔（tick，20t=1秒）
+     * @param minChunkDist      候选区块距玩家的最近区块数
+     * @param maxChunkDist      候选区块距玩家的最远区块数
+     * @param candidates        每周期尝试多少个不同方向的候选区块
+     * @param localCap          玩家 64 格内两种友好实体的数量上限
+     * @param persistent        补出的个体是否持久化（和平为 true；非和平为 false，按怪物规则自然消失）
+     * @param maxSpawnsPerCycle 每周期最多成功补刷多少只（一次扫描产出多只，提高密度不增加扫描频率）
+     * @param label             日志中的模式名
      */
     private enum Mode {
         /** 和平难度：原版怪物循环整体关闭，只能靠本补量；高频、持久化、上限略高。 */
-        PEACEFUL(200L, 2, 4, 4, 8, true, "和平补刷"),
+        PEACEFUL(100L, 2, 4, 6, 12, true, 2, "和平补刷"),
         /**
          * 非和平难度的「定期补量」：原版自然刷怪照常运行，本模式每隔一段时间
          * 绕过刷怪权重池与全局怪物上限，直接在玩家周围补少量友好实体，
          * 解决权重竞争/玩家快速移动导致长期遇不到的问题；不持久化，玩家远离后正常消失。
          */
-        BOOST(400L, 2, 3, 3, 6, false, "非和平补量");
+        BOOST(200L, 2, 3, 4, 10, false, 2, "非和平补量");
 
         private final long intervalTicks;
         private final int minChunkDist;
@@ -72,16 +73,18 @@ public final class FriendlyGirlPeacefulSpawnHandler {
         private final int candidates;
         private final int localCap;
         private final boolean persistent;
+        private final int maxSpawnsPerCycle;
         private final String label;
 
         Mode(long intervalTicks, int minChunkDist, int maxChunkDist, int candidates,
-             int localCap, boolean persistent, String label) {
+             int localCap, boolean persistent, int maxSpawnsPerCycle, String label) {
             this.intervalTicks = intervalTicks;
             this.minChunkDist = minChunkDist;
             this.maxChunkDist = maxChunkDist;
             this.candidates = candidates;
             this.localCap = localCap;
             this.persistent = persistent;
+            this.maxSpawnsPerCycle = maxSpawnsPerCycle;
             this.label = label;
         }
     }
@@ -264,9 +267,11 @@ public final class FriendlyGirlPeacefulSpawnHandler {
         }
 
         // 每个周期朝多个不同方向掷候选区块：单个区块若落在水域/峡谷等非法地形，
-        // 本周期还有其它方向兜底，避免长时间零产出。成功补刷 1 只即结束本周期，
+        // 本周期还有其它方向兜底，避免长时间零产出。每周期最多成功补刷
+        // maxSpawnsPerCycle 只（同一扫描周期多产出几只，密度更高但扫描频率不变），
         // 密度交给各模式的 localCap 控制。
-        for (int attempt = 0; attempt < mode.candidates; attempt++) {
+        int spawnedThisCycle = 0;
+        for (int attempt = 0; attempt < mode.candidates && spawnedThisCycle < mode.maxSpawnsPerCycle; attempt++) {
             int chunkX = player.chunkPosition().x
                     + (random.nextBoolean() ? 1 : -1)
                     * (mode.minChunkDist + random.nextInt(mode.maxChunkDist - mode.minChunkDist + 1));
@@ -274,7 +279,7 @@ public final class FriendlyGirlPeacefulSpawnHandler {
                     + (random.nextBoolean() ? 1 : -1)
                     * (mode.minChunkDist + random.nextInt(mode.maxChunkDist - mode.minChunkDist + 1));
             if (trySpawnInChunk(level, new ChunkPos(chunkX, chunkZ), random, mode)) {
-                return;
+                spawnedThisCycle++;
             }
         }
     }

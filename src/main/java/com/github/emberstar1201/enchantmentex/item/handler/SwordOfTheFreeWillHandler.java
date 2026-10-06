@@ -5,8 +5,10 @@ import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.entity.CrescentEntity;
 import com.github.emberstar1201.enchantmentex.entity.CustomLightningEntity;
+import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
 import net.minecraft.world.phys.Vec3;
 import com.github.emberstar1201.enchantmentex.item.SwordOfTheFreeWill;
+import com.github.emberstar1201.enchantmentex.util.AllyFilter;
 import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
@@ -146,11 +148,15 @@ public class SwordOfTheFreeWillHandler {
 
     // ============================================================
     // 工具方法：判断是否为「能使用人的意志」的实体
-    //   玩家（右键触发）与车万女仆（持剑自动触发）。
-    //   两者共用同一套 PersistentData 键，但各写各的实体，互不干扰。
+    //   玩家（右键触发）、车万女仆（持剑自动触发）、
+    //   已驯服的丧尸娘（主手持剑自动触发，与女仆同款节奏）。
+    //   三者共用同一套 PersistentData 键，但各写各的实体，互不干扰。
+    //   未驯服的野生丧尸娘不列入：即使她捡起地上的剑，也不触发技能。
     // ============================================================
     private static boolean isWillUser(LivingEntity entity) {
-        return entity instanceof Player || TLMSafe.isTouhouMaid(entity);
+        return entity instanceof Player
+                || TLMSafe.isTouhouMaid(entity)
+                || (entity instanceof ZombieGirlEntity zombieGirl && zombieGirl.isTamed());
     }
 
     // ============================================================
@@ -410,6 +416,9 @@ public class SwordOfTheFreeWillHandler {
         if (event.getSource().getDirectEntity() instanceof CrescentEntity) return;
 
         LivingEntity target = event.getEntity();
+        // 防误伤：友方（玩家、丧尸娘 / 溺尸娘、女仆、村民、有主生物等）不吃印记双倍，
+        // 也不向其发射剑气。剑气本体 CrescentEntity 另有 AllyFilter 穿透过滤，双保险。
+        if (AllyFilter.isFriendly(target)) return;
         if (isMarkedFor(target, attacker)) {
             event.setAmount(event.getAmount() * 2.0F);
         }
@@ -454,7 +463,8 @@ public class SwordOfTheFreeWillHandler {
                     "message.enchantment_expansion.sotfw.enhanced_triggered"
             ).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
         } else if (entity.level() instanceof ServerLevel serverLevel) {
-            notifyMaidOwner(serverLevel.getServer(), entity,
+            // 女仆 / 已驯服丧尸娘：保护触发后转发提示给主人
+            notifyOwner(serverLevel.getServer(), entity,
                     "message.enchantment_expansion.sotfw.enhanced_triggered",
                     ChatFormatting.GOLD, ChatFormatting.BOLD);
         }
@@ -481,7 +491,12 @@ public class SwordOfTheFreeWillHandler {
                             * (1.0f + (float) Config.swordDamageBoostPercent));
                 }
 
-                if (hasActiveBuff(attacker) && event.getEntity() instanceof Monster monster) {
+                // 目标必须是敌对怪物且非友方：丧尸娘本身也继承 Monster，
+                // 这里用 AllyFilter 再挡一层，保证闪电与额外魔法伤害绝不波及
+                // 同类（丧尸娘 / 溺尸娘）、女仆、玩家等友方实体。
+                if (hasActiveBuff(attacker)
+                        && event.getEntity() instanceof Monster monster
+                        && !AllyFilter.isFriendly(monster)) {
                     if (attacker.getRandom().nextDouble() < Config.swordLightningChance) {
                         if (monster.level() instanceof ServerLevel serverLevel) {
                             // ★ 使用自定义闪电实体（纯视觉）：
@@ -556,11 +571,11 @@ public class SwordOfTheFreeWillHandler {
     }
 
     // ============================================================
-    // 事件4.5：女仆 Tick（护甲管理 + 自动激活「人的意志」+ 冷却通知）
+    // 事件4.5：友方持剑者 Tick（护甲管理 + 自动激活「人的意志」+ 冷却通知）
     //
-    // 女仆没有 PlayerTickEvent，也没有右键入口，因此在 ServerTick 中
-    // 遍历所有车万女仆实体：
-    //   - 装备栏持剑      → 维护护甲修饰符（与玩家版一致）
+    // 女仆和已驯服丧尸娘都没有 PlayerTickEvent，也没有右键入口，因此在
+    // ServerTick 中遍历所有维度的这两类实体，逐个执行 tickSwordUser：
+    //   - 装备栏 / 主副手持剑 → 维护护甲修饰符（与玩家版一致）
     //   - 主手持剑 + 增益已结束 + 冷却已结束 → 自动激活
     //     激活时同时写入增益结束时间（600 秒）与冷却结束时间（900 秒），
     //     即冷却与持续时间并行计时；增益先结束，冷却结束时条件再次成立，
@@ -572,78 +587,98 @@ public class SwordOfTheFreeWillHandler {
     //   该写法因 Mth.floor(-Infinity) 整数溢出而恒返回空列表，
     //   导致整段逻辑从未执行（日志表现为女仆 Buff=false 且 冷却=false）。
     //   详见 TLMSafe#collectMaids 的说明。
+    // ★ 丧尸娘数量很少（和平补刷有上限），getAllEntities 扫描开销可忽略；
+    //   只处理 isTamed() 的个体，与 isWillUser 口径保持一致。
     // ============================================================
     @SubscribeEvent
-    public static void onMaidServerTick(TickEvent.ServerTickEvent event) {
+    public static void onFriendServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
 
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
 
         for (ServerLevel level : server.getAllLevels()) {
+            // 车万女仆（软前置：未安装时返回空列表）
             for (LivingEntity maid : TLMSafe.collectMaids(level)) {
-
-                boolean hasNormalSword = hasSwordVariantInInventory(maid, false);
-                boolean hasEnhancedSword = hasSwordVariantInInventory(maid, true);
-                boolean hasSword = hasNormalSword || hasEnhancedSword;
-
-                // 普通版使用配置护甲；强化版提供固定的护甲与盔甲韧性。
-                manageArmorModifier(maid, hasNormalSword, hasEnhancedSword);
-
-                if (!hasSword) continue;
-
-                // 强化版只使用星火剑气与星火印记，不参与「人的意志」提示和冷却逻辑。
-                if (maid.getMainHandItem().getItem() == ModItems.SWORD_OF_THE_FREE_WILL_ENHANCED.get()) {
-                    maid.getPersistentData().remove(KEY_BUFF_END);
-                    maid.getPersistentData().remove(KEY_COOLDOWN_END);
-                    maid.getPersistentData().remove(KEY_NOTIFIED);
-
-                    long enhancedCooldownEnd = maid.getPersistentData()
-                            .getLong(KEY_ENHANCED_TOTEM_COOLDOWN_END);
-                    if (enhancedCooldownEnd > 0
-                            && !maid.getPersistentData().getBoolean(KEY_ENHANCED_TOTEM_NOTIFIED)
-                            && maid.level().getGameTime() >= enhancedCooldownEnd) {
-                        maid.getPersistentData().putBoolean(KEY_ENHANCED_TOTEM_NOTIFIED, true);
-                        notifyMaidOwner(server, maid,
-                                "message.enchantment_expansion.sotfw.enhanced_cooldown_done",
-                                ChatFormatting.GREEN, ChatFormatting.BOLD);
-                    }
-                    continue;
-                }
-
-                // 自动激活：只有普通人权剑主手持有时才开启「人的意志」。
-                if (maid.getMainHandItem().getItem() == ModItems.SWORD_OF_THE_FREE_WILL.get()
-                        && !hasActiveBuff(maid)
-                        && !isOnCooldown(maid)) {
-                    activateWill(maid);
-                    notifyMaidOwner(server, maid,
-                            "message.enchantment_expansion.sotfw.activated",
-                            ChatFormatting.GOLD, ChatFormatting.BOLD);
-                    LOGGER.debug("[SOTFW] 女仆 {} 自动激活了「人的意志」", maid.getName().getString());
-                    continue;
-                }
-
-                // 冷却结束通知（自动激活成功时已发过「已激活」，此处不重复）
-                long cooldownEnd = maid.getPersistentData().getLong(KEY_COOLDOWN_END);
-                if (cooldownEnd > 0
-                        && !maid.getPersistentData().getBoolean(KEY_NOTIFIED)
-                        && maid.level().getGameTime() >= cooldownEnd) {
-                    maid.getPersistentData().putBoolean(KEY_NOTIFIED, true);
-                    notifyMaidOwner(server, maid,
-                            "message.enchantment_expansion.sotfw.cooldown_done",
-                            ChatFormatting.GREEN, ChatFormatting.BOLD);
+                tickSwordUser(server, maid);
+            }
+            // 已驯服的丧尸娘
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof ZombieGirlEntity zombieGirl && zombieGirl.isTamed()) {
+                    tickSwordUser(server, zombieGirl);
                 }
             }
         }
     }
 
+    /**
+     * 单个友方持剑者每 tick 的剑效果维护，女仆与已驯服丧尸娘共用。
+     */
+    private static void tickSwordUser(MinecraftServer server, LivingEntity user) {
+        boolean hasNormalSword = hasSwordVariantInInventory(user, false);
+        boolean hasEnhancedSword = hasSwordVariantInInventory(user, true);
+        boolean hasSword = hasNormalSword || hasEnhancedSword;
+
+        // 普通版使用配置护甲；强化版提供固定的护甲与盔甲韧性。
+        manageArmorModifier(user, hasNormalSword, hasEnhancedSword);
+
+        if (!hasSword) return;
+
+        // 强化版只使用星火剑气与星火印记，不参与「人的意志」提示和冷却逻辑。
+        if (user.getMainHandItem().getItem() == ModItems.SWORD_OF_THE_FREE_WILL_ENHANCED.get()) {
+            user.getPersistentData().remove(KEY_BUFF_END);
+            user.getPersistentData().remove(KEY_COOLDOWN_END);
+            user.getPersistentData().remove(KEY_NOTIFIED);
+
+            long enhancedCooldownEnd = user.getPersistentData()
+                    .getLong(KEY_ENHANCED_TOTEM_COOLDOWN_END);
+            if (enhancedCooldownEnd > 0
+                    && !user.getPersistentData().getBoolean(KEY_ENHANCED_TOTEM_NOTIFIED)
+                    && user.level().getGameTime() >= enhancedCooldownEnd) {
+                user.getPersistentData().putBoolean(KEY_ENHANCED_TOTEM_NOTIFIED, true);
+                notifyOwner(server, user,
+                        "message.enchantment_expansion.sotfw.enhanced_cooldown_done",
+                        ChatFormatting.GREEN, ChatFormatting.BOLD);
+            }
+            return;
+        }
+
+        // 自动激活：只有普通人权剑主手持有时才开启「人的意志」。
+        if (user.getMainHandItem().getItem() == ModItems.SWORD_OF_THE_FREE_WILL.get()
+                && !hasActiveBuff(user)
+                && !isOnCooldown(user)) {
+            activateWill(user);
+            notifyOwner(server, user,
+                    "message.enchantment_expansion.sotfw.activated",
+                    ChatFormatting.GOLD, ChatFormatting.BOLD);
+            LOGGER.debug("[SOTFW] {} 自动激活了「人的意志」", user.getName().getString());
+            return;
+        }
+
+        // 冷却结束通知（自动激活成功时已发过「已激活」，此处不重复）
+        long cooldownEnd = user.getPersistentData().getLong(KEY_COOLDOWN_END);
+        if (cooldownEnd > 0
+                && !user.getPersistentData().getBoolean(KEY_NOTIFIED)
+                && user.level().getGameTime() >= cooldownEnd) {
+            user.getPersistentData().putBoolean(KEY_NOTIFIED, true);
+            notifyOwner(server, user,
+                    "message.enchantment_expansion.sotfw.cooldown_done",
+                    ChatFormatting.GREEN, ChatFormatting.BOLD);
+        }
+    }
+
     // ============================================================
-    // 工具方法：把提示发给女仆的主人（女仆自身没有聊天栏）
-    //   主人离线时静默跳过。
+    // 工具方法：把提示发给友方持剑者的主人（女仆 / 丧尸娘自身没有聊天栏）
+    //   女仆主人走 TLM 反射，丧尸娘主人直接读 ownerUuid；主人离线时静默跳过。
     // ============================================================
-    private static void notifyMaidOwner(MinecraftServer server, LivingEntity maid,
-                                        String translationKey, ChatFormatting... styles) {
-        UUID ownerId = TLMSafe.getMaidOwnerUUID(maid);
+    private static void notifyOwner(MinecraftServer server, LivingEntity user,
+                                    String translationKey, ChatFormatting... styles) {
+        UUID ownerId;
+        if (user instanceof ZombieGirlEntity zombieGirl) {
+            ownerId = zombieGirl.getOwnerUuid();
+        } else {
+            ownerId = TLMSafe.getMaidOwnerUUID(user);
+        }
         if (ownerId == null) return;
 
         ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);

@@ -2,6 +2,7 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.OceanStarConfig;
+import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import net.minecraft.core.BlockPos;
@@ -41,13 +42,14 @@ import java.util.UUID;
 import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 
 // ========================================================================
-// 【星星×车万女仆联动】事件处理器
+// 【星星 × 友方生物联动】事件处理器（车万女仆 + 丧尸娘）
 //
-// 当玩家安装车万女仆（TouhouLittleMaid）后，女仆可以装备所有星星：
+// 一、车万女仆（TouhouLittleMaid，软前置）装备星星的位置：
 //   · 放入女仆饰品栏（BaubleItemInventory）—— 需要 MaidStarBaubleExtension
 //     先通过官方扩展点把星星注册进 BaubleManager，否则物品根本插不进去
 //   · 拿在主手 / 副手
-// 以上三种位置都会在本类中被识别并生效：
+// 二、丧尸娘：主手 / 副手，或放入她的 64 格随身背包任意格子
+// 以上位置都会在本类中被识别并生效（判定见 isFriendUsingStar）：
 //   - 终界之星：先限制单次伤害至 10 点，再按配置减伤 + 末影系生物中立
 //   - 海洋之星：水下氧气免疫 + 免疫挖掘疲劳 + 水流免疫（泳速提升）
 //                + 免疫溺水伤害 + 守卫者中立
@@ -95,27 +97,27 @@ public class MaidStarHandler {
                     continue;
                 }
 
-                // 只处理女仆（按实体注册名命名空间识别，兼容女仆的子类/变体）
-                if (!TLMSafe.isTouhouMaid(entity)) {
+                // 只处理友方生物：车万女仆（命名空间识别，兼容子类/变体）或丧尸娘
+                if (!TLMSafe.isTouhouMaid(entity) && !(entity instanceof ZombieGirlEntity)) {
                     continue;
                 }
 
                 // 生命之星：+30 生命值上限 + 回血加速
-                if (isMaidUsingStar(entity, ModItems.LIFE_STAR.get())) {
+                if (isFriendUsingStar(entity, ModItems.LIFE_STAR.get())) {
                     applyLifeStarEffects(entity);
                 } else {
                     clearLifeStarEffects(entity);
                 }
 
                 // 星辉之星：夜间移速 +20% + 夜视
-                if (isMaidUsingStar(entity, ModItems.STARLIGHT_STAR.get())) {
+                if (isFriendUsingStar(entity, ModItems.STARLIGHT_STAR.get())) {
                     applyStarlightStarEffects(entity);
                 } else {
                     clearStarlightStarEffects(entity);
                 }
 
                 // 海洋之星：水下环境免疫
-                if (isMaidUsingStar(entity, ModItems.OCEAN_STAR.get())) {
+                if (isFriendUsingStar(entity, ModItems.OCEAN_STAR.get())) {
                     applyOceanStarEffects(entity);
                 } else {
                     clearOceanStarSwimSpeed(entity);
@@ -281,7 +283,7 @@ public class MaidStarHandler {
         }
 
         // 终界之星：先限伤至 10 点，再减伤
-        if (isMaidUsingStar(entity, ModItems.END_STAR.get())) {
+        if (isFriendUsingStar(entity, ModItems.END_STAR.get())) {
             float originalAmount = event.getAmount();
             float cappedAmount = Math.min(originalAmount, 10.0f);
             double reduction = Math.min(Config.endStarDamageReductionPercent, 0.99);
@@ -291,14 +293,14 @@ public class MaidStarHandler {
         }
 
         // 虚空之星：免疫虚空伤害
-        if (isMaidUsingStar(entity, ModItems.VOID_STAR.get())
+        if (isFriendUsingStar(entity, ModItems.VOID_STAR.get())
                 && event.getSource().is(DamageTypes.FELL_OUT_OF_WORLD)) {
             event.setCanceled(true);
             return;
         }
 
         // 海洋之星：免疫溺水伤害
-        if (isMaidUsingStar(entity, ModItems.OCEAN_STAR.get())
+        if (isFriendUsingStar(entity, ModItems.OCEAN_STAR.get())
                 && event.getSource().is(DamageTypes.DROWN)) {
             event.setCanceled(true);
         }
@@ -314,7 +316,7 @@ public class MaidStarHandler {
             return;
         }
 
-        if (isMaidUsingStar(entity, ModItems.VOID_STAR.get())) {
+        if (isFriendUsingStar(entity, ModItems.VOID_STAR.get())) {
             event.setDamageMultiplier(0.0F);
             event.setCanceled(true);
         }
@@ -331,7 +333,7 @@ public class MaidStarHandler {
             return;
         }
 
-        if (isMaidUsingStar(entity, ModItems.END_STAR.get())
+        if (isFriendUsingStar(entity, ModItems.END_STAR.get())
                 && isEndNeutralMob(event.getSource().getEntity())) {
             event.setCanceled(true);
         }
@@ -346,7 +348,7 @@ public class MaidStarHandler {
         if (newTarget == null || newTarget.level() == null || newTarget.level().isClientSide()) {
             return;
         }
-        if (!TLMSafe.isTouhouMaid(newTarget)) {
+        if (!TLMSafe.isTouhouMaid(newTarget) && !(newTarget instanceof ZombieGirlEntity)) {
             return;
         }
 
@@ -354,7 +356,7 @@ public class MaidStarHandler {
 
         // 终界之星：末影系生物中立
         if (isEndNeutralMob(attacker)
-                && isMaidUsingStar(newTarget, ModItems.END_STAR.get())) {
+                && isFriendUsingStar(newTarget, ModItems.END_STAR.get())) {
             event.setNewTarget(null);
             event.setCanceled(true);
             return;
@@ -364,26 +366,23 @@ public class MaidStarHandler {
         if (OceanStarConfig.enableGuardianNeutral
                 && attacker instanceof Guardian guardian
                 && guardian.getLastHurtByMob() != newTarget
-                && isMaidUsingStar(newTarget, ModItems.OCEAN_STAR.get())) {
+                && isFriendUsingStar(newTarget, ModItems.OCEAN_STAR.get())) {
             event.setNewTarget(null);
             event.setCanceled(true);
         }
     }
 
     // ========================================================================
-    // 工具方法：判断女仆是否正在使用指定星星
+    // 工具方法：判断友方生物是否正在使用指定星星
     //
-    // 覆盖三种位置（任一命中即视为生效）：
-    //   1. 主手
-    //   2. 副手
-    //   3. 饰品栏（车万女仆自定义的 MaidBaubleInventory）
+    // 覆盖位置（任一命中即视为生效）：
+    //   通用：1. 主手  2. 副手
+    //   车万女仆：3. 饰品栏（MaidBaubleInventory，走 TLMSafe 反射，软前置）
+    //   丧尸娘：  3. 64 格随身背包（背包内任意格子中的星星都生效）
+    // 非友方实体直接返回 false；玩家由各自的玩家侧 Handler 处理，不在这里。
     // ========================================================================
-    private static boolean isMaidUsingStar(LivingEntity entity, Item star) {
+    private static boolean isFriendUsingStar(LivingEntity entity, Item star) {
         if (entity == null || star == null) {
-            return false;
-        }
-        // 未安装车万女仆 / 非女仆实体：直接返回，避免无谓的反射开销
-        if (!TLMSafe.isTouhouMaid(entity)) {
             return false;
         }
 
@@ -391,10 +390,18 @@ public class MaidStarHandler {
             return true;
         }
 
-        for (ItemStack stack : TLMSafe.collectMaidBaubles(entity)) {
-            if (!stack.isEmpty() && stack.is(star)) {
-                return true;
+        // 车万女仆：饰品栏（未安装 TLM 时 isTouhouMaid 恒 false，无反射开销）
+        if (TLMSafe.isTouhouMaid(entity)) {
+            for (ItemStack stack : TLMSafe.collectMaidBaubles(entity)) {
+                if (!stack.isEmpty() && stack.is(star)) {
+                    return true;
+                }
             }
+        }
+
+        // 丧尸娘：随身背包中的星星与手持等效
+        if (entity instanceof ZombieGirlEntity zombieGirl) {
+            return zombieGirl.hasItemInBackpack(star);
         }
         return false;
     }

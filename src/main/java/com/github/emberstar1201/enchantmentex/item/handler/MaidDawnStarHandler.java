@@ -1,5 +1,6 @@
 package com.github.emberstar1201.enchantmentex.item.handler;
 
+import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
 import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import net.minecraft.core.particles.ParticleTypes;
@@ -69,10 +70,10 @@ public class MaidDawnStarHandler {
         if (source == null) return;
 
         Entity attacker = source.getEntity();
-        // 玩家侧由 DawnStarHandler 处理；这里只认「非玩家」的 LivingEntity，再筛女仆
+        // 玩家侧由 DawnStarHandler 处理；这里只认「非玩家」的 LivingEntity，再筛女仆 / 丧尸娘
         if (!(attacker instanceof LivingEntity maid) || maid instanceof Player) return;
         if (maid.level().isClientSide()) return;
-        if (!TLMSafe.isTouhouMaid(maid)) return;
+        if (!TLMSafe.isTouhouMaid(maid) && !(maid instanceof ZombieGirlEntity)) return;
 
         LivingEntity victim = event.getEntity();
         if (victim instanceof Player) return;                       // PVP 不积累
@@ -99,7 +100,7 @@ public class MaidDawnStarHandler {
     public static void onLivingHurt(LivingHurtEvent event) {
         if (!(event.getSource().getEntity() instanceof LivingEntity maid) || maid instanceof Player) return;
         if (maid.level().isClientSide()) return;
-        if (!TLMSafe.isTouhouMaid(maid)) return;
+        if (!TLMSafe.isTouhouMaid(maid) && !(maid instanceof ZombieGirlEntity)) return;
         if (!DawnStarData.isDawnActive(maid)) return;
         // 收起晨曦之星后不再享受加成
         if (!DawnStarData.isHoldingOrWearingDawnStar(maid)) return;
@@ -133,8 +134,8 @@ public class MaidDawnStarHandler {
         for (ServerLevel level : event.getServer().getAllLevels()) {
             for (Entity e : level.getAllEntities()) {
                 if (!(e instanceof LivingEntity maid)) continue;
-                // 只处理女仆（按实体注册名命名空间识别，兼容女仆的子类/变体）
-                if (!TLMSafe.isTouhouMaid(maid)) continue;
+                // 只处理女仆 / 丧尸娘（女仆按实体注册名命名空间识别，兼容子类/变体）
+                if (!TLMSafe.isTouhouMaid(maid) && !(maid instanceof ZombieGirlEntity)) continue;
                 tickMaid(maid);
             }
         }
