@@ -1,5 +1,6 @@
 package com.github.emberstar1201.enchantmentex.entity.menu;
 
+import com.github.emberstar1201.enchantmentex.entity.FriendlyGirlInventory;
 import com.github.emberstar1201.enchantmentex.entity.ModMenuTypes;
 import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
 import net.minecraft.world.Container;
@@ -47,33 +48,33 @@ public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
     /** 背包槽在下标区间中的起止（左闭右开）。 */
     private static final int BACKPACK_SLOT_END = PLAYER_INVENTORY_START;
 
-    /** 当前打开的丧尸娘实体。 */
-    private final ZombieGirlEntity zombieGirl;
-    public ZombieGirlInventoryMenu(int containerId, Inventory playerInventory, ZombieGirlEntity zombieGirl) {
+    /** 当前打开的娘系实体（丧尸娘 / 溺尸娘共用同一套 GUI）。 */
+    private final FriendlyGirlInventory friendlyGirl;
+    public ZombieGirlInventoryMenu(int containerId, Inventory playerInventory, FriendlyGirlInventory friendlyGirl) {
         super(ModMenuTypes.ZOMBIE_GIRL_INVENTORY.get(), containerId);
-        this.zombieGirl = zombieGirl;
+        this.friendlyGirl = friendlyGirl;
         // 装备槽直接映射实体槽位，Slot 父类要求一个 Container，传入永不使用的空实现容器
         Container dummyContainer = new SimpleContainer(EQUIPMENT_SLOT_COUNT);
 
         // ---- 第一行：6 个装备槽（水平居中，x 起始 34），y = 18 ----
-        this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.HEAD,
+        this.addSlot(new FriendlyGirlEquipmentSlot(friendlyGirl, EquipmentSlot.HEAD,
                 dummyContainer, 0, 34, 18));
-        this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.CHEST,
+        this.addSlot(new FriendlyGirlEquipmentSlot(friendlyGirl, EquipmentSlot.CHEST,
                 dummyContainer, 1, 34 + 18, 18));
-        this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.LEGS,
+        this.addSlot(new FriendlyGirlEquipmentSlot(friendlyGirl, EquipmentSlot.LEGS,
                 dummyContainer, 2, 34 + 36, 18));
-        this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.FEET,
+        this.addSlot(new FriendlyGirlEquipmentSlot(friendlyGirl, EquipmentSlot.FEET,
                 dummyContainer, 3, 34 + 54, 18));
-        this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.MAINHAND,
+        this.addSlot(new FriendlyGirlEquipmentSlot(friendlyGirl, EquipmentSlot.MAINHAND,
                 dummyContainer, 4, 34 + 72, 18));
-        this.addSlot(new ZombieGirlEquipmentSlot(zombieGirl, EquipmentSlot.OFFHAND,
+        this.addSlot(new FriendlyGirlEquipmentSlot(friendlyGirl, EquipmentSlot.OFFHAND,
                 dummyContainer, 5, 34 + 90, 18));
 
         // ---- 64 格随身背包（8 列 × 8 行），y = 38 起 ----
         for (int i = 0; i < BACKPACK_SLOT_COUNT; i++) {
             int column = i % 8;
             int row = i / 8;
-            this.addSlot(new BackpackSlot(zombieGirl.getMeatInventory(), i,
+            this.addSlot(new BackpackSlot(friendlyGirl.getMeatInventory(), i,
                     8 + column * 18, 38 + row * 18));
         }
 
@@ -171,11 +172,11 @@ public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
      */
     @Override
     public boolean stillValid(Player player) {
-        return this.zombieGirl.isAlive()
-                && !this.zombieGirl.isRemoved()
-                && this.zombieGirl.isTamed()
-                && this.zombieGirl.isOwnedBy(player)
-                && player.distanceToSqr(this.zombieGirl) <= 64.0D;
+        return this.friendlyGirl.isAlive()
+                && !this.friendlyGirl.isRemoved()
+                && this.friendlyGirl.isTamed()
+                && this.friendlyGirl.isOwnedBy(player)
+                && ((LivingEntity) this.friendlyGirl).distanceToSqr(player) <= 64.0D;
     }
 
     /**
@@ -183,28 +184,28 @@ public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
      * 所有读写都绕过父类 Container，直接访问 LivingEntity 装备槽，
      * 因此盔甲值、武器伤害、附魔修饰符等均由原版装备系统实时结算。
      */
-    private static class ZombieGirlEquipmentSlot extends Slot {
-        private final ZombieGirlEntity zombieGirl;
+    private static class FriendlyGirlEquipmentSlot extends Slot {
+        private final FriendlyGirlInventory friendlyGirl;
         private final EquipmentSlot equipmentSlot;
 
-        ZombieGirlEquipmentSlot(ZombieGirlEntity zombieGirl, EquipmentSlot equipmentSlot,
-                                Container dummyContainer, int index, int x, int y) {
+        FriendlyGirlEquipmentSlot(FriendlyGirlInventory friendlyGirl, EquipmentSlot equipmentSlot,
+                                  Container dummyContainer, int index, int x, int y) {
             super(dummyContainer, index, x, y);
-            this.zombieGirl = zombieGirl;
+            this.friendlyGirl = friendlyGirl;
             this.equipmentSlot = equipmentSlot;
         }
 
         @Override
         public ItemStack getItem() {
-            return this.zombieGirl.getItemBySlot(this.equipmentSlot);
+            return this.friendlyGirl.getItemBySlot(this.equipmentSlot);
         }
 
         @Override
         public void set(ItemStack stack) {
-            this.zombieGirl.setItemSlot(this.equipmentSlot, stack);
+            this.friendlyGirl.setItemSlot(this.equipmentSlot, stack);
             if (!stack.isEmpty()) {
                 // 通过界面放入的装备死亡时必定掉落，保证玩家可以回收
-                this.zombieGirl.setDropChance(this.equipmentSlot, 1.0F);
+                this.friendlyGirl.setDropChance(this.equipmentSlot, 1.0F);
             }
         }
 
@@ -226,14 +227,14 @@ public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
                 return ItemStack.EMPTY;
             }
             ItemStack removed = equipped.split(Math.min(amount, equipped.getCount()));
-            this.zombieGirl.setItemSlot(this.equipmentSlot, equipped);
+            this.friendlyGirl.setItemSlot(this.equipmentSlot, equipped);
             return removed;
         }
 
         /** 主人可以自由拿取装备，也可以重新放入装备。 */
         @Override
         public boolean mayPickup(Player player) {
-            return this.zombieGirl.isOwnedBy(player);
+            return this.friendlyGirl.isOwnedBy(player);
         }
 
         /** 装备槽不可堆叠。 */

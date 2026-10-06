@@ -21,20 +21,20 @@ public final class ModMenuTypes {
             DeferredRegister.create(ForgeRegistries.MENU_TYPES, EnchantmentExpansion.MODID);
 
     /**
-     * 丧尸娘背包菜单。
+     * 娘系实体背包菜单（丧尸娘 / 溺尸娘共用）。
      * 使用 {@link IForgeMenuType#create} 是为了在客户端重建菜单时能从附加数据中
-     * 读取实体 id（NetworkHooks.openScreen 时写入），再从世界中取回丧尸娘实体。
+     * 读取实体 id（NetworkHooks.openScreen 时写入），再从世界中取回对应实体。
      */
     public static final RegistryObject<MenuType<ZombieGirlInventoryMenu>> ZOMBIE_GIRL_INVENTORY =
             MENU_TYPES.register("zombie_girl_inventory",
                     () -> IForgeMenuType.create((windowId, inventory, data) -> {
                         Entity entity = inventory.player.level().getEntity(data.readVarInt());
-                        if (entity instanceof ZombieGirlEntity zombieGirl) {
-                            return new ZombieGirlInventoryMenu(windowId, inventory, zombieGirl);
+                        if (entity instanceof FriendlyGirlInventory friendlyGirl) {
+                            return new ZombieGirlInventoryMenu(windowId, inventory, friendlyGirl);
                         }
                         // 实体已消失（死亡 / 卸载）时不应打开菜单，直接抛错由网络层中断
                         throw new IllegalStateException(
-                                "打开丧尸娘背包失败：附加数据中的实体不是 ZombieGirlEntity，实际为 " + entity);
+                                "打开娘系实体背包失败：附加数据中的实体未实现 FriendlyGirlInventory，实际为 " + entity);
                     }));
 
     private ModMenuTypes() {

@@ -2,6 +2,7 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.OceanStarConfig;
+import com.github.emberstar1201.enchantmentex.entity.DrownedGirlEntity;
 import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.util.TLMSafe;
@@ -97,8 +98,10 @@ public class MaidStarHandler {
                     continue;
                 }
 
-                // 只处理友方生物：车万女仆（命名空间识别，兼容子类/变体）或丧尸娘
-                if (!TLMSafe.isTouhouMaid(entity) && !(entity instanceof ZombieGirlEntity)) {
+                // 只处理友方生物：车万女仆（命名空间识别，兼容子类/变体）、丧尸娘或溺尸娘
+                if (!TLMSafe.isTouhouMaid(entity)
+                        && !(entity instanceof ZombieGirlEntity)
+                        && !(entity instanceof DrownedGirlEntity)) {
                     continue;
                 }
 
@@ -348,7 +351,9 @@ public class MaidStarHandler {
         if (newTarget == null || newTarget.level() == null || newTarget.level().isClientSide()) {
             return;
         }
-        if (!TLMSafe.isTouhouMaid(newTarget) && !(newTarget instanceof ZombieGirlEntity)) {
+        if (!TLMSafe.isTouhouMaid(newTarget)
+                && !(newTarget instanceof ZombieGirlEntity)
+                && !(newTarget instanceof DrownedGirlEntity)) {
             return;
         }
 
@@ -399,9 +404,12 @@ public class MaidStarHandler {
             }
         }
 
-        // 丧尸娘：随身背包中的星星与手持等效
+        // 丧尸娘 / 溺尸娘：随身背包中的星星与手持等效
         if (entity instanceof ZombieGirlEntity zombieGirl) {
             return zombieGirl.hasItemInBackpack(star);
+        }
+        if (entity instanceof DrownedGirlEntity drownedGirl) {
+            return drownedGirl.hasItemInBackpack(star);
         }
         return false;
     }

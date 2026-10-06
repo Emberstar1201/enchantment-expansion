@@ -3,12 +3,15 @@ package com.github.emberstar1201.enchantmentex.entity.client;
 import com.github.emberstar1201.enchantmentex.entity.DrownedGirlEntity;
 import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -42,9 +45,27 @@ public class ZombieGirlModel<T extends Mob> extends HumanoidModel<T> {
      */
     private final net.minecraft.client.model.geom.ModelPart hair;
 
+    /** 水面低于此值（相对脚底，脖子/下巴高度）→ 头部完整露出水面，显示头发。 */
+    private static final double HAIR_SHOW_SURFACE = 1.6D;
+    /** 水面高于此值（相对脚底，约头顶过半）→ 只剩约半个头在水面之上，立刻隐藏头发。 */
+    private static final double HAIR_HIDE_SURFACE = 1.78D;
+
+    /** 第二层衣物（夹克 / 双袖 / 双裤腿）：溺尸娘完全没入水中时整体隐藏，只渲染一层本体皮肤。 */
+    private final net.minecraft.client.model.geom.ModelPart jacket;
+    private final net.minecraft.client.model.geom.ModelPart rightSleeve;
+    private final net.minecraft.client.model.geom.ModelPart leftSleeve;
+    private final net.minecraft.client.model.geom.ModelPart rightPants;
+    private final net.minecraft.client.model.geom.ModelPart leftPants;
+
     public ZombieGirlModel(net.minecraft.client.model.geom.ModelPart root) {
         super(root);
         this.hair = this.head.getChild("hat");
+        // 第二层衣物挂在对应活动部件下（createLayer 中的命名），取出引用控制显隐
+        this.jacket = this.body.getChild("jacket");
+        this.rightSleeve = this.rightArm.getChild("right_sleeve");
+        this.leftSleeve = this.leftArm.getChild("left_sleeve");
+        this.rightPants = this.rightLeg.getChild("right_pants");
+        this.leftPants = this.leftLeg.getChild("left_pants");
     }
 
     /** 主体层定义：Alex 细手玩家皮肤 UV，64x64。 */
@@ -78,14 +99,37 @@ public class ZombieGirlModel<T extends Mob> extends HumanoidModel<T> {
                           float ageInTicks, float netHeadYaw, float headPitch) {
         super.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         // 头发第二层（head 的子部件）按实体类型分别处理：
-        //   溺尸娘游泳 / 举矛动作中头部大幅倾斜，头发必然穿模，始终隐藏；
+        //   溺尸娘：头发按头部露出水面的程度动态显隐（见下方逻辑）；
         //   普通丧尸娘：盔甲不渲染外观，不存在头盔穿模问题，头发始终显示。
         // 注意不能再操作 this.hat —— 它现在是根节点上的空占位部件。
-        if (entity instanceof DrownedGirlEntity) {
-            this.hair.visible = false;
+        if (entity instanceof DrownedGirlEntity drownedGirl) {
+            // 头发按「头部露出水面的程度」动态切换（不再是恒为隐藏）：
+            //   半个身子出水、头和半个身体都在空气中 → 渲染头发；
+            //   水面漫到头顶过半（只剩约半个头在水面之上）→ 立刻隐藏；
+            //   两个阈值之间保持上一次状态，防止随水面上下浮动时闪烁。
+            // 完全上岸（周围无水）时视为水面极低，头发恒定显示。
+            double surfaceAboveFeet = waterSurfaceHeight(drownedGirl) - drownedGirl.getY();
+            if (surfaceAboveFeet < HAIR_SHOW_SURFACE) {
+                this.hair.visible = true;
+            } else if (surfaceAboveFeet > HAIR_HIDE_SURFACE) {
+                this.hair.visible = false;
+            }
+            // 衣物第二层维持原规则：眼睛没入水中（完全没入）时只渲染一层本体皮肤
+            boolean submerged = entity.isUnderWater();
+            this.jacket.visible = !submerged;
+            this.rightSleeve.visible = !submerged;
+            this.leftSleeve.visible = !submerged;
+            this.rightPants.visible = !submerged;
+            this.leftPants.visible = !submerged;
             animateDrownedPose(ageInTicks);
         } else {
             this.hair.visible = true;
+            // 丧尸娘的第二层衣物恒为显示（防止共享模型状态时被上一帧残留隐藏）
+            this.jacket.visible = true;
+            this.rightSleeve.visible = true;
+            this.leftSleeve.visible = true;
+            this.rightPants.visible = true;
+            this.leftPants.visible = true;
             AnimationUtils.animateZombieArms(this.leftArm, this.rightArm,
                     entity.isAggressive(), this.attackTime, ageInTicks);
         }
@@ -111,6 +155,28 @@ public class ZombieGirlModel<T extends Mob> extends HumanoidModel<T> {
             this.rightLeg.xRot += this.swimAmount * 0.55F * Mth.sin(0.1F * ageInTicks);
             this.head.xRot = 0.0F;
         }
+    }
+
+    /**
+     * 计算实体脚部所在竖直水柱的水面世界高度。
+     * 从头顶上沿所在方块（脚底 +2）向下扫到脚底方块，取最高含水方块，
+     * 水面高度 = 方块底边 Y + 方块内液面自身高度（0~1，满格水源约 0.89）。
+     * 周围完全无水时返回负无穷大（视为头发完全露出，恒定显示）。
+     * 每帧每只个体仅 3 次流体查询，开销可忽略。
+     */
+    private static double waterSurfaceHeight(DrownedGirlEntity girl) {
+        Level level = girl.level();
+        int x = girl.getBlockX();
+        int z = girl.getBlockZ();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int y = girl.getBlockY() + 2; y >= girl.getBlockY(); y--) {
+            pos.set(x, y, z);
+            FluidState fluid = level.getFluidState(pos);
+            if (!fluid.isEmpty()) {
+                return y + fluid.getOwnHeight();
+            }
+        }
+        return Double.NEGATIVE_INFINITY;
     }
 
     /**

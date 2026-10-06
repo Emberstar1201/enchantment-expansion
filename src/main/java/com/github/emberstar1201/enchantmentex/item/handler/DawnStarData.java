@@ -1,5 +1,8 @@
 package com.github.emberstar1201.enchantmentex.item.handler;
 
+import com.github.emberstar1201.enchantmentex.entity.DrownedGirlEntity;
+import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
+import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -176,10 +179,13 @@ public class DawnStarData {
                 }
             }
         }
-        // 丧尸娘：64 格随身背包里的晨曦之星与手持等效。
-        if (entity instanceof com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity zombieGirl
-                && zombieGirl.hasItemInBackpack(
-                        com.github.emberstar1201.enchantmentex.item.ModItems.DAWN_STAR.get())) {
+        // 丧尸娘 / 溺尸娘：64 格随身背包里的晨曦之星与手持等效。
+        if (entity instanceof ZombieGirlEntity zombieGirl
+                && zombieGirl.hasItemInBackpack(ModItems.DAWN_STAR.get())) {
+            return true;
+        }
+        if (entity instanceof DrownedGirlEntity drownedGirl
+                && drownedGirl.hasItemInBackpack(ModItems.DAWN_STAR.get())) {
             return true;
         }
         return false;
@@ -210,9 +216,14 @@ public class DawnStarData {
                 applyLore(stack, lore);
             }
         }
-        // 丧尸娘：背包中的晨曦之星同样同步 lore
-        if (entity instanceof com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity zombieGirl) {
+        // 丧尸娘 / 溺尸娘：背包中的晨曦之星同样同步 lore
+        if (entity instanceof ZombieGirlEntity zombieGirl) {
             for (ItemStack stack : zombieGirl.getBackpackItems()) {
+                applyLore(stack, lore);
+            }
+        }
+        if (entity instanceof DrownedGirlEntity drownedGirl) {
+            for (ItemStack stack : drownedGirl.getBackpackItems()) {
                 applyLore(stack, lore);
             }
         }
@@ -240,9 +251,16 @@ public class DawnStarData {
                 }
             }
         }
-        // 丧尸娘：背包中刚放入、尚未写 lore 的晨曦之星
-        if (entity instanceof com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity zombieGirl) {
+        // 丧尸娘 / 溺尸娘：背包中刚放入、尚未写 lore 的晨曦之星
+        if (entity instanceof ZombieGirlEntity zombieGirl) {
             for (ItemStack stack : zombieGirl.getBackpackItems()) {
+                if (needsRefresh(stack)) {
+                    return true;
+                }
+            }
+        }
+        if (entity instanceof DrownedGirlEntity drownedGirl) {
+            for (ItemStack stack : drownedGirl.getBackpackItems()) {
                 if (needsRefresh(stack)) {
                     return true;
                 }

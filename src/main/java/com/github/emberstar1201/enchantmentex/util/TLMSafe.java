@@ -4,7 +4,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -31,8 +30,6 @@ import java.util.UUID;
 // 如需读取女仆自定义背包（"护符栏"等），可在此类中继续追加反射方法。
 // ========================================================================
 public final class TLMSafe {
-
-    private static final String NAMESPACE_TLM = "touhou_little_maid";
 
     // 反射缓存：降低 Class.forName / getMethod 开销
     private static Class<?> MAID_BASE_CLASS = null;
@@ -65,13 +62,20 @@ public final class TLMSafe {
     }
 
     /**
-     * 基于实体注册名命名空间判断该实体是否属于车万女仆。
-     * 这里会同时匹配：女仆本体、可能的"女仆子实体"、以及车万女仆下的其它生物。
+     * 判断该实体是否为「真正的车万女仆」（EntityMaid / IMaid 的实例）。
+     *
+     * <p>注意：不能再用「实体注册名命名空间 == touhou_little_maid」粗暴判断——
+     * 车万女仆模组除了女仆本体，还注册了「女仆妖精」等敌对生物，它们同在
+     * {@code touhou_little_maid} 命名空间下，但并不是女仆，不应被目标白名单
+     * 排除，也不应享受星星 / 人权剑的友军适配。</p>
+     *
+     * <p>这里复用 {@link #MAID_BASE_CLASS}（解析自 IMaid / EntityMaid）做
+     * {@code isInstance} 精确判定。未安装车万女仆时基类为 null，恒返回 false。</p>
      */
     public static boolean isTouhouMaid(Entity entity) {
         if (entity == null) return false;
-        var key = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        return key != null && NAMESPACE_TLM.equals(key.getNamespace());
+        if (!MAID_OWNER_RESOLVED) resolveMaidOwnerReflect(entity);
+        return MAID_BASE_CLASS != null && MAID_BASE_CLASS.isInstance(entity);
     }
 
     /**

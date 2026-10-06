@@ -201,6 +201,9 @@
   "entity.enchantment_expansion.drowned_girl": "溺屍娘",
   "item.enchantment_expansion.drowned_girl_spawn_egg": "溺屍娘刷怪蛋",
   "chat.enchantment_expansion.zombie_girl.tamed": "§b喪屍娘：§f暫時…就聽你的啦!",
+  "chat.enchantment_expansion.drowned_girl.tamed": "§b溺屍娘：§f……好啦，以後就跟住你喇。",
+  "chat.enchantment_expansion.drowned_girl.inventory_denied": "§b溺屍娘：§f呢啲唔係你嘅…唔好掂我嘅嘢。",
+  "container.enchantment_expansion.drowned_girl_inventory": "溺屍娘嘅隨身背包",
   "chat.enchantment_expansion.zombie_girl.inventory_denied": "她警惕地看著你，不讓你碰她的東西。",
   "chat.enchantment_expansion.zombie_girl.idle.0": "好辛苦……好似畀蟲咬緊咁。",
   "chat.enchantment_expansion.zombie_girl.idle.1": "……我仲記得以前嘅事。但身體已經唔係我嘅喇。",
@@ -247,5 +250,6 @@
   "container.enchantment_expansion.zombie_girl_meat_inventory": "生肉儲備",
   "subtitles.enchantment_expansion.husk_girl.idle": "喪屍娘：低聲細語",
   "subtitles.enchantment_expansion.husk_girl.hurt": "喪屍娘：受傷",
-  "subtitles.enchantment_expansion.husk_girl.death": "喪屍娘：逝去"
+  "subtitles.enchantment_expansion.husk_girl.death": "喪屍娘：逝去",
+  "subtitles.enchantment_expansion.husk_girl.eat": "喪屍娘：啃食生肉"
 }

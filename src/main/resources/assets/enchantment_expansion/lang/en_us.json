@@ -201,6 +201,9 @@
   "entity.enchantment_expansion.drowned_girl": "Drowned Girl",
   "item.enchantment_expansion.drowned_girl_spawn_egg": "Drowned Girl Spawn Egg",
   "chat.enchantment_expansion.zombie_girl.tamed": "§bZombie Girl: §fFine... I'll listen to you for now!",
+  "chat.enchantment_expansion.drowned_girl.tamed": "§bDrowned Girl: §f...Alright, I'll stay with you from now on.",
+  "chat.enchantment_expansion.drowned_girl.inventory_denied": "§bDrowned Girl: §fThose aren't yours... don't touch my stuff.",
+  "container.enchantment_expansion.drowned_girl_inventory": "Drowned Girl's Backpack",
   "chat.enchantment_expansion.zombie_girl.inventory_denied": "She watches you warily and won't let you touch her things.",
   "chat.enchantment_expansion.zombie_girl.idle.0": "It hurts... like something is gnawing at me.",
   "chat.enchantment_expansion.zombie_girl.idle.1": "...I can still remember the past. But this body isn't mine anymore.",
@@ -247,5 +250,6 @@
   "container.enchantment_expansion.zombie_girl_meat_inventory": "Raw Meat Supply",
   "subtitles.enchantment_expansion.husk_girl.idle": "Zombie Girl murmurs",
   "subtitles.enchantment_expansion.husk_girl.hurt": "Zombie Girl hurts",
-  "subtitles.enchantment_expansion.husk_girl.death": "Zombie Girl dies"
+  "subtitles.enchantment_expansion.husk_girl.death": "Zombie Girl dies",
+  "subtitles.enchantment_expansion.husk_girl.eat": "Zombie Girl eats raw meat"
 }

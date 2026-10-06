@@ -22,5 +22,12 @@
     "sounds": [
       "enchantment_expansion:husk_girl_farewell_1"
     ]
+  },
+  "husk_girl.eat": {
+    "category": "neutral",
+    "subtitle": "subtitles.enchantment_expansion.husk_girl.eat",
+    "sounds": [
+      "enchantment_expansion:husk_girl_eat_1"
+    ]
   }
 }

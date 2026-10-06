@@ -78,7 +78,7 @@ import java.util.UUID;
  *   3. 驯服 / 跟随 / 坐下状态由本类自行实现（Zombie 不是 TamableAnimal）。
  *   4. 通过自定义属性把「僵尸召唤增援」概率清零，玩家攻击她时不会刷出僵尸。
  */
-public class ZombieGirlEntity extends Zombie implements RangedAttackMob {
+public class ZombieGirlEntity extends Zombie implements RangedAttackMob, FriendlyGirlInventory {
     /** 是否已被驯服。 */
     private boolean tamed;
     /** 主人 UUID；未驯服时为 null。 */
@@ -94,7 +94,7 @@ public class ZombieGirlEntity extends Zombie implements RangedAttackMob {
     private static final int BACKPACK_SIZE = 64;
     private final SimpleContainer meatInventory = new SimpleContainer(BACKPACK_SIZE);
     /**
-     * 皮肤变种的网络同步数据：0~8 对应 zombie_girl.png 到 zombie_girl_8.png。
+     * 皮肤变种的网络同步数据：0~9 对应 zombie_girl.png 到 zombie_girl_9.png。
      * 为什么不能用普通字段：finalizeSpawn 只在服务端执行，普通字段不会同步，
      * 客户端的 variant 永远是默认值 0，渲染器就只能拿到 zombie_girl.png。
      * SynchedEntityData 会在生成 / 数据变化时自动把值同步给所有追踪的客户端。
@@ -121,6 +121,8 @@ public class ZombieGirlEntity extends Zombie implements RangedAttackMob {
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_7.png");
     private static final ResourceLocation TEXTURE_VARIANT_8 =
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_8.png");
+    private static final ResourceLocation TEXTURE_VARIANT_9 =
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_9.png");
 
     // ====================================================================
     // 闲时对话系统：台词翻译键与冷却常量（文本见 lang 文件，支持四语言）
@@ -592,7 +594,8 @@ public class ZombieGirlEntity extends Zombie implements RangedAttackMob {
             if (isRawMeat(meat)) {
                 meat.shrink(1);
                 this.heal(4.0F);
-                this.playSound(SoundEvents.GENERIC_EAT, 1.0F, 1.25F);
+                // 专用啃肉音效（husk_girl_eat_1.ogg），取代原版进食声
+                this.playSound(ModSounds.HUSK_GIRL_EAT.get(), 1.0F, 1.25F);
                 this.lastMealTick = this.tickCount;
                 return;
             }
@@ -640,8 +643,8 @@ public class ZombieGirlEntity extends Zombie implements RangedAttackMob {
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
                                          MobSpawnType reason, @Nullable SpawnGroupData spawnData,
                                          @Nullable CompoundTag dataTag) {
-        // 共有 9 张贴图（0~8），写入同步数据后客户端渲染器才能拿到对应变种
-        this.entityData.set(DATA_VARIANT, this.random.nextInt(9));
+        // 共有 10 张贴图（0~9），写入同步数据后客户端渲染器才能拿到对应变种
+        this.entityData.set(DATA_VARIANT, this.random.nextInt(10));
         return super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
     }
 
@@ -656,6 +659,7 @@ public class ZombieGirlEntity extends Zombie implements RangedAttackMob {
             case 6 -> TEXTURE_VARIANT_6;
             case 7 -> TEXTURE_VARIANT_7;
             case 8 -> TEXTURE_VARIANT_8;
+            case 9 -> TEXTURE_VARIANT_9;
             default -> TEXTURE_DEFAULT;
         };
     }
@@ -826,7 +830,7 @@ public class ZombieGirlEntity extends Zombie implements RangedAttackMob {
                         this.level().broadcastEntityEvent(this, (byte) 6);
                     }
                 }
-                this.playSound(SoundEvents.GENERIC_EAT, 1.0F, 1.4F);
+                this.playSound(ModSounds.HUSK_GIRL_EAT.get(), 1.0F, 1.4F);
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
             // 未驯服时不接受任何其它物品，阻止武器 / 盔甲被装上
@@ -842,7 +846,7 @@ public class ZombieGirlEntity extends Zombie implements RangedAttackMob {
                     }
                     this.heal(4.0F);
                 }
-                this.playSound(SoundEvents.GENERIC_EAT, 1.0F, 1.4F);
+                this.playSound(ModSounds.HUSK_GIRL_EAT.get(), 1.0F, 1.4F);
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
             // 手持剑 / 斧 / 三叉戟：优先快捷交付到主手
@@ -990,9 +994,9 @@ public class ZombieGirlEntity extends Zombie implements RangedAttackMob {
         super.readAdditionalSaveData(tag);
         tamed = tag.getBoolean("Tamed");
         sitting = tag.getBoolean("Sitting");
-        // 夹紧到合法范围 0~8 后写回同步数据，防止旧存档或外部命令写入异常索引
+        // 夹紧到合法范围 0~9 后写回同步数据，防止旧存档或外部命令写入异常索引
         this.entityData.set(DATA_VARIANT,
-                tag.contains("Variant") ? Math.max(0, Math.min(8, tag.getInt("Variant"))) : 0);
+                tag.contains("Variant") ? Math.max(0, Math.min(9, tag.getInt("Variant"))) : 0);
         ownerUuid = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         this.meatInventory.fromTag(tag.getList("MeatInventory", Tag.TAG_COMPOUND));
     }

@@ -36,6 +36,10 @@ public class ModSounds {
     public static final RegistryObject<SoundEvent> HUSK_GIRL_FAREWELL =
             register("husk_girl.farewell");
 
+    /** 啃食生肉（eat_1，仅此一个）：非满血自动消耗背包生肉回血时播放。 */
+    public static final RegistryObject<SoundEvent> HUSK_GIRL_EAT =
+            register("husk_girl.eat");
+
     /**
      * 注册可变传播距离的音效（传播范围由播放时的音量参数决定，与原版生物音效一致）。
      */

@@ -5,6 +5,7 @@ import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.entity.CrescentEntity;
 import com.github.emberstar1201.enchantmentex.entity.CustomLightningEntity;
+import com.github.emberstar1201.enchantmentex.entity.DrownedGirlEntity;
 import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
 import net.minecraft.world.phys.Vec3;
 import com.github.emberstar1201.enchantmentex.item.SwordOfTheFreeWill;
@@ -156,7 +157,8 @@ public class SwordOfTheFreeWillHandler {
     private static boolean isWillUser(LivingEntity entity) {
         return entity instanceof Player
                 || TLMSafe.isTouhouMaid(entity)
-                || (entity instanceof ZombieGirlEntity zombieGirl && zombieGirl.isTamed());
+                || (entity instanceof ZombieGirlEntity zombieGirl && zombieGirl.isTamed())
+                || (entity instanceof DrownedGirlEntity drownedGirl && drownedGirl.isTamed());
     }
 
     // ============================================================
@@ -602,10 +604,12 @@ public class SwordOfTheFreeWillHandler {
             for (LivingEntity maid : TLMSafe.collectMaids(level)) {
                 tickSwordUser(server, maid);
             }
-            // 已驯服的丧尸娘
+            // 已驯服的丧尸娘与溺尸娘
             for (Entity entity : level.getAllEntities()) {
                 if (entity instanceof ZombieGirlEntity zombieGirl && zombieGirl.isTamed()) {
                     tickSwordUser(server, zombieGirl);
+                } else if (entity instanceof DrownedGirlEntity drownedGirl && drownedGirl.isTamed()) {
+                    tickSwordUser(server, drownedGirl);
                 }
             }
         }
@@ -676,6 +680,8 @@ public class SwordOfTheFreeWillHandler {
         UUID ownerId;
         if (user instanceof ZombieGirlEntity zombieGirl) {
             ownerId = zombieGirl.getOwnerUuid();
+        } else if (user instanceof DrownedGirlEntity drownedGirl) {
+            ownerId = drownedGirl.getOwnerUuid();
         } else {
             ownerId = TLMSafe.getMaidOwnerUUID(user);
         }
