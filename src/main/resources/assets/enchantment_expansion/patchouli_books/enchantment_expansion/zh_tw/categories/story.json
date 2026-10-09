@@ -1,0 +1,7 @@
+{
+  "name": "劇情敘事",
+  "description": "不屬於圖鑑的零散篇章：無名者的詩、被浸濕的日記，以及群星之間的隻言片語。",
+  "icon": "enchantment_expansion:unsigned_verses",
+  "sortnum": 4,
+  "advancement": "enchantment_expansion:story/found_verses"
+}

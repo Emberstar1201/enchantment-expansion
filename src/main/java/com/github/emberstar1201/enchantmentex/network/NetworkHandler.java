@@ -136,5 +136,26 @@ public class NetworkHandler {
                 AnnihilationOrbPacket::new,
                 AnnihilationOrbPacket::handle
         );
+        CHANNEL.registerMessage(
+                packetId++,
+                SetGirlWorkModePacket.class,
+                SetGirlWorkModePacket::encode,
+                SetGirlWorkModePacket::new,
+                SetGirlWorkModePacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                MobBuffPromptPacket.class,
+                MobBuffPromptPacket::encode,
+                MobBuffPromptPacket::new,
+                MobBuffPromptPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                MobBuffChoicePacket.class,
+                MobBuffChoicePacket::encode,
+                MobBuffChoicePacket::new,
+                MobBuffChoicePacket::handle
+        );
     }
 }

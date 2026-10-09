@@ -193,6 +193,6 @@ public final class WitherBuffHandler {
     }
 
     private static boolean enabled() {
-        return MobBuffConfig.enabled && MobBuffConfig.witherEnabled;
+        return MobBuffRuntime.isEnabled() && MobBuffConfig.witherEnabled;
     }
 }

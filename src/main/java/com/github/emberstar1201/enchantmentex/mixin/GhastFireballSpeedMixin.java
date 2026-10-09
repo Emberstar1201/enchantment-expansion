@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.mixin;
 
 import com.github.emberstar1201.enchantmentex.MobBuffConfig;
+import com.github.emberstar1201.enchantmentex.MobBuffRuntime;
 import net.minecraft.world.entity.projectile.LargeFireball;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +16,7 @@ public class GhastFireballSpeedMixin {
             at = @At("TAIL"))
     private void enchantmentEx$slowFireball(CallbackInfo ci) {
         LargeFireball fireball = (LargeFireball) (Object) this;
-        if (MobBuffConfig.enabled) {
+        if (MobBuffRuntime.isEnabled()) {
             fireball.setDeltaMovement(fireball.getDeltaMovement()
                     .scale(MobBuffConfig.ghastFireballSpeedMultiplier));
         }

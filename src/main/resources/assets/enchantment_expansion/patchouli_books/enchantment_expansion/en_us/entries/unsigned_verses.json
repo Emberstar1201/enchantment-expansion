@@ -1,0 +1,14 @@
+{
+  "name": "Unsigned Verses",
+  "category": "enchantment_expansion:story",
+  "icon": "minecraft:paper",
+  "sortnum": 0,
+  "advancement": "enchantment_expansion:story/found_verses",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Verses Slipped Between Pages",
+      "text": "A flower that blooms on old bones still knows the color of spring.$(br)A name the tide carried off still remembers the way home.$(br2)Should you meet one of the dead who refuses to bite, lower your sword —$(br)she is no monster; she simply remembers the word 'human' too well.$(br2)Take dawnlight and gold, nine measures in all, and press them into a star.$(br)What that star holds is life — more life than death itself can hold.$(br)Hold it out to her:$(br)where life spills over, the husk of death cannot stand,$(br)and she will remember who she once was."
+    }
+  ]
+}

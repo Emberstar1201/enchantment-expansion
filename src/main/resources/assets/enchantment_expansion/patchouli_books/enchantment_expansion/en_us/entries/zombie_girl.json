@@ -8,12 +8,12 @@
       "type": "patchouli:entity",
       "entity": "enchantment_expansion:zombie_girl",
       "title": "Zombie Girl",
-      "text": "§lRace:§r Undead. Immune to poison, takes bonus damage from Smite; yet healing potions still mend her wounds, and harming potions hurt her as normal.$(br)§lAllegiance:§r Friendly. She never attacks players or villagers, and draws her blade against zombies, skeletons and other kin ruled by hunger. She and Drowned Girls will never harm one another.$(br)She is not purged on peaceful difficulty, and sunlight does not burn her. You may meet her in the open by day, or in darkness and night — about as often as ordinary zombies, just a little less often in daylight."
+      "text": "§lRace:§r Undead.$(br)§lAllegiance:§r Friendly. She never attacks players or villagers unprovoked, and only turns against kin that have sunk into bloodlust; she and Drowned Girls will never harm one another.$(br)They are not alone. Over long years of wandering, they found one another and formed a small band.$(br)§lPotions:§r Unlike ordinary undead — healing potions mend her wounds, and harming potions hurt her as normal.$(br)§lHabits:§r She is not purged on peaceful difficulty, and sunlight does not burn her. You may meet her by day, by night, or in darkness — about as often as ordinary zombies, just a little less often in daylight."
     },
     {
       "type": "patchouli:text",
       "title": "A Waking Nightmare",
-      "text": "They are undead like zombies and skeletons, yet they loathe their own kind — loathe those walking corpses that surrendered to bloodlust and became pure monsters.$(br)They know full well that they, too, are monsters. Their living memories were preserved beneath the End's starlight, and that is the cruelest torment of all: they remember being human, and can never go back.$(br2)When you raise a weapon against her, she will not fight back. To her, death is not an end but a release — release from a body that is not hers, and from a self-loathing without end."
+      "text": "They are undead like zombies and skeletons, yet they loathe their own kind — loathe those walking corpses that sank into bloodlust and became pure monsters.$(br)They know full well that they, too, are monsters. But they had no help from any outside force. By nothing more than their own lingering will, they nailed their consciousness fast inside these husks. At times that consciousness flickers violently, like a candle in the wind — yet it has never truly gone out.$(br2)When someone raises a weapon against them, they do not fight back. To them, death is not an end but a release — release from this body that is already a candle guttering in the wind. What they do not know is that somewhere in the Tome of the End, a page has been torn free: «Take nine parts dawn-dew and golden light, and condense them into a single star...» Perhaps what is written there is another possibility."
     }
   ]
 }

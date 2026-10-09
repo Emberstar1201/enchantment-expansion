@@ -258,6 +258,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(EnderDragonBuffHandler.class);
         // 原版怪物强化：游戏内配置命令 /ee mobbuff ...（仅 OP / 服主可用）
         MinecraftForge.EVENT_BUS.register(MobBuffCommandHandler.class);
+        MinecraftForge.EVENT_BUS.register(MobBuffPromptHandler.class);
         // 附魔书快捷查找（EnchantmentBookLookupHandler）：
         //   不再在这里显式注册。它是纯客户端处理器（引用 RenderTooltipEvent / GuiGraphics），
         //   已加 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Bus.FORGE)，
@@ -301,6 +302,9 @@ public class EnchantmentExpansion {
                 com.github.emberstar1201.enchantmentex.entity.client.ZombieGirlRenderer::new);
         event.registerEntityRenderer(ModEntities.DROWNED_GIRL.get(),
                 com.github.emberstar1201.enchantmentex.entity.client.DrownedGirlRenderer::new);
+        // 幸存者少女：复用丧尸娘 Alex 细手模型，贴图换成 human_girl 系列人类皮肤
+        event.registerEntityRenderer(ModEntities.SURVIVOR_GIRL.get(),
+                com.github.emberstar1201.enchantmentex.entity.client.HumanGirlRenderer::new);
     }
 
     // ========================================================================
@@ -326,6 +330,11 @@ public class EnchantmentExpansion {
                         .build());
         event.put(ModEntities.DROWNED_GIRL.get(),
                 net.minecraft.world.entity.monster.Drowned.createAttributes().build());
+        // 幸存者少女：属性沿用僵尸（与丧尸娘一致，增援概率清零），移速加成由实体每 tick 自行结算
+        event.put(ModEntities.SURVIVOR_GIRL.get(),
+                net.minecraft.world.entity.monster.Zombie.createAttributes()
+                        .add(net.minecraft.world.entity.ai.attributes.Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D)
+                        .build());
     }
 
     // ========================================================================

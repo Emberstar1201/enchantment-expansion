@@ -62,7 +62,7 @@ public final class EnderDragonBuffHandler {
 
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
-        if (!MobBuffConfig.enabled || !MobBuffConfig.enderDragonEnabled
+        if (!MobBuffRuntime.isEnabled() || !MobBuffConfig.enderDragonEnabled
                 || event.getLevel().isClientSide()
                 || !(event.getEntity() instanceof EnderDragon dragon)) {
             return;
@@ -87,7 +87,7 @@ public final class EnderDragonBuffHandler {
 
     @SubscribeEvent
     public static void onDragonDamage(LivingDamageEvent event) {
-        if (!MobBuffConfig.enabled || !MobBuffConfig.enderDragonEnabled
+        if (!MobBuffRuntime.isEnabled() || !MobBuffConfig.enderDragonEnabled
                 || event.getEntity().level().isClientSide()
                 || !(event.getEntity() instanceof EnderDragon dragon)) {
             return;
@@ -118,7 +118,7 @@ public final class EnderDragonBuffHandler {
 
     @SubscribeEvent
     public static void onDragonDeath(LivingDeathEvent event) {
-        if (!MobBuffConfig.enabled || !MobBuffConfig.enderDragonEnabled
+        if (!MobBuffRuntime.isEnabled() || !MobBuffConfig.enderDragonEnabled
                 || !(event.getEntity() instanceof EnderDragon dragon)
                 || !(dragon.level() instanceof ServerLevel level)) {
             return;
@@ -138,7 +138,7 @@ public final class EnderDragonBuffHandler {
 
     @SubscribeEvent
     public static void onDragonExperienceDrop(LivingExperienceDropEvent event) {
-        if (MobBuffConfig.enabled && MobBuffConfig.enderDragonEnabled
+        if (MobBuffRuntime.isEnabled() && MobBuffConfig.enderDragonEnabled
                 && event.getEntity() instanceof EnderDragon) {
             // 自定义经验在死亡动画结束阶段生成，清零原版掉落流程，避免重复。
             event.setDroppedExperience(0);
@@ -149,7 +149,7 @@ public final class EnderDragonBuffHandler {
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END
-                || !MobBuffConfig.enabled || !MobBuffConfig.enderDragonEnabled) {
+                || !MobBuffRuntime.isEnabled() || !MobBuffConfig.enderDragonEnabled) {
             return;
         }
 

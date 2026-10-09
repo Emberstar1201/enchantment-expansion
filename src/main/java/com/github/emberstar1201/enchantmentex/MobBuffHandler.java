@@ -145,7 +145,7 @@ public final class MobBuffHandler {
         if (!(event.getEntity() instanceof Mob mob)) {
             return;
         }
-        if (!MobBuffConfig.enabled) {
+        if (!MobBuffRuntime.isEnabled()) {
             return;
         }
         if (mob instanceof Evoker && event.getLevel() instanceof ServerLevel serverLevel) {
@@ -221,7 +221,7 @@ public final class MobBuffHandler {
     // ====================================================================
     @SubscribeEvent
     public static void onEntitySize(EntityEvent.Size event) {
-        if (!MobBuffConfig.enabled) {
+        if (!MobBuffRuntime.isEnabled()) {
             return;
         }
         if (event.getEntity() instanceof Zombie zombie && zombie.isBaby()
@@ -263,7 +263,7 @@ public final class MobBuffHandler {
     // ====================================================================
     @SubscribeEvent
     public static void onLivingDrops(LivingDropsEvent event) {
-        if (!MobBuffConfig.enabled) {
+        if (!MobBuffRuntime.isEnabled()) {
             return;
         }
         if (event.getEntity().level().isClientSide()) {
@@ -315,7 +315,7 @@ public final class MobBuffHandler {
     // ====================================================================
     @SubscribeEvent
     public static void onLivingExperienceDrop(LivingExperienceDropEvent event) {
-        if (!MobBuffConfig.enabled || event.getEntity().level().isClientSide()) {
+        if (!MobBuffRuntime.isEnabled() || event.getEntity().level().isClientSide()) {
             return;
         }
 
@@ -351,7 +351,7 @@ public final class MobBuffHandler {
     // ====================================================================
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
-        if (!MobBuffConfig.enabled) {
+        if (!MobBuffRuntime.isEnabled()) {
             return;
         }
         if (event.getSource().getEntity() instanceof WitherSkeleton witherSkeleton

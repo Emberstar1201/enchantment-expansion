@@ -150,7 +150,7 @@ public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
      * 计算物品应放入哪个装备槽（返回菜单下标 0 ~ 5），无法装备返回 -1。
      * 盔甲 / 头盔类用原版 LivingEntity#getEquipmentSlotForItem 判定，
      * 与右键给生物穿戴、玩家自身穿戴的规则保持一致；
-     * 主手只接受剑 / 斧 / 三叉戟，副手接受盾牌。
+     * 主手只接受剑 / 斧 / 三叉戟 / 弓，副手接受盾牌。
      */
     private static int resolveEquipmentSlotIndex(ItemStack stack) {
         EquipmentSlot vanillaSlot = LivingEntity.getEquipmentSlotForItem(stack);

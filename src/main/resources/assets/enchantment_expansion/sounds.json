@@ -29,5 +29,20 @@
     "sounds": [
       "enchantment_expansion:husk_girl_eat_1"
     ]
+  },
+  "home_bell": {
+    "category": "players",
+    "subtitle": "subtitles.enchantment_expansion.home_bell",
+    "sounds": [
+      "enchantment_expansion:home_bell"
+    ]
+  },
+  "human_girl.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.enchantment_expansion.human_girl.idle",
+    "sounds": [
+      "enchantment_expansion:human_girl_idle_1",
+      "enchantment_expansion:human_girl_idle_3"
+    ]
   }
 }

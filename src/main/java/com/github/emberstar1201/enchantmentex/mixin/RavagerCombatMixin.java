@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.mixin;
 
 import com.github.emberstar1201.enchantmentex.MobBuffConfig;
+import com.github.emberstar1201.enchantmentex.MobBuffRuntime;
 import net.minecraft.world.entity.monster.Ravager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,7 +18,7 @@ public abstract class RavagerCombatMixin {
 
     @ModifyConstant(method = "blockedByShield", constant = @org.spongepowered.asm.mixin.injection.Constant(intValue = 40))
     private int enchantmentEx$increaseShieldStun(int original) {
-        if (!MobBuffConfig.enabled) {
+        if (!MobBuffRuntime.isEnabled()) {
             return original;
         }
         return original + MobBuffConfig.ravagerStunTicks;
@@ -25,7 +26,7 @@ public abstract class RavagerCombatMixin {
 
     @ModifyConstant(method = "doHurtTarget", constant = @org.spongepowered.asm.mixin.injection.Constant(intValue = 10))
     private int enchantmentEx$increaseAttackCharge(int original) {
-        if (!MobBuffConfig.enabled) {
+        if (!MobBuffRuntime.isEnabled()) {
             return original;
         }
         // 延长攻击动作锁定时间，使冲撞后的再次攻击间隔更长。

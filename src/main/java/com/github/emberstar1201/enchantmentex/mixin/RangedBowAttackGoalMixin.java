@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.mixin;
 
 import com.github.emberstar1201.enchantmentex.MobBuffConfig;
+import com.github.emberstar1201.enchantmentex.MobBuffRuntime;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
@@ -40,7 +41,7 @@ public class RangedBowAttackGoalMixin {
                     target = "Lnet/minecraft/world/entity/Mob;getTicksUsingItem()I"))
     private int enchantmentEx$fasterBowDraw(Mob mob) {
         int actualTicks = mob.getTicksUsingItem();
-        if (!MobBuffConfig.enabled || !(mob instanceof AbstractSkeleton)) {
+        if (!MobBuffRuntime.isEnabled() || !(mob instanceof AbstractSkeleton)) {
             return actualTicks;
         }
         int drawTicks = MobBuffConfig.getSkeletonBowDrawTicks();

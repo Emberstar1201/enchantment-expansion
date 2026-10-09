@@ -1,0 +1,14 @@
+{
+  "name": "無名詩箋",
+  "category": "enchantment_expansion:story",
+  "icon": "minecraft:paper",
+  "sortnum": 0,
+  "advancement": "enchantment_expansion:story/found_verses",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "夾在舊書裡的詩",
+      "text": "「枯骨上開出的花，仍認得春天的顏色；$(br)潮水帶走的名字，仍記得回家的方向。$(br2)若你在夜裡遇見不咬人的亡者，請先放下劍——$(br)她不是怪物，只是把『人』字記得太牢。$(br2)取九分朝露與金輝，凝作一顆星。$(br)星中所盛的『生』，滿到連死亡都盛不住。$(br)把它舉到她面前——$(br)滿溢而出的生機，會沖散亡靈的軀殼，$(br)她會重新想起，自己曾經是誰。」"
+    }
+  ]
+}

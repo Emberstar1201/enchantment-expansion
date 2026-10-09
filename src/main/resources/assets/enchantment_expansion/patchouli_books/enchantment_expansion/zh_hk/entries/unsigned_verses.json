@@ -1,0 +1,14 @@
+{
+  "name": "無名詩箋",
+  "category": "enchantment_expansion:story",
+  "icon": "minecraft:paper",
+  "sortnum": 0,
+  "advancement": "enchantment_expansion:story/found_verses",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "夾喺舊書入面嘅詩",
+      "text": "「枯骨上開出嘅花，仲認得春天嘅顏色；$(br)潮水沖走嘅名字，仲記得返屋企嘅路。$(br2)若果你喺夜裡遇到唔咬人嘅亡者，請先收返把劍——$(br)佢唔係怪物，只係把『人』字記得太牢。$(br2)取九分朝露同金輝，凝成一粒星。$(br)星入面盛住嘅『生』，多到連死亡都盛唔住。$(br)將粒星遞到佢面前——$(br)滿瀉而出嘅生機，會沖散亡靈嘅軀殼，$(br)佢會重新諗返起，自己曾經係邊個。」"
+    }
+  ]
+}

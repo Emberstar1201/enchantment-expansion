@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.mixin;
 
 import com.github.emberstar1201.enchantmentex.MobBuffConfig;
+import com.github.emberstar1201.enchantmentex.MobBuffRuntime;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
@@ -47,7 +48,7 @@ public class EnderManHurtMixin {
         boolean original = source.is(tag);
         if (original
                 && DamageTypeTags.IS_PROJECTILE.equals(tag)
-                && MobBuffConfig.enabled
+                && MobBuffRuntime.isEnabled()
                 && MobBuffConfig.enderManProjectileVulnerable) {
             return false;
         }

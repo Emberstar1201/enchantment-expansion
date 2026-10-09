@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:beef"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.tame_girl.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.tame_girl.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "enchantment_expansion:adventure/friendly_undead",
+  "criteria": {
+    "granted": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "granted"
+    ]
+  ]
+}

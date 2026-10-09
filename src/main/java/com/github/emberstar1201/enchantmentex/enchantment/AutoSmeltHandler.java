@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -39,6 +40,37 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class AutoSmeltHandler {
+
+    // ========================================================================
+    // 【mob 侧复用】供幸存者少女挖矿（SurvivorMiningGoal）调用：
+    //   生物挖矿不走 BlockEvent.BreakEvent，因此由 Goal 把 Block.getDrops
+    //   的结果交给本方法做「粗矿 → 成品」转换，加成概率与玩家侧完全一致。
+    //   返回新列表，调用方用返回值替换原掉落列表。
+    // ========================================================================
+    public static List<ItemStack> applySmelt(List<ItemStack> drops, int enchantLevel,
+                                             RandomSource random) {
+        List<ItemStack> finalDrops = new ArrayList<>();
+        for (ItemStack drop : drops) {
+            Item smelted = SMELT_MAP.get(drop.getItem());
+            if (smelted != null) {
+                int count = drop.getCount();
+                // II级：概率额外+1（与玩家侧同一配置）
+                if (enchantLevel >= 2
+                        && random.nextDouble() < Config.autoSmeltLevel2BonusChance) {
+                    count += 1;
+                }
+                // III级：概率额外+1~2
+                if (enchantLevel >= 3
+                        && random.nextDouble() < Config.autoSmeltLevel3BonusChance) {
+                    count += 1 + random.nextInt(2);
+                }
+                finalDrops.add(new ItemStack(smelted, count));
+            } else {
+                finalDrops.add(drop.copy());
+            }
+        }
+        return finalDrops;
+    }
 
     // ========================================================================
     // 粗矿 → 成品 映射表（硬编码，原版稳定）

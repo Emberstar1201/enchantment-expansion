@@ -1,0 +1,14 @@
+{
+  "name": "无名诗笺",
+  "category": "enchantment_expansion:story",
+  "icon": "minecraft:paper",
+  "sortnum": 0,
+  "advancement": "enchantment_expansion:story/found_verses",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "夹在旧书里的诗",
+      "text": "「枯骨上开出的花，仍认得春天的颜色；$(br)潮水带走的名字，仍记得回家的方向。$(br2)若你在夜里遇见不咬人的亡者，请先放下剑——$(br)她不是怪物，只是把『人』字记得太牢。$(br2)取九分朝露与金辉，凝作一颗星。$(br)星中所盛的『生』，满到连死亡都盛不住。$(br)把它举到她面前——$(br)满溢而出的生机，会冲散亡灵的躯壳，$(br)她会重新想起，自己曾经是谁。」"
+    }
+  ]
+}

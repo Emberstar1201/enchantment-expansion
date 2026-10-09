@@ -83,6 +83,13 @@ public class ModEntities {
                             DrownedGirlEntity::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build("drowned_girl"));
 
+    // 幸存者少女：丧尸娘 / 溺尸娘被生命之星治愈后的人类形态，只能通过治愈获得，不自然生成。
+    // 仍归入 MONSTER 分类以复用丧尸娘的碰撞箱与生成同步参数（不注册任何自然生成规则）。
+    public static final RegistryObject<EntityType<SurvivorGirlEntity>> SURVIVOR_GIRL =
+            ENTITY_TYPES.register("survivor_girl", () -> EntityType.Builder.<SurvivorGirlEntity>of(
+                            SurvivorGirlEntity::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).clientTrackingRange(8).build("survivor_girl"));
+
     // 在主类构造函数中调用的注册方法
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

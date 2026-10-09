@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "enchantment_expansion:life_star"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.second_life.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.second_life.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "enchantment_expansion:adventure/tame_girl",
+  "criteria": {
+    "granted": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "granted"
+    ]
+  ]
+}

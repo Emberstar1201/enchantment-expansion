@@ -128,6 +128,15 @@ public class ExNihiloHandler {
     }
 
     // ========================================================================
+    // 【mob 侧复用】供幸存者少女挖矿（SurvivorMiningGoal）调用：
+    //   生物挖矿不走 BlockEvent.BreakEvent，由 Goal 直接掷一次额外掉落
+    //   （稀有/常规双层结构与玩家侧一致）；空堆表示本次没有额外掉落。
+    // ========================================================================
+    public static ItemStack rollExtraDropForMob(ServerLevel level, int enchantLevel) {
+        return rollDrop(level, enchantLevel);
+    }
+
+    // ========================================================================
     // 掉落判定（"稀有/常规"双层结构）
     // ========================================================================
     private static ItemStack rollDrop(ServerLevel level, int enchantLevel) {

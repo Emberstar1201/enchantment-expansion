@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "enchantment_expansion:zombie_girl_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.friendly_undead.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.friendly_undead.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "minecraft:adventure/root",
+  "criteria": {
+    "granted": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "granted"
+    ]
+  ]
+}

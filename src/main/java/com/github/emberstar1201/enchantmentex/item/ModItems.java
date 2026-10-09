@@ -271,6 +271,36 @@ public class ModItems {
                     () -> new ForgeSpawnEggItem(ModEntities.DROWNED_GIRL,
                             0x2F6D72, 0xC4AFA0, new Item.Properties()));
 
+    public static final RegistryObject<UnownedStardustItem> UNOWNED_STARDUST = ITEMS.register(
+            "unowned_stardust", () -> new UnownedStardustItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.RARE)
+                    .fireResistant()));
+
+    // ========================================================================
+    // 【归乡铃】（Home Bell）
+    //   铜锭 + 木棍合成；右键摇铃，把主人名下所有已驯服少女召回身边
+    //   （含未加载区块中的个体）。
+    // 物品属性定义见 HomeBellItem，召回逻辑见 GirlSummonHandler
+    // 注册ID：home_bell
+    // ========================================================================
+    public static final RegistryObject<Item> HOME_BELL = ITEMS.register(
+            "home_bell", () -> new HomeBellItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.RARE)
+                    .fireResistant()));
+
+    // ========================================================================
+    // 【无名诗笺】（Unsigned Verses）
+    //   宝箱战利品；进入背包瞬间消失并解锁终界之书「剧情叙事」分栏。
+    // 物品属性定义见 UnsignedVersesItem，战利品注入见 VersesLootHandler
+    // 注册ID：unsigned_verses
+    // ========================================================================
+    public static final RegistryObject<Item> UNSIGNED_VERSES = ITEMS.register(
+            "unsigned_verses", () -> new UnsignedVersesItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.UNCOMMON)));
+
     // ========================================================================
     // 注册方法：在主类构造函数中调用此方法，将注册器绑定到模组事件总线
     // ========================================================================
@@ -307,6 +337,9 @@ public class ModItems {
                 event.accept(DAWN_STAR);
                 event.accept(ETERNAL_TOTEM);
                 event.accept(ENHANCEMENT_SCROLL);
+                event.accept(UNOWNED_STARDUST);
+                event.accept(HOME_BELL);
+                event.accept(UNSIGNED_VERSES);
             }
             // 刷怪蛋标签页
             if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {

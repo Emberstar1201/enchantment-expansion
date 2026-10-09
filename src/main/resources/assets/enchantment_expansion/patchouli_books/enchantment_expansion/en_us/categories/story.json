@@ -1,0 +1,7 @@
+{
+  "name": "Story",
+  "description": "Scattered pages beyond the bestiary: unsigned verses, a soaked diary, and whispers among the stars.",
+  "icon": "enchantment_expansion:unsigned_verses",
+  "sortnum": 4,
+  "advancement": "enchantment_expansion:story/found_verses"
+}

@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.entity;
 
 import com.github.emberstar1201.enchantmentex.entity.menu.ZombieGirlInventoryMenu;
+import com.github.emberstar1201.enchantmentex.item.UnownedStardustItem;
 import com.github.emberstar1201.enchantmentex.sound.ModSounds;
 import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import net.minecraft.nbt.CompoundTag;
@@ -27,9 +28,13 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
+import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelReader;
@@ -51,9 +56,20 @@ import java.util.UUID;
  * 目标过滤只允许水中的敌对亡灵，避免攻击玩家和其它溺尸娘。
  */
 public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory {
+    private static final UUID SPEED_MODIFIER_UUID = UUID.fromString("8b14dfcb-75b1-4c42-8ea2-4f75d7a0c1e9");
+    private static final String SPEED_MODIFIER_NAME = "drowned_girl_base_speed";
+    // MULTIPLY_TOTAL 运算：成人 0.1 → 最终为原版溺尸的 1.1 倍（陆地与游泳同样生效）
+    private static final double SPEED_MULTIPLIER_ADULT = 0.1D;
+    // MULTIPLY_TOTAL 运算：幼年 0.2 → 最终为小溺尸的 1.2 倍
+    private static final double SPEED_MULTIPLIER_BABY = 0.2D;
     private static final EntityDataAccessor<Integer> DATA_VARIANT =
             SynchedEntityData.defineId(DrownedGirlEntity.class, EntityDataSerializers.INT);
 
+    /**
+     * 溺尸娘皮肤：与丧尸娘共用同一批贴图文件，变种 0~18 共 19 个
+     * （0 号为默认 zombie_girl.png，其余按编号 zombie_girl_N.png）。
+     * 治愈成幸存者少女后编号原样继承，对应 human_girl_N.png。
+     */
     private static final ResourceLocation[] TEXTURES = {
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl.png"),
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_1.png"),
@@ -63,11 +79,24 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_5.png"),
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_6.png"),
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_7.png"),
-            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_8.png")
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_8.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_9.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_10.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_11.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_12.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_13.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_14.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_15.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_16.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_17.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_18.png")
     };
 
     public DrownedGirlEntity(EntityType<? extends Drowned> type, Level level) {
         super(type, level);
+        // 陆地寻路允许穿过木门（配合 OpenDoorGoal 实际开关门），夜晚能开门进屋睡觉
+        this.groundNavigation.setCanOpenDoors(true);
+        this.groundNavigation.setCanFloat(true);
     }
 
     // ====================================================================
@@ -86,9 +115,24 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
      */
     private final SimpleContainer meatInventory = new SimpleContainer(64);
 
+    /**
+     * 皮肤变种是否已被真正分配过（自然生成 finalizeSpawn / 读档 Variant / 治愈感染继承）。
+     * {@code /summon}、{@code /ee girl summon} 新建的实体既不走 finalizeSpawn 也不带
+     * Variant NBT，编号恒为默认 0，没有刷怪蛋的幼年溺尸娘因此永远显示默认 zombie_girl.png。
+     * 该字段不落盘，首个服务端 tick 发现未分配时补一次随机并自动同步客户端。
+     */
+    private boolean variantAssigned;
+
     @Override
     public void aiStep() {
         super.aiStep();
+        // 兜底分配皮肤变种：未经 finalizeSpawn、也不带 Variant NBT 的新建实体
+        // （没有刷怪蛋的幼年溺尸娘主要靠 /summon 产生）在首个服务端 tick 补随机。
+        if (!this.level().isClientSide && !this.variantAssigned) {
+            this.entityData.set(DATA_VARIANT, this.random.nextInt(TEXTURES.length));
+            this.variantAssigned = true;
+        }
+        syncMovementSpeed();
         // 已驯服且非满血：每 2 秒尝试从随身背包啃一块生肉回血（与丧尸娘同节奏）
         if (!this.level().isClientSide && this.tamed
                 && this.tickCount % 40L == 0L
@@ -97,9 +141,35 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         }
     }
 
+    private void syncMovementSpeed() {
+        var attribute = this.getAttribute(Attributes.MOVEMENT_SPEED);
+        if (attribute == null) {
+            return;
+        }
+        // 幼年体型用更高的倍率，体型变化（长大）时更新修饰符
+        double amount = this.isBaby() ? SPEED_MULTIPLIER_BABY : SPEED_MULTIPLIER_ADULT;
+        AttributeModifier existing = attribute.getModifier(SPEED_MODIFIER_UUID);
+        if (existing != null) {
+            if (existing.getAmount() == amount) {
+                return;
+            }
+            attribute.removeModifier(SPEED_MODIFIER_UUID);
+        }
+        attribute.addPermanentModifier(new AttributeModifier(
+                SPEED_MODIFIER_UUID, SPEED_MODIFIER_NAME, amount,
+                Operation.MULTIPLY_TOTAL));
+    }
+
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
+
+        // 手持无主的星尘 / 生命之星：返回 PASS 放行给物品的 interactLivingEntity 处理。
+        // 注意：mobInteract 一旦返回消费结果（SUCCESS/CONSUME），物品交互会被完全拦截。
+        if (held.getItem() instanceof UnownedStardustItem
+                || held.getItem() instanceof com.github.emberstar1201.enchantmentex.item.LifeStarItem) {
+            return InteractionResult.PASS;
+        }
 
         // ---- 未驯服：喂生肉有 1/3 概率驯服（与丧尸娘一致），其它物品一律拒绝 ----
         if (!this.tamed) {
@@ -138,6 +208,12 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
                 this.playSound(ModSounds.HUSK_GIRL_EAT.get(), 1.0F, 1.4F);
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
+            if (ZombieGirlEntity.isMeleeWeapon(held)) {
+                if (!this.level().isClientSide) {
+                    receiveWeapon(player, held);
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            }
             // 空手或手持其它物品：打开背包 GUI（仅主手触发，避免双手各开一次）
             if (hand == InteractionHand.MAIN_HAND) {
                 if (!this.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
@@ -163,6 +239,17 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         return InteractionResult.sidedSuccess(this.level().isClientSide);
     }
 
+    private void receiveWeapon(Player player, ItemStack held) {
+        ItemStack newWeapon = held.copy();
+        ItemStack oldWeapon = this.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+        this.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, newWeapon);
+        this.setDropChance(net.minecraft.world.entity.EquipmentSlot.MAINHAND, 1.0F);
+        held.shrink(1);
+        if (!oldWeapon.isEmpty() && !player.getInventory().add(oldWeapon)) {
+            player.drop(oldWeapon, false);
+        }
+    }
+
     /** 驯服：记录主人、禁止自然消失、向主人发送对话框提示。 */
     private void tame(Player player) {
         this.tamed = true;
@@ -171,16 +258,32 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         if (player.level() instanceof ServerLevel) {
             player.displayClientMessage(
                     Component.translatable("chat.enchantment_expansion.drowned_girl.tamed"), true);
+            // 驯服赠礼：日记放进她的随身背包
+            com.github.emberstar1201.enchantmentex.item.GirlDiaryBooks
+                    .giveDrownedGirlDiary(this);
         }
     }
 
+    @Override
     public boolean isTamed() {
         return this.tamed;
+    }
+
+    /** 是否被命令坐下（FriendlyGirlInventory 接口要求；供共用睡觉 Goal 判定）。 */
+    @Override
+    public boolean isOrderedToSit() {
+        return this.sitting;
     }
 
     @Nullable
     public UUID getOwnerUuid() {
         return this.ownerUuid;
+    }
+
+    public void bondTo(Player player) {
+        this.tamed = true;
+        this.ownerUuid = player.getUUID();
+        this.setPersistenceRequired();
     }
 
     public boolean isOwnedBy(Player player) {
@@ -237,7 +340,20 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
     // ====================================================================
     @Override
     protected SoundEvent getAmbientSound() {
-        return ModSounds.HUSK_GIRL_IDLE.get();
+        // 睡着时不播放闲置音（与原版村民一致）
+        return this.isSleeping() ? null : ModSounds.HUSK_GIRL_IDLE.get();
+    }
+
+    /** 友好溺尸娘不能阻止玩家上床睡觉（Monster 原版默认会阻止休息）。 */
+    @Override
+    public boolean isPreventingPlayerRest(Player player) {
+        return false;
+    }
+
+    /** 睡着后不可被推动：防止路过的生物把她一点点挤下床。 */
+    @Override
+    public boolean isPushable() {
+        return !this.isSleeping() && super.isPushable();
     }
 
     @Override
@@ -261,6 +377,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
                                          MobSpawnType reason, @Nullable SpawnGroupData spawnData,
                                          @Nullable CompoundTag dataTag) {
         this.entityData.set(DATA_VARIANT, this.random.nextInt(TEXTURES.length));
+        this.variantAssigned = true;
         return super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
     }
 
@@ -283,11 +400,21 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        this.entityData.set(DATA_VARIANT, Math.max(0, Math.min(TEXTURES.length - 1,
-                tag.getInt("Variant"))));
+        // 存档（含星尘收容放出、治愈/感染的 NBT 迁移）里带 Variant 才视为已分配；
+        // /summon 等无 Variant 键的新建实体保持未分配，由首个服务端 tick 兜底随机。
+        if (tag.contains("Variant")) {
+            this.entityData.set(DATA_VARIANT, Math.max(0, Math.min(TEXTURES.length - 1,
+                    tag.getInt("Variant"))));
+            this.variantAssigned = true;
+        }
         this.tamed = tag.getBoolean("Tamed");
         this.ownerUuid = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         this.meatInventory.fromTag(tag.getList("MeatInventory", Tag.TAG_COMPOUND));
+        // 从星尘放出时恢复收容时刻的 tickCount：
+        // 实体所有基于 tickCount 的计时（回血节奏、攻击目标记忆等）在收容期间完全冻结。
+        if (tag.contains("CapturedTickCount")) {
+            this.tickCount = tag.getInt("CapturedTickCount");
+        }
     }
 
     /** 溺尸娘保留亡灵逻辑，但不会因为白天而燃烧。 */
@@ -304,7 +431,17 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
 
     @Override
     protected void registerGoals() {
-        // 先注册原版溺尸的游泳上浮、水中攻击、寻水、闲逛等移动 Goal。
+        // 意识暂时丧失彩蛋：附近有村民时低概率追着村民跑（只追不打）。
+        // 优先级 0，与水中上浮 Goal（只占 JUMP 标记）不冲突，
+        // 触发期间会压制 super 中注册的原版水中攻击等全部移动行为。
+        this.goalSelector.addGoal(0, new GirlConfusionGoal(this));
+        // 开门与睡觉必须在 super 之前注册：睡眠 Goal 与原版攻击同为优先级 2，
+        // 同优先级按注册顺序抢占 MOVE/JUMP/LOOK 标记，确保夜里附近有床时
+        // 直接去睡，不会先被水中攻击 / 闲逛类 Goal 抢走。
+        // （OpenDoorGoal 不占移动标记，可与任意行为并行。）
+        this.goalSelector.addGoal(1, new OpenDoorGoal(this, true));
+        this.goalSelector.addGoal(2, new GirlSleepGoal(this, this));
+        // 再注册原版溺尸的游泳上浮、水中攻击、寻水、闲逛等移动 Goal。
         super.registerGoals();
         // 在原版基础上追加：跟随主人（优先级 1，与攻击同级但互斥，高于寻水）、靠岸（优先级 3）。
         // 原版 DrownedGoToWaterGoal 优先级为 2，因此跟随（1）会压过寻水，避免被拉回水里。

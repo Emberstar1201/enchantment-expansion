@@ -122,6 +122,16 @@ public class ZombieGirlModel<T extends Mob> extends HumanoidModel<T> {
             this.rightPants.visible = !submerged;
             this.leftPants.visible = !submerged;
             animateDrownedPose(ageInTicks);
+        } else if (entity instanceof com.github.emberstar1201.enchantmentex.entity.SurvivorGirlEntity) {
+            // 幸存者少女已是人类：第二层皮肤 / 衣物恒显示，
+            // 手臂不调用僵尸举臂动画——super.setupAnim 已在上方按玩家式人形
+            // （走路自然摆臂、挥武器单臂攻击）设置好姿态，这里不再覆盖。
+            this.hair.visible = true;
+            this.jacket.visible = true;
+            this.rightSleeve.visible = true;
+            this.leftSleeve.visible = true;
+            this.rightPants.visible = true;
+            this.leftPants.visible = true;
         } else {
             this.hair.visible = true;
             // 丧尸娘的第二层衣物恒为显示（防止共享模型状态时被上一帧残留隐藏）

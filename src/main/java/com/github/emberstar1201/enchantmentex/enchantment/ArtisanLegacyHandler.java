@@ -1,6 +1,8 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DiggerItem;
@@ -100,6 +102,49 @@ public class ArtisanLegacyHandler {
     }
 
     // ========================================================================
+    // ========================================================================
+    // 【mob 侧复用】供幸存者少女挖矿（SurvivorMiningGoal）调用：
+    //   生物挖矿不走 BlockEvent.BreakEvent，由 Goal 在破坏方块前调用本方法：
+    //   同样记录记忆方块并掷额外掉落判定，返回额外掉落（数量恒为 1），
+    //   无额外掉落返回空堆。额外掉落不落地，由调用方直接收进她的随身背包。
+    // ========================================================================
+    public static ItemStack mobBreak(ItemStack tool, BlockState state, BlockPos pos,
+                                     ServerLevel level, LivingEntity miner, RandomSource random) {
+        int enchantLevel = EnchantmentHelper.getItemEnchantmentLevel(
+                ModEnchantments.ARTISAN_LEGACY.get(), tool);
+
+        // 与玩家侧同款兼容：「中国制造」附魔在镐/斧/锹上同样触发匠心传承效果
+        if (enchantLevel <= 0
+                && tool.getItem() instanceof DiggerItem
+                && EnchantmentHelper.getItemEnchantmentLevel(
+                        ModEnchantments.MADE_IN_CHINA.get(), tool) > 0) {
+            enchantLevel = 1;
+        }
+        if (enchantLevel <= 0) {
+            return ItemStack.EMPTY;
+        }
+
+        // 步骤1：记录方块到工具 NBT（与玩家侧共用同一份记忆数据）
+        ArtisanLegacyData.recordBreak(tool, state.getBlock());
+
+        // 步骤2：额外掉落判定
+        if (!ArtisanLegacyData.rollExtraDrop(tool, state.getBlock(), random)) {
+            return ItemStack.EMPTY;
+        }
+        LootParams.Builder lootParams = new LootParams.Builder(level)
+                .withParameter(LootContextParams.ORIGIN, pos.getCenter())
+                .withParameter(LootContextParams.TOOL, tool)
+                .withOptionalParameter(LootContextParams.THIS_ENTITY, miner);
+
+        List<ItemStack> possibleDrops = state.getDrops(lootParams);
+        if (possibleDrops.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack extraDrop = possibleDrops.get(random.nextInt(possibleDrops.size())).copy();
+        extraDrop.setCount(1);
+        return extraDrop;
+    }
+
     // 事件2：挖掘速度计算 → 对已记忆方块加速
     // ========================================================================
     @SubscribeEvent
