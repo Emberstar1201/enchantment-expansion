@@ -817,6 +817,10 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         this.variantAssigned = true;
     }
 
+    public void setCampVariant(int variant) {
+        setVariant(variant);
+    }
+
     /** 把外部 NBT / 随机值夹紧到当前实体支持的皮肤索引范围。 */
     protected int clampVariant(int variant) {
         if (variant < 0 || variant >= VARIANT_TEXTURES.size()) {
@@ -990,9 +994,9 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
             return InteractionResult.PASS;
         }
 
-        // ---- 未驯服：喂生肉有 1/3 概率驯服（与狼一致） ----
+        // ---- 未驯服：喂驯服食物有 1/3 概率驯服（与狼一致） ----
         if (!this.tamed) {
-            if (isRawMeat(held)) {
+            if (isTamingFood(held)) {
                 if (!this.level().isClientSide) {
                     if (!player.getAbilities().instabuild) {
                         held.shrink(1);
@@ -1056,6 +1060,11 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         return InteractionResult.sidedSuccess(this.level().isClientSide);
     }
 
+    /** 是否为可驯服食物：丧尸娘只接受生肉，幸存者少女覆写为任意食物。 */
+    protected boolean isTamingFood(ItemStack stack) {
+        return isRawMeat(stack);
+    }
+
     /** 是否为生肉（可驯服食物，也允许放入专属背包）。 */
     public static boolean isRawMeat(ItemStack stack) {
         return stack.is(Items.BEEF) || stack.is(Items.PORKCHOP) || stack.is(Items.CHICKEN)
@@ -1107,17 +1116,22 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
     }
 
     /** 驯服：记录主人、禁止自然消失、向主人发送对话框提示。 */
-    private void tame(Player player) {
+    protected void tame(Player player) {
         this.tamed = true;
         this.ownerUuid = player.getUUID();
         this.setPersistenceRequired();
         if (player.level() instanceof ServerLevel) {
             player.displayClientMessage(
                     Component.translatable(getTamedMessageKey()), true);
-            // 驯服赠礼：日记放进她的随身背包（幸存者少女不会被生肉驯服，不受影响）
-            com.github.emberstar1201.enchantmentex.item.GirlDiaryBooks
-                    .giveZombieGirlDiary(this);
+            // 驯服赠礼：日记放进她的随身背包（子类覆写为各自的日记类型）
+            giveTamingDiary();
         }
+    }
+
+    /** 驯服赠礼：丧尸娘给「破损的日记」，幸存者少女覆写给幸存者日记。 */
+    protected void giveTamingDiary() {
+        com.github.emberstar1201.enchantmentex.item.GirlDiaryBooks
+                .giveZombieGirlDiary(this);
     }
 
     /** 驯服成功提示的翻译键（幸存者少女等子类覆写为各自的台词）。 */

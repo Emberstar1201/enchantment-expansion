@@ -357,5 +357,12 @@ public class EnchantmentExpansion {
                 net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 FriendlyGirlPeacefulSpawnHandler::checkDrownedGirlSpawnRules,
                 net.minecraftforge.event.entity.SpawnPlacementRegisterEvent.Operation.REPLACE);
+
+        // 幸存者少女：地面生成，白天夜晚均可在地表出现，权重低于丧尸娘。
+        event.register(ModEntities.SURVIVOR_GIRL.get(),
+                net.minecraft.world.entity.SpawnPlacements.Type.ON_GROUND,
+                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                FriendlyGirlPeacefulSpawnHandler::checkSurvivorGirlSpawnRules,
+                net.minecraftforge.event.entity.SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

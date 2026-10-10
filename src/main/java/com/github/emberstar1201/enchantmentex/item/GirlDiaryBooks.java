@@ -14,7 +14,10 @@ import net.minecraft.world.item.WrittenBookItem;
  * 驯服少女时塞进她随身背包的日记成书：
  * 丧尸娘 → 「破损的日记」，溺尸娘 → 「浸水的日记」。
  *
- * <p>书页内容全部是可翻译组件（{@code book.enchantment_expansion.*_diary.pageN}），
+ * <p>每种少女有多个日记变种，驯服时随机选取一个，
+ * 不同变种讲述不同的感染/溺水经历。</p>
+ *
+ * <p>书页内容全部是可翻译组件（{@code book.enchantment_expansion.*_diary*.pageN}），
  * 客户端按各自语言渲染；标题与作者是成书 NBT 的纯字符串（无法本地化），
  * 因此直接写成「中文 / English」双语。</p>
  */
@@ -22,17 +25,56 @@ public final class GirlDiaryBooks {
     /** 日记页数（page1 ~ pageN 翻译键按此数量读取）。 */
     private static final int PAGE_COUNT = 4;
 
+    /**
+     * 丧尸娘日记变种：地窖、森林、瘟疫。
+     * 对应翻译键前缀为 book.enchantment_expansion.{key}.pageN。
+     */
+    private static final String[] ZOMBIE_DIARY_VARIANTS = {
+            "zombie_girl_diary",        // 地窖：村庄遇袭，藏在地窖中被感染
+            "zombie_girl_diary_forest", // 森林：采药时在森林深处被怪物围攻
+            "zombie_girl_diary_plague"  // 瘟疫：村庄瘟疫蔓延，染病后异变
+    };
+
+    /**
+     * 溺尸娘日记变种：船难、河流、迷雾。
+     * 对应翻译键前缀为 book.enchantment_expansion.{key}.pageN。
+     */
+    private static final String[] DROWNED_DIARY_VARIANTS = {
+            "drowned_girl_diary",        // 船难：暴风雨中翻船沉没
+            "drowned_girl_diary_river",  // 河流：被急流卷走沉入河底
+            "drowned_girl_diary_fog"     // 迷雾：浓雾中从码头坠水
+    };
+
+    /**
+     * 幸存者少女日记变种：救助、护送、照顾、治疗。
+     * 讲述幸存者少女被丧尸娘/溺尸娘救助的不同经历。
+     */
+    private static final String[] SURVIVOR_DIARY_VARIANTS = {
+            "survivor_girl_diary",         // 救助：被怪物追击时丧尸出手相救，带回营地
+            "survivor_girl_diary_observe",  // 护送：迷路时溺尸指路并护送回村
+            "survivor_girl_diary_resonance",// 照顾：发烧时丧尸照料三天
+            "survivor_girl_diary_heal"      // 治疗：受伤时丧尸采药包扎
+    };
+
     private GirlDiaryBooks() {
     }
 
-    /** 驯服丧尸娘时把「破损的日记」放进她的背包。 */
+    /** 驯服丧尸娘时随机选取一个日记变种放进她的背包。 */
     public static void giveZombieGirlDiary(Mob girl) {
-        give(girl, "zombie_girl_diary", "破损的日记 / Torn Diary");
+        String key = ZOMBIE_DIARY_VARIANTS[girl.getRandom().nextInt(ZOMBIE_DIARY_VARIANTS.length)];
+        give(girl, key, "破损的日记 / Torn Diary");
     }
 
-    /** 驯服溺尸娘时把「浸水的日记」放进她的背包。 */
+    /** 驯服溺尸娘时随机选取一个日记变种放进她的背包。 */
     public static void giveDrownedGirlDiary(Mob girl) {
-        give(girl, "drowned_girl_diary", "浸水的日记 / Soaked Diary");
+        String key = DROWNED_DIARY_VARIANTS[girl.getRandom().nextInt(DROWNED_DIARY_VARIANTS.length)];
+        give(girl, key, "浸水的日记 / Soaked Diary");
+    }
+
+    /** 驯服幸存者少女时随机选取一个日记变种放进她的背包。 */
+    public static void giveSurvivorGirlDiary(Mob girl) {
+        String key = SURVIVOR_DIARY_VARIANTS[girl.getRandom().nextInt(SURVIVOR_DIARY_VARIANTS.length)];
+        give(girl, key, "幸存者的日记 / Survivor's Diary");
     }
 
     /** 组装成书并放入她的随身背包；背包满时掉落在她脚下。 */

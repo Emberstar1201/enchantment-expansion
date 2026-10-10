@@ -338,6 +338,19 @@ public class SurvivorGirlEntity extends ZombieGirlEntity {
         return stack.getItem().getFoodProperties() != null;
     }
 
+    /** 幸存者少女用任意食物驯服（1/3 概率，与丧尸娘一致）。 */
+    @Override
+    protected boolean isTamingFood(ItemStack stack) {
+        return stack.getItem().getFoodProperties() != null;
+    }
+
+    /** 驯服赠礼：幸存者少女的日记（记录她发现丧尸娘拥有智慧和沟通能力）。 */
+    @Override
+    protected void giveTamingDiary() {
+        com.github.emberstar1201.enchantmentex.item.GirlDiaryBooks
+                .giveSurvivorGirlDiary(this);
+    }
+
     /**
      * 主人喂食结算：按食物营养价值回血（每点营养 = 半颗心，
      * 与生肉 8 点营养回 2 颗心的旧数值一致），并给予食物附带的正面效果。

@@ -21,7 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -66,11 +66,11 @@ public final class GirlReinforcementHandler {
     private static final UUID HEALTH_MODIFIER_UUID =
             UUID.fromString("7c2f5b31-9d64-4a12-8b0e-6f4a91c2d5f8");
     private static final String HEALTH_MODIFIER_NAME = "girl_reinforcement_health";
-    /**
-     * 增援标记：写入实体持久数据（ForgeData，随存档保存）。
-     * 带标记的少女死亡时不再触发下一波，防止「杀增援 → 再增援」的无限放大。
-     */
+    /** 增援标记：写入实体持久数据（ForgeData，随存档保存）。 */
     private static final String TAG_REINFORCEMENT = "GirlReinforcement";
+    /** 受伤阈值标记：同一只少女只在首次跌至最大生命值 85% 时触发。 */
+    private static final String TAG_THRESHOLD_TRIGGERED = "GirlReinforcementThresholdTriggered";
+    private static final double TRIGGER_HEALTH_RATIO = 0.85D;
     /** 增援到达提示的翻译键。 */
     private static final String KEY_SPAWNED = "chat.enchantment_expansion.girl_reinforcement.spawned";
 
@@ -83,40 +83,38 @@ public final class GirlReinforcementHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingDeath(LivingDeathEvent event) {
-        // 仅服务端主世界逻辑处理；事件在 die() 内、实体移除前触发，此刻读凶手 / 生成实体都安全。
-        if (!(event.getEntity().level() instanceof ServerLevel level) || level.isClientSide) {
+    public static void onLivingDamage(LivingDamageEvent event) {
+        LivingEntity girl = event.getEntity();
+        if (!(girl.level() instanceof ServerLevel level) || level.isClientSide) {
             return;
         }
-        // 死者必须是本模组三种少女之一（幸存者少女继承丧尸娘，instanceof 自动覆盖）。
-        if (!(event.getEntity() instanceof ZombieGirlEntity)
-                && !(event.getEntity() instanceof DrownedGirlEntity)) {
+        // 死亡事件已经不再参与触发；这里在实际扣血后判断是否首次跌到 85% 及以下。
+        if (!(girl instanceof ZombieGirlEntity) && !(girl instanceof DrownedGirlEntity)) {
             return;
         }
-        // 增援被杀不再连锁：带标记的直接放行。
-        if (event.getEntity().getPersistentData().getBoolean(TAG_REINFORCEMENT)) {
+        if (girl.getPersistentData().getBoolean(TAG_REINFORCEMENT)
+                || girl.getPersistentData().getBoolean(TAG_THRESHOLD_TRIGGERED)) {
             return;
         }
-        // 凶手必须是怪物：玩家不是 Monster，天然不触发（帮玩家不惩罚玩家）；
-        // 少女自身也继承自 Zombie/Drowned（Monster 子类），用 FriendlyGirlInventory 排除少女内战。
+        float healthBefore = girl.getHealth();
+        float threshold = girl.getMaxHealth() * (float) TRIGGER_HEALTH_RATIO;
+        if (healthBefore > threshold && healthBefore - event.getAmount() > threshold) {
+            return;
+        }
         if (!(event.getSource().getEntity() instanceof Monster killer)
                 || killer instanceof FriendlyGirlInventory) {
             return;
         }
-        // 锚点玩家：驯服个体找主人，野生个体找最近玩家；找不到就不生成。
-        Player anchor = findAnchorPlayer(level, event.getEntity());
+        girl.getPersistentData().putBoolean(TAG_THRESHOLD_TRIGGERED, true);
+
+        Player anchor = findAnchorPlayer(level, girl);
         if (anchor == null) {
             return;
         }
 
         long now = level.getGameTime();
-        // 冷却先记后生成：同一 tick 内多只少女死亡时，第二只会被全局冷却挡住，只发一波。
-        // 代价是全部落点失败时也消耗冷却，可接受（落点失败极罕见）。
         Long playerReady = PLAYER_COOLDOWNS.get(anchor.getUUID());
-        if (playerReady != null && now < playerReady) {
-            return;
-        }
-        if (now < globalCooldownUntil) {
+        if (playerReady != null && now < playerReady || now < globalCooldownUntil) {
             return;
         }
         PLAYER_COOLDOWNS.put(anchor.getUUID(), now + COOLDOWN_TICKS);
@@ -201,12 +199,8 @@ public final class GirlReinforcementHandler {
         RandomSource random = girl.getRandom();
         applyHealth(girl, HP_MIN + random.nextDouble() * (HP_MAX - HP_MIN));
 
-        // 驯服归属锚点玩家（bondTo 内部会 setPersistenceRequired，不随距离消失）。
-        if (girl instanceof ZombieGirlEntity zombieGirl) {
-            zombieGirl.bondTo(anchor);
-        } else if (girl instanceof DrownedGirlEntity drownedGirl) {
-            drownedGirl.bondTo(anchor);
-        }
+        // 增援必须保持野生状态，不能继承锚点玩家的主人归属或跟随行为。
+        // 这里不调用 bondTo；新实体默认就是未驯服且没有主人。
         // 复仇：优先攻击凶手；凶手已死/失效则不设目标，回归少女普通的目标选择。
         if (killer.isAlive() && !killer.isRemoved()) {
             girl.setTarget(killer);

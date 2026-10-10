@@ -53,7 +53,7 @@ import java.util.UUID;
 
 /**
  * 溺尸娘：保留 Drowned 原生水陆移动、游泳、上浮和靠岸行为的独立变种。
- * 目标过滤只允许水中的敌对亡灵，避免攻击玩家和其它溺尸娘。
+ * 目标过滤只允许敌对亡灵，避免攻击玩家、少女和其它友好生物。
  */
 public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory {
     private static final UUID SPEED_MODIFIER_UUID = UUID.fromString("8b14dfcb-75b1-4c42-8ea2-4f75d7a0c1e9");
@@ -386,6 +386,11 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         return TEXTURES[Math.max(0, Math.min(TEXTURES.length - 1, variant))];
     }
 
+    public void setCampVariant(int variant) {
+        this.entityData.set(DATA_VARIANT, Math.max(0, Math.min(TEXTURES.length - 1, variant)));
+        this.variantAssigned = true;
+    }
+
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
@@ -489,9 +494,9 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
                 || goal.getGoal() instanceof NearestAttackableTargetGoal);
         // 优先级 1：主人协同攻击（主人攻击的目标，600 tick 记忆窗口）
         this.targetSelector.addGoal(1, new OwnerHurtTargetGoal());
-        // 优先级 2：被攻击时反击水中亡灵
+        // 优先级 2：被攻击时反击敌对亡灵
         this.targetSelector.addGoal(2, new FriendlyUndeadHurtByTargetGoal(this));
-        // 优先级 3：天生仇恨水中亡灵
+        // 优先级 3：天生仇恨敌对亡灵
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(
                 this, Mob.class, 10, true, false, DrownedGirlEntity::isWaterHostileUndead));
     }
@@ -505,7 +510,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
 
     /**
      * 目标白名单：主人协同攻击和天生仇恨共用。
-     * 排除玩家、丧尸娘、溺尸娘、车万女仆；其余生物均可作为目标。
+     * 排除玩家、丧尸娘、溺尸娘、车万女仆；其余生物均可作为主人协同目标。
      */
     private static boolean isValidAttackTarget(LivingEntity target) {
         return target != null
@@ -519,7 +524,6 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
     private static boolean isWaterHostileUndead(@Nullable LivingEntity target) {
         return target instanceof Enemy
                 && target.getMobType() == MobType.UNDEAD
-                && target.isInWater()
                 && !(target instanceof DrownedGirlEntity)
                 && !(target instanceof ZombieGirlEntity);
     }

@@ -207,6 +207,41 @@ public final class FriendlyGirlPeacefulSpawnHandler {
     }
 
     /**
+     * 幸存者少女的地面生成规则。
+     *
+     * <p>与丧尸娘不同，幸存者少女是真正的人类，不受亡灵限制：
+     * <ul>
+     *   <li>白天和夜晚均可生成，不要求黑暗；</li>
+     *   <li>不进海洋/河流群系（与丧尸娘一致）；</li>
+     *   <li>和平难度下也能生成。</li>
+     * </ul>
+     * 生成权重低于丧尸娘（约 1/5），让她们在野外偶尔出现但不至于铺天盖地。
+     */
+    public static boolean checkSurvivorGirlSpawnRules(
+            EntityType<SurvivorGirlEntity> entityType,
+            ServerLevelAccessor level,
+            MobSpawnType spawnType,
+            BlockPos pos,
+            RandomSource random) {
+        if (!Mob.checkMobSpawnRules(entityType, level, spawnType, pos, random)) {
+            return false;
+        }
+
+        if (spawnType != MobSpawnType.NATURAL && spawnType != MobSpawnType.CHUNK_GENERATION) {
+            return true;
+        }
+
+        // 不进海洋与河流群系
+        if (level.getBiome(pos).is(BiomeTags.IS_OCEAN)
+                || level.getBiome(pos).is(BiomeTags.IS_RIVER)) {
+            return false;
+        }
+
+        // 幸存者少女是人类，白天夜晚均可在地表生成
+        return level.canSeeSky(pos) || Monster.isDarkEnoughToSpawn(level, pos, random);
+    }
+
+    /**
      * 玩家进入世界时打印一行诊断日志：当前维度、难度、怪物生成规则，
      * 以及和平补刷器是否处于工作状态。用于一眼确认「是否真的切到了和平难度」
      * （菜单中「简单」紧邻「和平」，极易点错而不自知）。
@@ -319,27 +354,31 @@ public final class FriendlyGirlPeacefulSpawnHandler {
 
         // 种类权重与生物群系修饰保持一致：水域中溺尸娘必须占绝对优势
         // （丧尸娘谓词已拒绝海洋/河流，但先选中她会浪费一轮找点）：
-        // 高频水域（河流等）500，普通水域（海洋等）200，丧尸娘 95；
-        // 区块内完全没水时溺尸娘权重为 0，只刷丧尸娘。
+        // 高频水域（河流等）500，普通水域（海洋等）200，丧尸娘 95，幸存者少女 18；
+        // 区块内完全没水时溺尸娘权重为 0。
         int drownedWeight = !foundWater ? 0 : highFrequencyWater ? 500 : 200;
         int zombieGirlWeight = 95;
+        int survivorGirlWeight = 18;
         boolean preferDrowned = foundWater
-                && random.nextInt(zombieGirlWeight + drownedWeight) < drownedWeight;
+                && random.nextInt(zombieGirlWeight + drownedWeight + survivorGirlWeight) < drownedWeight;
 
         // 优先权重选中的种类，失败再试另一种：位置判定含原版溺尸概率门（非和平），
-        // 单点可能被拒，由同区块多次选列兜底。
+        // 单点可能被拒，由同区块多次选列兜底。幸存者少女作为最后兜底尝试。
         if (preferDrowned) {
             return trySpawnType(level, ModEntities.DROWNED_GIRL.get(), chunkPos, random, mode)
-                    || trySpawnType(level, ModEntities.ZOMBIE_GIRL.get(), chunkPos, random, mode);
+                    || trySpawnType(level, ModEntities.ZOMBIE_GIRL.get(), chunkPos, random, mode)
+                    || trySpawnType(level, ModEntities.SURVIVOR_GIRL.get(), chunkPos, random, mode);
         }
         return trySpawnType(level, ModEntities.ZOMBIE_GIRL.get(), chunkPos, random, mode)
-                || (foundWater && trySpawnType(level, ModEntities.DROWNED_GIRL.get(), chunkPos, random, mode));
+                || (foundWater && trySpawnType(level, ModEntities.DROWNED_GIRL.get(), chunkPos, random, mode))
+                || trySpawnType(level, ModEntities.SURVIVOR_GIRL.get(), chunkPos, random, mode);
     }
 
     private static boolean trySpawnType(
             ServerLevel level, EntityType<?> type, ChunkPos chunkPos, RandomSource random, Mode mode) {
         boolean drownedGirl = type == ModEntities.DROWNED_GIRL.get();
-        if (!drownedGirl && type != ModEntities.ZOMBIE_GIRL.get()) {
+        boolean survivorGirl = type == ModEntities.SURVIVOR_GIRL.get();
+        if (!drownedGirl && !survivorGirl && type != ModEntities.ZOMBIE_GIRL.get()) {
             return false;
         }
 

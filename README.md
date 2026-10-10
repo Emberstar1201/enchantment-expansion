@@ -6,6 +6,10 @@
 
 <span style="color:red">**⚠️ WARNING (Disclaimer): The Zombie Girl's hurt sound is EXTREMELY embarrassing. Do NOT play it out loud in public! If you really want to play, please wear headphones!**</span>
 
+<span style="color:orange">**⚠️ 音频警告：模组中铃铛的声音存在余音效果，佩戴耳机时可能对听力造成潜在伤害，请注意适当调节音量。**</span>
+
+<span style="color:orange">**⚠️ Audio Warning: The bell sounds in this mod have a lingering resonance effect. When wearing headphones, it may cause potential hearing damage. Please adjust the volume appropriately.**</span>
+
 ---
 
 ## ✨ 与我互动

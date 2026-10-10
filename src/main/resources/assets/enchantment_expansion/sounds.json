@@ -42,6 +42,7 @@
     "subtitle": "subtitles.enchantment_expansion.human_girl.idle",
     "sounds": [
       "enchantment_expansion:human_girl_idle_1",
+      "enchantment_expansion:human_girl_idle_2",
       "enchantment_expansion:human_girl_idle_3"
     ]
   }

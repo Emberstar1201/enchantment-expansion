@@ -44,7 +44,7 @@ public class ModSounds {
     public static final RegistryObject<SoundEvent> HOME_BELL =
             register("home_bell");
 
-    /** 幸存者少女呼吸声（随机 idle_1 / idle_3）：仅人类形态闲置时播放。 */
+    /** 幸存者少女呼吸声（随机 idle_1 / idle_2 / idle_3）：仅人类形态闲置时播放。 */
     public static final RegistryObject<SoundEvent> HUMAN_GIRL_IDLE =
             register("human_girl.idle");
 
