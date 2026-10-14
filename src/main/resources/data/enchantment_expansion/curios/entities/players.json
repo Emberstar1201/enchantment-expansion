@@ -1,0 +1,10 @@
+{
+  "entities": [
+    "minecraft:player"
+  ],
+  "slots": [
+    "stardust_slot",
+    "star",
+    "emberstar_cord"
+  ]
+}

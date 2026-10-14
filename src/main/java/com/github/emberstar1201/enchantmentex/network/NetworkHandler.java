@@ -138,13 +138,6 @@ public class NetworkHandler {
         );
         CHANNEL.registerMessage(
                 packetId++,
-                SetGirlWorkModePacket.class,
-                SetGirlWorkModePacket::encode,
-                SetGirlWorkModePacket::new,
-                SetGirlWorkModePacket::handle
-        );
-        CHANNEL.registerMessage(
-                packetId++,
                 MobBuffPromptPacket.class,
                 MobBuffPromptPacket::encode,
                 MobBuffPromptPacket::new,
@@ -156,6 +149,13 @@ public class NetworkHandler {
                 MobBuffChoicePacket::encode,
                 MobBuffChoicePacket::new,
                 MobBuffChoicePacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                GirlInteractionPacket.class,
+                GirlInteractionPacket::encode,
+                GirlInteractionPacket::new,
+                GirlInteractionPacket::handle
         );
     }
 }

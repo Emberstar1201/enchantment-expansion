@@ -8,7 +8,7 @@
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:end_star",
       "title": "End Star",
-      "text": "§lAcquisition: §r Appears above the return portal in The End after defeating the Ender Dragon.$(br2)§lEffect: §r$(br)Active while held or embedded in worn armor: creative flight; 80% damage reduction, with any single hit first capped at 10 damage; every 10 experience levels adds +100% damage, up to +1000%; immune to the mining penalty and movement slowdown; forces Endermen, Endermites, Shulkers and the Ender Dragon to stay neutral. Below Y=-60, you slowly rise and begin a 3-second void rescue that returns you to your latest respawn point; at Y≤-40, void damage is blocked. Surrounded by purple enchantment particles while held or dropped.$(br2)§lTouhou Little Maid: §r Maids have no experience level, so their own experience is used instead — every 100 maid experience points (configurable) grants +100% damage, with the same cap; the bonus message is sent to the maid's owner."
+      "text": "§lAcquisition: §r Appears above the End return portal after defeating the Ender Dragon.$(br2)§lEffect: §r$(br)Active while held, embedded in worn armor, or in a Curios slot: creative flight; single-hit damage capped at 10, then reduced by 80%; every 10 experience levels grants +100% damage dealt, up to +1000%; immunity to mining penalties and slowness; End mobs become neutral. Below Y=-60, a 3-second void rescue returns you to your respawn point; at Y≤-40, void damage is blocked.$(br2)Maids gain the same damage bonus from their own experience."
     }
   ]
 }

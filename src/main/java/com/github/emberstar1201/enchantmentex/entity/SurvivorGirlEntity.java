@@ -46,8 +46,8 @@ import java.util.List;
  * <ul>
  *   1. {@link #getMobType()} 返回 {@link MobType#UNDEFINED}，是真正的人类：
  *      中毒等效果正常结算，不再受亡灵杀手额外伤害；</li>
- *   2. 材质使用 human_girl.png ~ human_girl_18.png（与丧尸娘 0~18 号变种一一对应，
- *      共 19 张用户自制皮肤）；</li>
+ *   2. 材质使用 human_girl.png ~ human_girl_19.png（与丧尸娘 0~19 号变种一一对应，
+ *      共 20 张用户自制皮肤）；</li>
  *   3. 背包自动进食从「只吃生肉」扩展为「任意食物」，
  *      按营养价值回血，并且只继承食物的正面药水效果
  *      （金苹果 / 附魔金苹果的再生、抗性、防火、吸收照常给予；
@@ -59,12 +59,19 @@ public class SurvivorGirlEntity extends ZombieGirlEntity {
     private static final String ORIGIN_ZOMBIE_GIRL = "zombie_girl";
     /** 治愈前形态 NBT 值：溺尸娘。 */
     private static final String ORIGIN_DROWNED_GIRL = "drowned_girl";
+    /** 独立生成的幸存者少女没有亡灵原形。 */
+    private static final String ORIGIN_SURVIVOR_GIRL = "survivor_girl";
 
-    /**
-     * 治愈前的亡灵形态，被感染时变回它。
-     * 默认按普通丧尸娘处理（/summon 等非治愈途径生成的幸存者也有合理的还原形态）。
-     */
-    private String originForm = ORIGIN_ZOMBIE_GIRL;
+    /** 治愈来源用于感染还原；独立生成的幸存者少女默认保留自己的形态与人设。 */
+    private String originForm = ORIGIN_SURVIVOR_GIRL;
+
+    public String getOriginPersonaKey() {
+        return switch (this.originForm) {
+            case ORIGIN_DROWNED_GIRL -> ORIGIN_DROWNED_GIRL;
+            case ORIGIN_ZOMBIE_GIRL -> ORIGIN_ZOMBIE_GIRL;
+            default -> ORIGIN_SURVIVOR_GIRL;
+        };
+    }
 
     /** 人类幼体长达成人所需时间：20 分钟 = 24000 tick（与原版小村民成长时间一致）。 */
     private static final int GROW_UP_TICKS = 24000;
@@ -76,8 +83,8 @@ public class SurvivorGirlEntity extends ZombieGirlEntity {
      */
     private int growUpTicks = -1;
 
-    /** 已完成人类化的皮肤数量：human_girl.png 与 human_girl_1 ~ human_girl_18，共 19 张。 */
-    private static final int HUMAN_TEXTURE_COUNT = 19;
+    /** 已完成人类化的皮肤数量：human_girl.png 与 human_girl_1 ~ human_girl_19，共 20 张。 */
+    private static final int HUMAN_TEXTURE_COUNT = 20;
 
     /** 人类形态材质表（下标与丧尸娘变种编号一一对应）。 */
     private static final List<ResourceLocation> HUMAN_TEXTURES = new ArrayList<>();
@@ -292,8 +299,11 @@ public class SurvivorGirlEntity extends ZombieGirlEntity {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (tag.contains("HumanOrigin")) {
-            this.originForm = ORIGIN_DROWNED_GIRL.equals(tag.getString("HumanOrigin"))
-                    ? ORIGIN_DROWNED_GIRL : ORIGIN_ZOMBIE_GIRL;
+            String savedOrigin = tag.getString("HumanOrigin");
+            this.originForm = ORIGIN_DROWNED_GIRL.equals(savedOrigin)
+                    ? ORIGIN_DROWNED_GIRL
+                    : ORIGIN_SURVIVOR_GIRL.equals(savedOrigin)
+                    ? ORIGIN_SURVIVOR_GIRL : ORIGIN_ZOMBIE_GIRL;
         }
         if (tag.contains("HumanGrowUpTicks")) {
             // 存档 / 星尘放出：按保存的剩余时间继续成长
@@ -305,7 +315,7 @@ public class SurvivorGirlEntity extends ZombieGirlEntity {
     }
 
     // ====================================================================
-    // 人类材质：human_girl 系列（0~18 共 19 张；异常编号回落到 0 号默认皮肤）
+    // 人类材质：human_girl 系列（0~19 共 20 张；异常编号回落到 0 号默认皮肤）
     // ====================================================================
 
     @Override
@@ -442,90 +452,7 @@ public class SurvivorGirlEntity extends ZombieGirlEntity {
         return "chat.enchantment_expansion.survivor_girl.inventory_denied";
     }
 
-    @Override
-    protected String getChatPrefix() {
-        return "§b【幸存者少女】§f";
-    }
-
-    // ====================================================================
-    // 独立对话文本：治愈后的人类少女有自己的一套台词，不再沿用丧尸娘池。
-    // 每个池子目前只有一条（以后可直接往数组里追加翻译键，随机抽取逻辑不变）。
-    // 闲时 / 时间感应 / 受伤冷却统一 10 分钟（12000 tick），死亡遗言死亡时触发一次。
-    // 所有冷却字段都继承自丧尸娘，星尘收容时按既有 NBT 机制一并冻结。
-    // ====================================================================
-
-    /** 幸存者少女专属台词翻译键前缀。 */
-    private static final String CHAT_PREFIX_KEY = "chat.enchantment_expansion.survivor_girl";
-
-    /** 闲时台词（目前 1 条）。 */
-    private static final String[] SURVIVOR_IDLE_KEYS = {
-            CHAT_PREFIX_KEY + ".idle.0"
-    };
-    /** 日出台词。 */
-    private static final String[] SURVIVOR_SUNRISE_KEYS = {
-            CHAT_PREFIX_KEY + ".time.sunrise.0"
-    };
-    /** 正午台词。 */
-    private static final String[] SURVIVOR_NOON_KEYS = {
-            CHAT_PREFIX_KEY + ".time.noon.0"
-    };
-    /** 夜晚台词。 */
-    private static final String[] SURVIVOR_NIGHT_KEYS = {
-            CHAT_PREFIX_KEY + ".time.night.0"
-    };
-    /** 午夜台词。 */
-    private static final String[] SURVIVOR_MIDNIGHT_KEYS = {
-            CHAT_PREFIX_KEY + ".time.midnight.0"
-    };
-    /** 受伤台词。 */
-    private static final String[] SURVIVOR_HURT_KEYS = {
-            CHAT_PREFIX_KEY + ".hurt.0"
-    };
-    /** 死亡遗言。 */
-    private static final String[] SURVIVOR_DEATH_KEYS = {
-            CHAT_PREFIX_KEY + ".death.0"
-    };
-
-    /** 幸存者少女闲聊 / 时间感应 / 受伤台词的统一冷却：30 秒（600 tick）。 */
-    private static final int SURVIVOR_CHAT_COOLDOWN = 600;
-
-    @Override
-    protected String[] getIdleChatKeys() {
-        return SURVIVOR_IDLE_KEYS;
-    }
-
-    @Override
-    protected String[] getHurtChatKeys() {
-        return SURVIVOR_HURT_KEYS;
-    }
-
-    @Override
-    protected String[] getDeathChatKeys() {
-        return SURVIVOR_DEATH_KEYS;
-    }
-
-    @Override
-    protected String[] getTimeChatKeys(TimeChatPhase phase) {
-        return switch (phase) {
-            case SUNRISE -> SURVIVOR_SUNRISE_KEYS;
-            case NOON -> SURVIVOR_NOON_KEYS;
-            case NIGHT -> SURVIVOR_NIGHT_KEYS;
-            case MIDNIGHT -> SURVIVOR_MIDNIGHT_KEYS;
-        };
-    }
-
-    /** 受伤吐槽同样使用 10 分钟冷却（丧尸娘是 30 秒，人类台词更少，统一节奏）。 */
-    @Override
-    protected int getHurtChatCooldown() {
-        return SURVIVOR_CHAT_COOLDOWN;
-    }
-
-    /** 人类形态不再触发村庄侦查 / 战斗胜利 / 意识侵蚀等丧尸娘专属对话。 */
-    @Override
-    protected boolean enableZombieSpecificChats() {
-        return false;
-    }
-
+    // 自动聊天系统已移除；幸存者少女仅保留交互、好感度和背包相关行为。
     // 睡眠相关行为（夜晚找床、无视怪物、受击回躺、开门、睡姿、不闲聊、
     // 不阻止玩家休息、不可推动）全部由 ZombieGirlEntity 基类与共用的
     // GirlSleepGoal / GirlBedWakeHandler 提供，本类无需再覆写。

@@ -96,6 +96,19 @@ description='''${mod_description}'''
     ordering="AFTER"
     side="BOTH"
 
+# ================================================================
+# Curios API 软前置（玩家星星饰品栏）
+# - mandatory=false：玩家未安装 Curios 时本模组仍可正常加载
+# - ordering=AFTER：安装 Curios 时确保其先完成槽位系统初始化
+# - side=BOTH：槽位数据由服务端同步，客户端显示 Curios 界面
+# ================================================================
+[[dependencies.${mod_id}]]
+    modId="curios"
+    mandatory=false
+    versionRange="${curios_version_range}"
+    ordering="AFTER"
+    side="BOTH"
+
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
 # stop your mod loading on the server for example.

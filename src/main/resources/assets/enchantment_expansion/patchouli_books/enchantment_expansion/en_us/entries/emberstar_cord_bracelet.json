@@ -1,0 +1,14 @@
+{
+  "name": "Emberstar Cord Bracelet",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:emberstar_cord_bracelet",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:emberstar_cord_bracelet",
+      "title": "Emberstar Cord Bracelet",
+      "text": "§lAcquisition: §r 1% chance from any chests/* loot table.$(br2)§lEquip: §r Place it in the Curios Star, Stardust, or Emberstar Cord slot, or equip it in the player's offhand. Holding it in the main hand does not count.$(br2)§lEffects: §r Mob detection range -75%; Void Shelter damage reduction starts at 27.5% and grows to 75% with world time; 'Night Outside the Campfire' is only a name, and while equipped damage is ×3.5 with attack cooldown reduced by 50%; Disassembled Stardust has a 5% chance to convert hits to void damage."
+    }
+  ]
+}

@@ -32,8 +32,8 @@ import java.util.UUID;
 /**
  * 少女阵亡增援（参考原版僵尸增援，但方向相反：用来帮玩家）。
  *
- * <p>当一只野生或被驯服的少女（丧尸娘 / 溺尸娘 / 幸存者少女）被「怪物」击杀时，
- * 在锚点玩家周围生成 4 只武装增援：随机三种类型之一、血量 50~100 随机、
+ * <p>当一只野生或被驯服的少女（丧尸娘 / 溺尸娘 / 幸存者少女）被「怪物」打至重伤时，
+ * 在受伤少女周围生成 4 只武装增援：随机三种类型之一、血量 50~100 随机、
  * 全套钻石盔甲 + 钻石剑，驯服归属锚点玩家，并优先攻击击杀少女的凶手。</p>
  *
  * <p>防刷设计：</p>
@@ -50,11 +50,11 @@ public final class GirlReinforcementHandler {
 
     /** 每次生成的增援数量。 */
     private static final int REINFORCE_COUNT = 4;
-    /** 增援落点在锚点玩家周围的水平半径（格）。 */
+    /** 增援落点在受伤少女周围的水平半径（格）。 */
     private static final int SPAWN_RADIUS = 12;
     /** 每只增援的落点尝试次数（全败则少生成一只，不影响其余增援）。 */
     private static final int SPAWN_ATTEMPTS = 12;
-    /** 野生少女死亡时搜索锚点玩家的半径（格）；找不到玩家就不生成。 */
+    /** 野生少女受伤时搜索锚点玩家的半径（格）；找不到玩家就不生成。 */
     private static final double PLAYER_SEARCH_RADIUS = 64.0D;
     /** 冷却时长（tick）：按玩家与全局各 60 秒。 */
     private static final int COOLDOWN_TICKS = 1200;
@@ -122,7 +122,7 @@ public final class GirlReinforcementHandler {
 
         int spawned = 0;
         for (int i = 0; i < REINFORCE_COUNT; i++) {
-            if (spawnReinforcement(level, anchor, killer)) {
+            if (spawnReinforcement(level, girl, killer)) {
                 spawned++;
             }
         }
@@ -154,11 +154,11 @@ public final class GirlReinforcementHandler {
     }
 
     /**
-     * 在锚点玩家周围生成一只增援少女。
+     * 在受伤少女周围生成一只增援少女。
      *
      * @return 是否成功生成
      */
-    private static boolean spawnReinforcement(ServerLevel level, Player anchor, LivingEntity killer) {
+    private static boolean spawnReinforcement(ServerLevel level, LivingEntity injured, LivingEntity killer) {
         // 随机三种类型之一；三种少女都继承自 Zombie（溺尸娘 → Drowned → Zombie），
         // 统一按 Zombie 引用处理即可调用 setBaby 等公共方法。
         EntityType<? extends Zombie> type = switch (level.getRandom().nextInt(3)) {
@@ -166,7 +166,7 @@ public final class GirlReinforcementHandler {
             case 1 -> ModEntities.DROWNED_GIRL.get();
             default -> ModEntities.SURVIVOR_GIRL.get();
         };
-        BlockPos pos = findSpawnPos(level, anchor, type, type == ModEntities.DROWNED_GIRL.get());
+        BlockPos pos = findSpawnPos(level, injured, type, type == ModEntities.DROWNED_GIRL.get());
         if (pos == null) {
             return false;
         }
@@ -212,18 +212,18 @@ public final class GirlReinforcementHandler {
     }
 
     /**
-     * 找增援落点：玩家周围 ±12 格随机采样。
+     * 找增援落点：受伤少女周围 ±12 格随机采样。
      * 陆地列取高度图顶端（排除水面），成功即用；溺尸娘额外尝试水面之下的水格。
      * 不走 ForgeEventFactory.checkSpawnPosition——少女属 MONSTER 类别，
      * SpawnPlacements 谓词要求黑暗光照，白天玩家基地会全部落点失败。
      *
      * @return 有效落点；重试全部失败返回 null（该只增援放弃）
      */
-    private static BlockPos findSpawnPos(ServerLevel level, Player anchor,
+    private static BlockPos findSpawnPos(ServerLevel level, LivingEntity injured,
                                          EntityType<? extends Zombie> type, boolean allowWater) {
         RandomSource random = level.getRandom();
-        int baseX = Mth.floor(anchor.getX());
-        int baseZ = Mth.floor(anchor.getZ());
+        int baseX = Mth.floor(injured.getX());
+        int baseZ = Mth.floor(injured.getZ());
         for (int i = 0; i < SPAWN_ATTEMPTS; i++) {
             int x = baseX + random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS;
             int z = baseZ + random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS;

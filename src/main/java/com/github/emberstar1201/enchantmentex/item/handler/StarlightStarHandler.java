@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.util.CuriosCompat;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -135,6 +136,11 @@ public class StarlightStarHandler {
                     && "starlight_star".equals(armorPiece.getTag().getString("EmbeddedStar"))) {
                 return true;
             }
+        }
+
+        // Curios 饰品栏（软依赖）：星辉之星放入饰品槽同样生效。
+        if (CuriosCompat.isWearing(player, ModItems.STARLIGHT_STAR.get())) {
+            return true;
         }
 
         return false;

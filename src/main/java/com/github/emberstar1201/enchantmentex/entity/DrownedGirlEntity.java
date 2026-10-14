@@ -64,9 +64,13 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
     private static final double SPEED_MULTIPLIER_BABY = 0.2D;
     private static final EntityDataAccessor<Integer> DATA_VARIANT =
             SynchedEntityData.defineId(DrownedGirlEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_TAMED =
+            SynchedEntityData.defineId(DrownedGirlEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_AFFECTION =
+            SynchedEntityData.defineId(DrownedGirlEntity.class, EntityDataSerializers.INT);
 
     /**
-     * 溺尸娘皮肤：与丧尸娘共用同一批贴图文件，变种 0~18 共 19 个
+     * 溺尸娘皮肤：与丧尸娘共用同一批贴图文件，变种 0~19 共 20 个
      * （0 号为默认 zombie_girl.png，其余按编号 zombie_girl_N.png）。
      * 治愈成幸存者少女后编号原样继承，对应 human_girl_N.png。
      */
@@ -89,7 +93,8 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_15.png"),
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_16.png"),
             new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_17.png"),
-            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_18.png")
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_18.png"),
+            new ResourceLocation("enchantment_expansion", "textures/entity/zombie_girl_19.png")
     };
 
     public DrownedGirlEntity(EntityType<? extends Drowned> type, Level level) {
@@ -104,11 +109,14 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
     // 主人空手/非武器右键打开「6 装备槽 + 64 格背包」GUI）。
     // 实现 FriendlyGirlInventory 接口后与丧尸娘共用 ZombieGirlInventoryMenu。
     // ====================================================================
-    private boolean tamed;
     @Nullable
     private UUID ownerUuid;
-    /** 是否坐下（与丧尸娘同字段名，跟随 Goal 会检查）。 */
+    /** 是否被主人命令坐下（与丧尸娘同字段名，跟随 Goal 会检查）。 */
     private boolean sitting;
+    private static final int MAX_AFFECTION = 100;
+    private static final long GIFT_BOREDOM_TICKS = 600L;
+    private String lastGiftItem = "";
+    private long lastGiftTick = Long.MIN_VALUE;
     /**
      * 64 格随身背包（8 列 × 8 行），随实体 NBT 持久化。
      * 字段名沿用丧尸娘的 MeatInventory 历史命名，实际可放任意物品。
@@ -134,7 +142,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         }
         syncMovementSpeed();
         // 已驯服且非满血：每 2 秒尝试从随身背包啃一块生肉回血（与丧尸娘同节奏）
-        if (!this.level().isClientSide && this.tamed
+        if (!this.level().isClientSide && this.isTamed()
                 && this.tickCount % 40L == 0L
                 && this.getHealth() < this.getMaxHealth()) {
             consumeMeatForHealing();
@@ -167,12 +175,15 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         // 手持无主的星尘 / 生命之星：返回 PASS 放行给物品的 interactLivingEntity 处理。
         // 注意：mobInteract 一旦返回消费结果（SUCCESS/CONSUME），物品交互会被完全拦截。
         if (held.getItem() instanceof UnownedStardustItem
-                || held.getItem() instanceof com.github.emberstar1201.enchantmentex.item.LifeStarItem) {
+                || held.getItem() instanceof com.github.emberstar1201.enchantmentex.item.LifeStarItem
+                || held.getItem() instanceof com.github.emberstar1201.enchantmentex.item.AffectionStageUpItem
+                || held.getItem() instanceof com.github.emberstar1201.enchantmentex.item.AffectionStageDownItem
+                || ZombieGirlEntity.isVanillaEntityInteractionItem(held)) {
             return InteractionResult.PASS;
         }
 
         // ---- 未驯服：喂生肉有 1/3 概率驯服（与丧尸娘一致），其它物品一律拒绝 ----
-        if (!this.tamed) {
+        if (!this.isTamed()) {
             if (ZombieGirlEntity.isRawMeat(held)) {
                 if (!this.level().isClientSide) {
                     if (!player.getAbilities().instabuild) {
@@ -252,8 +263,9 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
 
     /** 驯服：记录主人、禁止自然消失、向主人发送对话框提示。 */
     private void tame(Player player) {
-        this.tamed = true;
+        this.entityData.set(DATA_TAMED, true);
         this.ownerUuid = player.getUUID();
+        this.setAffection(10);
         this.setPersistenceRequired();
         if (player.level() instanceof ServerLevel) {
             player.displayClientMessage(
@@ -266,7 +278,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
 
     @Override
     public boolean isTamed() {
-        return this.tamed;
+        return this.entityData.get(DATA_TAMED);
     }
 
     /** 是否被命令坐下（FriendlyGirlInventory 接口要求；供共用睡觉 Goal 判定）。 */
@@ -275,14 +287,73 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         return this.sitting;
     }
 
+    @Override
+    public void setOrderedToSit(boolean sitting) {
+        this.sitting = sitting;
+        if (sitting) {
+            this.navigation.stop();
+            this.setDeltaMovement(this.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
+        }
+    }
+
+    @Override
+    public int getAffection() {
+        if (!this.isTamed()) {
+            return 0;
+        }
+        int affection = Math.max(0, Math.min(MAX_AFFECTION, this.entityData.get(DATA_AFFECTION)));
+        // 兼容旧实体或驯服同步的短暂时序：已驯服但没有好感数据时按初始值处理。
+        return affection == 0 ? 10 : affection;
+    }
+
+    @Override
+    public void setAffection(int value) {
+        this.entityData.set(DATA_AFFECTION, Math.max(0, Math.min(MAX_AFFECTION, value)));
+    }
+
+    @Override
+    public void receiveGift(Player player) {
+        ItemStack gift = player.getMainHandItem();
+        if (!this.isTamed() || !this.isOwnedBy(player) || gift.isEmpty()) {
+            return;
+        }
+        String itemId = net.minecraft.core.registries.BuiltInRegistries.ITEM
+                .getKey(gift.getItem()).toString();
+        boolean bored = itemId.equals(this.lastGiftItem)
+                && this.tickCount - this.lastGiftTick < GIFT_BOREDOM_TICKS;
+        int quality = switch (gift.getRarity()) {
+            case UNCOMMON -> 2;
+            case RARE -> 4;
+            case EPIC -> 8;
+            default -> 1;
+        };
+        float acceptChance = bored ? 0.15F : Math.min(0.9F, 0.45F + quality * 0.05F);
+        this.lastGiftItem = itemId;
+        this.lastGiftTick = this.tickCount;
+        if (this.random.nextFloat() > acceptChance) {
+            player.displayClientMessage(Component.translatable(
+                    "chat.enchantment_expansion.girl.gift_rejected"), true);
+            return;
+        }
+        if (!player.getAbilities().instabuild) {
+            gift.shrink(1);
+        }
+        this.setAffection(this.getAffection() + quality);
+        player.displayClientMessage(Component.translatable(
+                "chat.enchantment_expansion.girl.gift_accepted", quality), true);
+    }
+
     @Nullable
     public UUID getOwnerUuid() {
         return this.ownerUuid;
     }
 
     public void bondTo(Player player) {
-        this.tamed = true;
+        this.entityData.set(DATA_TAMED, true);
         this.ownerUuid = player.getUUID();
+        if (this.getAffection() <= 0) {
+            this.setAffection(10);
+        }
         this.setPersistenceRequired();
     }
 
@@ -370,6 +441,8 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_VARIANT, 0);
+        this.entityData.define(DATA_TAMED, false);
+        this.entityData.define(DATA_AFFECTION, 0);
     }
 
     @Override
@@ -395,7 +468,11 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Variant", this.entityData.get(DATA_VARIANT));
-        tag.putBoolean("Tamed", this.tamed);
+        tag.putBoolean("Tamed", this.isTamed());
+        tag.putBoolean("Sitting", this.sitting);
+        tag.putInt("Affection", this.entityData.get(DATA_AFFECTION));
+        tag.putString("LastGiftItem", this.lastGiftItem);
+        tag.putLong("LastGiftTick", this.lastGiftTick);
         tag.put("MeatInventory", this.meatInventory.createTag());
         if (this.ownerUuid != null) {
             tag.putUUID("Owner", this.ownerUuid);
@@ -412,7 +489,12 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
                     tag.getInt("Variant"))));
             this.variantAssigned = true;
         }
-        this.tamed = tag.getBoolean("Tamed");
+        this.entityData.set(DATA_TAMED, tag.getBoolean("Tamed"));
+        this.sitting = tag.getBoolean("Sitting");
+        this.setAffection(tag.contains("Affection") ? tag.getInt("Affection") : 0);
+        this.lastGiftItem = tag.getString("LastGiftItem");
+        this.lastGiftTick = tag.contains("LastGiftTick")
+                ? tag.getLong("LastGiftTick") : Long.MIN_VALUE;
         this.ownerUuid = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         this.meatInventory.fromTag(tag.getList("MeatInventory", Tag.TAG_COMPOUND));
         // 从星尘放出时恢复收容时刻的 tickCount：
@@ -552,7 +634,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         @Override
         public boolean canUse() {
             DrownedGirlEntity self = DrownedGirlEntity.this;
-            if (!self.tamed || self.ownerUuid == null || self.level().isClientSide) {
+            if (!self.isTamed() || self.ownerUuid == null || self.level().isClientSide) {
                 return false;
             }
             this.owner = self.level() instanceof ServerLevel server
@@ -569,7 +651,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         @Override
         public boolean canContinueToUse() {
             DrownedGirlEntity self = DrownedGirlEntity.this;
-            return self.tamed
+            return self.isTamed()
                     && this.owner != null
                     && this.owner.tickCount - this.ownerHurtTimestamp <= OWNER_TARGET_MEMORY_TICKS
                     && isValidOwnerTarget(this.ownerTarget)
@@ -622,7 +704,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         @Override
         public boolean canUse() {
             DrownedGirlEntity self = DrownedGirlEntity.this;
-            if (!self.tamed || self.sitting || self.ownerUuid == null || self.getTarget() != null) {
+            if (!self.isTamed() || self.sitting || self.ownerUuid == null || self.getTarget() != null) {
                 return false;
             }
             this.owner = self.level() instanceof ServerLevel server

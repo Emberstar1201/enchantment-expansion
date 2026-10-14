@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Eternal Spark",
-      "text": "§lMax Level:§r I$(br2)§lApplies to:§r Sword, Axe, Trident$(br2)§lEffect:§r Attacks stack up to 3 spark marks dealing max-HP-percentage true damage; spreads to nearby enemies on target death.$(br2)§lObtained via:§r Crafting recipe (see next page)$(br)Conflicts with Entropy and Levis Echo"
+      "text": "§lMax Level: §r I$(br2)§lApplies to: §r Swords, axes, tridents$(br2)§lEffect: §r Attacks build up to 3 Spark stacks and deal void damage based on max health; spreads to nearby hostile mobs on death.$(br2)§lObtaining: §r Crafting recipe (next page)$(br)Conflicts with Entropy and Levi's Echo"
     },
     {
       "type": "patchouli:crafting",

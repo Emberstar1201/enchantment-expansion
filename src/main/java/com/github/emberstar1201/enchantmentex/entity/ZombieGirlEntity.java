@@ -45,8 +45,6 @@ import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.village.poi.PoiManager;
-import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
@@ -58,7 +56,12 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.SaddleItem;
+import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.TridentItem;
@@ -73,7 +76,6 @@ import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -97,12 +99,18 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
     private static final double SPEED_MULTIPLIER_BABY = 0.2D;
     private static final String SPEED_MODIFIER_NAME = "zombie_girl_base_speed";
 
-    /** 是否已被驯服。 */
-    private boolean tamed;
+    private static final EntityDataAccessor<Boolean> DATA_TAMED =
+            SynchedEntityData.defineId(ZombieGirlEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_AFFECTION =
+            SynchedEntityData.defineId(ZombieGirlEntity.class, EntityDataSerializers.INT);
     /** 主人 UUID；未驯服时为 null。 */
     private UUID ownerUuid;
     /** 是否被主人命令坐下。 */
     private boolean sitting;
+    private static final int MAX_AFFECTION = 100;
+    private static final long GIFT_BOREDOM_TICKS = 600L;
+    private String lastGiftItem = "";
+    private long lastGiftTick = Long.MIN_VALUE;
     /**
      * 驯服丧尸娘的随身背包（64 格，8 × 8 布局）。
      * 菜单直接读写这个容器，关闭界面时不需要二次同步；实体存档时写入 MeatInventory。
@@ -123,7 +131,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
      */
     private boolean variantAssigned;
     /**
-     * 皮肤变种的网络同步数据：0~9 对应 zombie_girl.png 到 zombie_girl_9.png。
+     * 皮肤变种的网络同步数据：0~19 对应 zombie_girl.png 到 zombie_girl_19.png。
      * 为什么不能用普通字段：finalizeSpawn 只在服务端执行，普通字段不会同步，
      * 客户端的 variant 永远是默认值 0，渲染器就只能拿到 zombie_girl.png。
      * SynchedEntityData 会在生成 / 数据变化时自动把值同步给所有追踪的客户端。
@@ -136,7 +144,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
      * 变种 0 使用默认贴图 zombie_girl.png，其余按编号使用 zombie_girl_N.png。
      * 新增皮肤时只需把最大编号写进 MAX_VARIANT（贴图文件需提前放入正确路径）。
      */
-    private static final int MAX_VARIANT = 18;
+    private static final int MAX_VARIANT = 19;
 
     /** 预生成的变种贴图表（下标即 variant 值），避免渲染时反复构造 ResourceLocation。 */
     private static final List<ResourceLocation> VARIANT_TEXTURES = new ArrayList<>();
@@ -150,203 +158,8 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         }
     }
 
-    // ====================================================================
-    // 闲时对话系统：台词翻译键与冷却常量（文本见 lang 文件，支持四语言）
-    // ====================================================================
-    /** 常态闲聊台词翻译键池（随机抽取，不固定顺序）。 */
-    private static final String[] IDLE_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.idle.0",
-            "chat.enchantment_expansion.zombie_girl.idle.1",
-            "chat.enchantment_expansion.zombie_girl.idle.2",
-            "chat.enchantment_expansion.zombie_girl.idle.3",
-            "chat.enchantment_expansion.zombie_girl.idle.4",
-            "chat.enchantment_expansion.zombie_girl.idle.5",
-            "chat.enchantment_expansion.zombie_girl.idle.6",
-            "chat.enchantment_expansion.zombie_girl.idle.7",
-            "chat.enchantment_expansion.zombie_girl.idle.8",
-            "chat.enchantment_expansion.zombie_girl.idle.9"
-    };
-    /** 靠近正常村庄（有存活村民）时的台词翻译键池（随机抽取）。 */
-    private static final String[] VILLAGE_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.village.0",
-            "chat.enchantment_expansion.zombie_girl.village.1",
-            "chat.enchantment_expansion.zombie_girl.village.2"
-    };
-    /** 靠近僵尸村庄（全是僵尸村民）时的台词翻译键池（随机抽取）。 */
-    private static final String[] ZOMBIE_VILLAGE_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.zombie_village.0",
-            "chat.enchantment_expansion.zombie_girl.zombie_village.1",
-            "chat.enchantment_expansion.zombie_girl.zombie_village.2"
-    };
-    /** 受伤时的台词翻译键池（随机抽取）。 */
-    private static final String[] HURT_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.hurt.0",
-            "chat.enchantment_expansion.zombie_girl.hurt.1",
-            "chat.enchantment_expansion.zombie_girl.hurt.2",
-            "chat.enchantment_expansion.zombie_girl.hurt.3",
-            "chat.enchantment_expansion.zombie_girl.hurt.4"
-    };
-    /** 死亡遗言翻译键池（随机抽取）。 */
-    private static final String[] DEATH_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.death.0",
-            "chat.enchantment_expansion.zombie_girl.death.1",
-            "chat.enchantment_expansion.zombie_girl.death.2"
-    };
-    /** 与主人一同击败亡灵生物后的台词池（60 秒冷却）。 */
-    private static final String[] COMBAT_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.combat.0",
-            "chat.enchantment_expansion.zombie_girl.combat.1",
-            "chat.enchantment_expansion.zombie_girl.combat.2"
-    };
-    /** 日出台词池。 */
-    private static final String[] TIME_SUNRISE_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.time.sunrise.0",
-            "chat.enchantment_expansion.zombie_girl.time.sunrise.1"
-    };
-    /** 中午台词池。 */
-    private static final String[] TIME_NOON_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.time.noon.0",
-            "chat.enchantment_expansion.zombie_girl.time.noon.1"
-    };
-    /** 夜晚台词池。 */
-    private static final String[] TIME_NIGHT_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.time.night.0",
-            "chat.enchantment_expansion.zombie_girl.time.night.1"
-    };
-    /** 午夜台词池。 */
-    private static final String[] TIME_MIDNIGHT_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.time.midnight.0",
-            "chat.enchantment_expansion.zombie_girl.time.midnight.1"
-    };
-    /** 意识侵蚀轻度台词池。 */
-    private static final String[] CORRUPTION_MILD_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.corruption.mild.0",
-            "chat.enchantment_expansion.zombie_girl.corruption.mild.1"
-    };
-    /** 意识侵蚀中度台词池。 */
-    private static final String[] CORRUPTION_MODERATE_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.corruption.moderate.0",
-            "chat.enchantment_expansion.zombie_girl.corruption.moderate.1"
-    };
-    /** 意识侵蚀重度台词池。 */
-    private static final String[] CORRUPTION_SEVERE_CHAT_KEYS = {
-            "chat.enchantment_expansion.zombie_girl.corruption.severe.0",
-            "chat.enchantment_expansion.zombie_girl.corruption.severe.1"
-    };
-
-    /**
-     * 时间感应对话的四个时段（供子类按时段提供各自的台词池）。
-     * 判定窗口与 tickTimeChat 中的世界时间区间一一对应。
-     */
-    protected enum TimeChatPhase {
-        /** 日出（23000~1000）。 */
-        SUNRISE,
-        /** 正午（5000~7000）。 */
-        NOON,
-        /** 夜晚（13000~15000）。 */
-        NIGHT,
-        /** 午夜（17000~19000）。 */
-        MIDNIGHT
-    }
-
-    // ====================================================================
-    // 对话台词池钩子：丧尸娘使用上方默认池；幸存者少女等子类覆写为各自的
-    // 独立台词池。每个池子至少包含一条翻译键，由随机下标抽取。
-    // ====================================================================
-
-    /** 常态闲聊台词池（子类可覆写）。 */
-    protected String[] getIdleChatKeys() {
-        return IDLE_CHAT_KEYS;
-    }
-
-    /** 受伤吐槽台词池（子类可覆写）。 */
-    protected String[] getHurtChatKeys() {
-        return HURT_CHAT_KEYS;
-    }
-
-    /** 死亡遗言台词池（子类可覆写）。 */
-    protected String[] getDeathChatKeys() {
-        return DEATH_CHAT_KEYS;
-    }
-
-    /**
-     * 指定时段的时间感应台词池（子类可覆写）。
-     * @param phase 已命中的时段，不为 null
-     */
-    protected String[] getTimeChatKeys(TimeChatPhase phase) {
-        return switch (phase) {
-            case SUNRISE -> TIME_SUNRISE_CHAT_KEYS;
-            case NOON -> TIME_NOON_CHAT_KEYS;
-            case NIGHT -> TIME_NIGHT_CHAT_KEYS;
-            case MIDNIGHT -> TIME_MIDNIGHT_CHAT_KEYS;
-        };
-    }
-
-    /**
-     * 受伤吐槽冷却（tick）。丧尸娘固定 30 秒；
-     * 幸存者少女覆写为 10 分钟，与其独立台词的统一冷却保持一致。
-     */
-    protected int getHurtChatCooldown() {
-        return HURT_CHAT_COOLDOWN;
-    }
-
-    /**
-     * 是否启用丧尸娘专属对话事件：村庄侦查、战斗胜利、意识侵蚀彩蛋。
-     * 幸存者少女已变回人类，没有亡灵低语与意识侵蚀体验，覆写为 false，
-     * 只保留通用的闲时 / 时间感应 / 受伤 / 死亡四类对话。
-     */
-    protected boolean enableZombieSpecificChats() {
-        return true;
-    }
-
-    /**
-     * 当前是否允许触发常态闲聊。睡着时不闲聊，
-     * 避免她躺在床上时还弹出闲聊文本（幸存者少女经继承同规则）。
-     */
-    protected boolean canIdleChatNow() {
-        return !this.isSleeping();
-    }
-
-    /** 受伤吐槽冷却：30 秒（600 tick），防止火焰等高频伤害刷屏。 */
-    private static final int HURT_CHAT_COOLDOWN = 600;
-    /** 受伤吐槽冷却截止时刻（tick）。 */
-    private long hurtChatCooldownUntil;
-
-    /** 常态闲聊间隔：30 秒（600 tick）。 */
-    private static final int IDLE_CHAT_INTERVAL = 600;
-    /** 村庄对话冷却：30 秒（600 tick）。 */
-    private static final int VILLAGE_CHAT_COOLDOWN = 600;
-    /** 主人需在实体 32 格内才能收到闲聊。 */
-    private static final double OWNER_CHAT_RANGE_SQR = 32.0D * 32.0D;
-    /** 村庄 POI 检测半径：128 格。 */
-    private static final int VILLAGE_POI_RANGE = 128;
-    /** 视为"同一村庄"的最大中心偏移，超过则当作进入了另一个村庄。 */
-    private static final double SAME_VILLAGE_DIST_SQR = 64.0D * 64.0D;
-
-    /** 下一次允许常态闲聊的游戏时刻（tick）。 */
-    private long nextIdleChatTick;
-    /** 村庄对话冷却截止时刻（tick）。 */
-    private long villageChatCooldownUntil;
-    /** 上次吃生肉回血的时刻（tick），用于判断"不在啃生肉"。子类需要访问以扩展进食逻辑。 */
+    /** 上次吃生肉回血的时刻（tick），供进食逻辑判断。 */
     protected long lastMealTick = -10000L;
-    /** 战斗胜利对话冷却截止时刻（tick）。 */
-    private long combatChatCooldownUntil;
-    /** 上次触发时间感应对话的时刻（tick），防止同一时段重复触发。 */
-    private long lastTimeChatTick = -600L;
-    /** 意识侵蚀彩蛋：上次触发时刻（tick）。 */
-    private long lastCorruptionChatTick = -600L;
-    /** 意识侵蚀彩蛋：无敌人持续时间（tick）。 */
-    private int noEnemyTicks;
-    /** 意识侵蚀彩蛋：定住状态截止时刻（tick）。 */
-    private long freezeUntilTick;
-    /** 意识侵蚀彩蛋：是否已发送过本次台词（防止定住期间重复刷屏）。 */
-    private boolean corruptionChatSent;
-    /**
-     * 当前所处村庄的中心 POI；离开村庄范围后重置为 null。
-     * 同一村庄只触发一次对话，彻底离开后重新进入才会再次触发。
-     */
-    @Nullable
-    private BlockPos lastVillagePos;
 
     public ZombieGirlEntity(EntityType<? extends Zombie> type, Level level) {
         super(type, level);
@@ -414,12 +227,12 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         super.aiStep();
         // 兜底分配皮肤变种：/summon、/ee girl summon 等未经 finalizeSpawn、
         // 也不带 Variant NBT 的实体（幼年体主要靠这些途径产生）在首个服务端 tick 补随机。
-        // 幸存者少女的 aiStep 会先走这里，随机范围 0~18 与 human_girl 19 张贴图一致。
+        // 幸存者少女的 aiStep 会先走这里，随机范围 0~19 与 human_girl 20 张贴图一致。
         if (!this.level().isClientSide && !this.variantAssigned) {
             setVariant(this.random.nextInt(MAX_VARIANT + 1));
         }
         syncMovementSpeed();
-        if (!this.level().isClientSide && this.tamed
+        if (!this.level().isClientSide && this.isTamed()
                 && this.tickCount % 40L == 0L
                 && this.getHealth() < this.getMaxHealth()) {
             consumeMeatForHealing();
@@ -428,28 +241,6 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         if (this.isInWater() && this.getTarget() == null && this.getDeltaMovement().y < 0.05D) {
             this.setDeltaMovement(this.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D)
                     .add(0.0D, 0.08D, 0.0D));
-        }
-        // 闲时对话系统（仅服务端）
-        if (!this.level().isClientSide) {
-            tickIdleChat();
-            // POI 查询与范围扫描有开销，每秒（20 tick）检测一次即可
-            if (this.tickCount % 20 == 0) {
-                // 时间感应是通用对话（丧尸娘 / 幸存者少女各自有独立台词）
-                tickTimeChat();
-                // 村庄侦查 / 战斗胜利 / 意识侵蚀是丧尸娘专属，
-                // 幸存者少女（人类形态）覆写 enableZombieSpecificChats 关闭
-                if (enableZombieSpecificChats()) {
-                    tickVillageChat();
-                    tickCombatChat();
-                    tickCorruptionChat();
-                }
-            }
-            // 意识侵蚀定住效果：冻结期间禁止移动和攻击（仅意识侵蚀启用时可能产生冻结）
-            if (this.tickCount < this.freezeUntilTick) {
-                this.setDeltaMovement(this.getDeltaMovement().multiply(0.0D, 1.0D, 0.0D));
-                this.getNavigation().stop();
-                this.setTarget(null);
-            }
         }
     }
 
@@ -472,218 +263,9 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
                 Operation.MULTIPLY_TOTAL));
     }
 
-    // ====================================================================
-    // 闲时对话：常态闲聊（每 30 秒随机一条）
-    // ====================================================================
-    private void tickIdleChat() {
-        if (this.tickCount < this.nextIdleChatTick) return;
-        // 冷却到期即重置下一轮，即使本轮条件不满足也不会堆积刷屏
-        this.nextIdleChatTick = this.tickCount + IDLE_CHAT_INTERVAL;
-
-        if (!this.tamed || this.ownerUuid == null) return;
-        // 和平状态：不在战斗、未坐下、最近 10 秒内没有啃生肉
-        if (this.getTarget() != null || this.sitting) return;
-        if (this.tickCount - this.lastMealTick < 200L) return;
-        // 子类钩子（如幸存者少女睡着时不闲聊）
-        if (!canIdleChatNow()) return;
-
-        ServerPlayer owner = getOnlineOwner();
-        if (owner == null || owner.distanceToSqr(this) > OWNER_CHAT_RANGE_SQR) return;
-
-        String[] idlePool = getIdleChatKeys();
-        sendChatToOwner(idlePool[this.random.nextInt(idlePool.length)]);
-    }
-
-    // ====================================================================
-    // 闲时对话：靠近村庄时触发（同一村庄一次，冷却 30 秒）
-    // ====================================================================
-    private void tickVillageChat() {
-        if (!this.tamed || this.ownerUuid == null) return;
-        if (!(this.level() instanceof ServerLevel serverLevel)) return;
-
-        // 以"床"类 POI 作为村庄标志，取 128 格内最近的一个
-        BlockPos villageCenter = serverLevel.getPoiManager()
-                .getInRange(holder -> holder.is(PoiTypes.HOME), this.blockPosition(),
-                        VILLAGE_POI_RANGE, PoiManager.Occupancy.ANY)
-                .map(net.minecraft.world.entity.ai.village.poi.PoiRecord::getPos)
-                .min(Comparator.comparingDouble(pos -> pos.distSqr(this.blockPosition())))
-                .orElse(null);
-
-        if (villageCenter == null) {
-            // 已离开村庄范围，重置状态以便下次重新进入时再次触发
-            this.lastVillagePos = null;
-            return;
-        }
-
-        // 同一村庄（中心偏移 64 格内）不重复触发
-        if (this.lastVillagePos != null
-                && villageCenter.distSqr(this.lastVillagePos) < SAME_VILLAGE_DIST_SQR) {
-            return;
-        }
-        this.lastVillagePos = villageCenter;
-
-        if (this.tickCount < this.villageChatCooldownUntil) return;
-
-        ServerPlayer owner = getOnlineOwner();
-        if (owner == null || owner.distanceToSqr(this) > OWNER_CHAT_RANGE_SQR) return;
-
-        // 村庄类型判定：POI 中心 32 格内有存活村民 → 正常村庄；
-        // 没有村民但有僵尸村民 → 僵尸村庄；两者皆无则无法判断，不触发
-        net.minecraft.world.phys.AABB villageBox = new net.minecraft.world.phys.AABB(villageCenter)
-                .inflate(32.0D);
-        boolean hasVillager = !serverLevel.getEntitiesOfClass(
-                net.minecraft.world.entity.npc.Villager.class, villageBox).isEmpty();
-        boolean hasZombieVillager = !serverLevel.getEntitiesOfClass(
-                net.minecraft.world.entity.monster.ZombieVillager.class, villageBox).isEmpty();
-
-        String[] pool = hasVillager ? VILLAGE_CHAT_KEYS
-                : hasZombieVillager ? ZOMBIE_VILLAGE_CHAT_KEYS : null;
-        if (pool == null) return;
-
-        sendChatToOwner(pool[this.random.nextInt(pool.length)]);
-        this.villageChatCooldownUntil = this.tickCount + VILLAGE_CHAT_COOLDOWN;
-    }
-
-    // ====================================================================
-    // 战斗胜利对话：与主人一同击败亡灵生物后触发（60 秒冷却）
-    // ====================================================================
-    private void tickCombatChat() {
-        if (!this.tamed || this.ownerUuid == null) return;
-        if (this.tickCount < this.combatChatCooldownUntil) return;
-
-        // 检查 16 格内是否有刚死亡的亡灵生物（最后攻击者是主人或丧尸娘自己）
-        net.minecraft.world.phys.AABB area = this.getBoundingBox().inflate(16.0D);
-        java.util.List<Monster> nearbyUndead = this.level().getEntitiesOfClass(Monster.class, area,
-                entity -> entity.getMobType() == MobType.UNDEAD
-                        && entity.isDeadOrDying()
-                        && entity.getLastHurtByMob() != null
-                        && (entity.getLastHurtByMob().getUUID().equals(this.ownerUuid)
-                            || entity.getLastHurtByMob() == this));
-        if (nearbyUndead.isEmpty()) return;
-
-        ServerPlayer owner = getOnlineOwner();
-        if (owner == null || owner.distanceToSqr(this) > OWNER_CHAT_RANGE_SQR) return;
-
-        sendChatToOwner(COMBAT_CHAT_KEYS[this.random.nextInt(COMBAT_CHAT_KEYS.length)]);
-        this.combatChatCooldownUntil = this.tickCount + IDLE_CHAT_INTERVAL; // 与闲聊同冷却
-    }
-
-    // ====================================================================
-    // 时间感应对话：日出 / 正午 / 夜晚 / 午夜（各时段共享 30 秒冷却）
-    // ====================================================================
-    private void tickTimeChat() {
-        if (!this.tamed || this.ownerUuid == null) return;
-        // 同一时段 30 秒内不重复触发（冷却也会被星尘收容冻结）
-        if (this.tickCount - this.lastTimeChatTick < 600L) return;
-
-        ServerPlayer owner = getOnlineOwner();
-        if (owner == null || owner.distanceToSqr(this) > OWNER_CHAT_RANGE_SQR) return;
-
-        long dayTime = this.level().getDayTime() % 24000L;
-        TimeChatPhase phase = null;
-
-        // 日出 23000~1000，正午 5000~7000，夜晚 13000~15000，午夜 17000~19000
-        if (dayTime >= 23000L || dayTime <= 1000L) {
-            phase = TimeChatPhase.SUNRISE;
-        } else if (dayTime >= 5000L && dayTime <= 7000L) {
-            phase = TimeChatPhase.NOON;
-        } else if (dayTime >= 13000L && dayTime <= 15000L) {
-            phase = TimeChatPhase.NIGHT;
-        } else if (dayTime >= 17000L && dayTime <= 19000L) {
-            phase = TimeChatPhase.MIDNIGHT;
-        }
-        if (phase == null) return;
-
-        // 台词池由子类按实体类型提供（丧尸娘 / 幸存者少女各自独立）
-        String[] pool = getTimeChatKeys(phase);
-        sendChatToOwner(pool[this.random.nextInt(pool.length)]);
-        this.lastTimeChatTick = this.tickCount;
-    }
-
-    // ====================================================================
-    // 意识侵蚀彩蛋：无敌人 10 秒后原地定住 3 秒 + 台词
-    // ====================================================================
-    private void tickCorruptionChat() {
-        if (!this.tamed || this.ownerUuid == null) return;
-
-        // 已有目标或定住中则重置计数
-        if (this.getTarget() != null || this.tickCount < this.freezeUntilTick) {
-            this.noEnemyTicks = 0;
-            return;
-        }
-
-        // 注意：本方法每 20 tick 才被调用一次，因此每次按 20 tick 累加
-        this.noEnemyTicks += 20;
-        if (this.noEnemyTicks < 200) return; // 10 秒 = 200 tick
-
-        // 30 秒冷却
-        if (this.tickCount - this.lastCorruptionChatTick < 600L) return;
-
-        ServerPlayer owner = getOnlineOwner();
-        if (owner == null || owner.distanceToSqr(this) > OWNER_CHAT_RANGE_SQR) return;
-
-        // 随机选择侵蚀程度：轻度 50%、中度 30%、重度 20%
-        float roll = this.random.nextFloat();
-        String[] pool;
-        if (roll < 0.5F) {
-            pool = CORRUPTION_MILD_CHAT_KEYS;
-        } else if (roll < 0.8F) {
-            pool = CORRUPTION_MODERATE_CHAT_KEYS;
-        } else {
-            pool = CORRUPTION_SEVERE_CHAT_KEYS;
-        }
-
-        sendChatToOwner(pool[this.random.nextInt(pool.length)]);
-        this.lastCorruptionChatTick = this.tickCount;
-        this.noEnemyTicks = 0;
-        this.freezeUntilTick = this.tickCount + 60; // 定住 3 秒（60 tick）
-        this.corruptionChatSent = true;
-    }
-
-    /** 获取在线的主人（ServerPlayer），不在线返回 null。 */
-    @Nullable
-    private ServerPlayer getOnlineOwner() {
-        if (!(this.level() instanceof ServerLevel serverLevel)) return null;
-        return serverLevel.getServer().getPlayerList().getPlayer(this.ownerUuid);
-    }
-
-    /**
-     * 向主人的聊天栏发送带统一前缀的翻译键台词。
-     * 前缀本身是硬编码的“丧尸娘”标识（固定，不翻译），
-     * 后面的台词内容走 translatable，客户端自动切换语言。
-     */
-    private void sendChatToOwner(String translationKey) {
-        ServerPlayer owner = getOnlineOwner();
-        if (owner != null) {
-            // 前缀用 literal（固定文本），台词用 translatable（四语言）
-            owner.sendSystemMessage(Component.literal(getChatPrefix())
-                    .append(Component.translatable(translationKey)));
-        }
-    }
-
-    /** 受伤时触发：冷却时长由子类决定（丧尸娘 30 秒，幸存者少女 10 分钟），火焰等高频伤害不会刷屏。 */
-    @Override
-    public boolean hurt(DamageSource source, float amount) {
-        boolean result = super.hurt(source, amount);
-        if (result && this.tamed && this.ownerUuid != null
-                && !this.level().isClientSide
-                && this.tickCount >= this.hurtChatCooldownUntil) {
-            this.hurtChatCooldownUntil = this.tickCount + getHurtChatCooldown();
-            String[] hurtPool = getHurtChatKeys();
-            sendChatToOwner(hurtPool[this.random.nextInt(hurtPool.length)]);
-        }
-        return result;
-    }
-
-    /** 死亡时触发：遗言不受 32 格距离限制，主人只要在线就能收到。 */
+    /** 死亡时把随身背包物品掉落在脚下，避免贵重物品随实体消失。 */
     @Override
     public void die(DamageSource source) {
-        if (!this.level().isClientSide && this.tamed && this.ownerUuid != null) {
-            String[] deathPool = getDeathChatKeys();
-            sendChatToOwner(deathPool[this.random.nextInt(deathPool.length)]);
-        }
-        // 随身背包里的全部物品掉落在脚下：背包现在可放任意物品（含星星等贵重物），
-        // 绝不能随尸体消失；装备槽由原版掉落系统按 100% 掉落率处理，不在这里重复。
         if (!this.level().isClientSide) {
             for (int slot = 0; slot < this.meatInventory.getContainerSize(); slot++) {
                 ItemStack backpackStack = this.meatInventory.getItem(slot);
@@ -787,6 +369,8 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_VARIANT, 0);
+        this.entityData.define(DATA_TAMED, false);
+        this.entityData.define(DATA_AFFECTION, 0);
     }
 
     /** 自然生成或刷怪蛋出生时，随机分配皮肤变种。 */
@@ -980,8 +564,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
      *   主人：生肉可直接喂食；主手空手时打开背包；剑/斧/三叉戟仍可直接交给她装备；
      *         其它物品 FAIL（盔甲等物品请通过背包界面放入）。
      *   非主人面对已驯服个体：发送拒绝提示并保持关闭。
-     * 注：拴绳、命名牌、刷怪蛋在 Mob#checkAndHandleImportantInteractions 中
-     *     更早处理，不受这里影响，仍然可用。
+     * 注：拴绳、命名牌、刷怪蛋以及其它原版实体交互物品会先放行，避免被背包逻辑截获。
      */
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
@@ -990,12 +573,15 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         // 手持无主的星尘 / 生命之星：返回 PASS 放行给物品的 interactLivingEntity 处理。
         // 注意：mobInteract 一旦返回消费结果（SUCCESS/CONSUME），物品交互会被完全拦截。
         if (held.getItem() instanceof UnownedStardustItem
-                || held.getItem() instanceof com.github.emberstar1201.enchantmentex.item.LifeStarItem) {
+                || held.getItem() instanceof com.github.emberstar1201.enchantmentex.item.LifeStarItem
+                || held.getItem() instanceof com.github.emberstar1201.enchantmentex.item.AffectionStageUpItem
+                || held.getItem() instanceof com.github.emberstar1201.enchantmentex.item.AffectionStageDownItem
+                || isVanillaEntityInteractionItem(held)) {
             return InteractionResult.PASS;
         }
 
         // ---- 未驯服：喂驯服食物有 1/3 概率驯服（与狼一致） ----
-        if (!this.tamed) {
+        if (!this.isTamed()) {
             if (isTamingFood(held)) {
                 if (!this.level().isClientSide) {
                     if (!player.getAbilities().instabuild) {
@@ -1060,6 +646,18 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         return InteractionResult.sidedSuccess(this.level().isClientSide);
     }
 
+    /** 原版会直接作用于实体的物品，必须先放行给原版实体交互逻辑。 */
+    public static boolean isVanillaEntityInteractionItem(ItemStack stack) {
+        Item item = stack.getItem();
+        return item instanceof SpawnEggItem
+                || item instanceof BucketItem
+                || item instanceof DyeItem
+                || item instanceof SaddleItem
+                || item instanceof ShearsItem
+                || item == Items.LEAD
+                || item == Items.NAME_TAG;
+    }
+
     /** 是否为可驯服食物：丧尸娘只接受生肉，幸存者少女覆写为任意食物。 */
     protected boolean isTamingFood(ItemStack stack) {
         return isRawMeat(stack);
@@ -1110,15 +708,19 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
      * 能被星尘收容；已驯服个体的原主人不会被改写。
      */
     public void bondTo(Player player) {
-        this.tamed = true;
+        this.entityData.set(DATA_TAMED, true);
         this.ownerUuid = player.getUUID();
+        if (this.getAffection() <= 0) {
+            this.setAffection(10);
+        }
         this.setPersistenceRequired();
     }
 
     /** 驯服：记录主人、禁止自然消失、向主人发送对话框提示。 */
     protected void tame(Player player) {
-        this.tamed = true;
+        this.entityData.set(DATA_TAMED, true);
         this.ownerUuid = player.getUUID();
+        this.setAffection(10);
         this.setPersistenceRequired();
         if (player.level() instanceof ServerLevel) {
             player.displayClientMessage(
@@ -1149,11 +751,6 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         return Component.translatable("container.enchantment_expansion.zombie_girl_inventory");
     }
 
-    /** 聊天消息前缀（子类可覆写，如「幸存者少女」）。 */
-    protected String getChatPrefix() {
-        return "§b【丧尸娘】§f";
-    }
-
     /** 主人手持何种物品可以喂食；丧尸娘只接受生肉，幸存者少女覆写为任意食物。 */
     protected boolean canEatFromOwner(ItemStack stack) {
         return isRawMeat(stack);
@@ -1176,7 +773,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
     }
 
     public boolean isTamed() {
-        return tamed;
+        return this.entityData.get(DATA_TAMED);
     }
 
     public UUID getOwnerUuid() {
@@ -1189,6 +786,53 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
 
     public boolean isOrderedToSit() {
         return sitting;
+    }
+
+    @Override
+    public int getAffection() {
+        if (!this.isTamed()) {
+            return 0;
+        }
+        int affection = Math.max(0, Math.min(MAX_AFFECTION, this.entityData.get(DATA_AFFECTION)));
+        // 兼容旧实体或驯服同步的短暂时序：已驯服但没有好感数据时按初始值处理。
+        return affection == 0 ? 10 : affection;
+    }
+
+    @Override
+    public void setAffection(int value) {
+        this.entityData.set(DATA_AFFECTION, Math.max(0, Math.min(MAX_AFFECTION, value)));
+    }
+
+    @Override
+    public void receiveGift(Player player) {
+        ItemStack gift = player.getMainHandItem();
+        if (!this.isTamed() || !this.isOwnedBy(player) || gift.isEmpty()) {
+            return;
+        }
+        String itemId = net.minecraft.core.registries.BuiltInRegistries.ITEM
+                .getKey(gift.getItem()).toString();
+        boolean bored = itemId.equals(this.lastGiftItem)
+                && this.tickCount - this.lastGiftTick < GIFT_BOREDOM_TICKS;
+        int quality = switch (gift.getRarity()) {
+            case UNCOMMON -> 2;
+            case RARE -> 4;
+            case EPIC -> 8;
+            default -> 1;
+        };
+        float acceptChance = bored ? 0.15F : Math.min(0.9F, 0.45F + quality * 0.05F);
+        this.lastGiftItem = itemId;
+        this.lastGiftTick = this.tickCount;
+        if (this.random.nextFloat() > acceptChance) {
+            player.displayClientMessage(Component.translatable(
+                    "chat.enchantment_expansion.girl.gift_rejected"), true);
+            return;
+        }
+        if (!player.getAbilities().instabuild) {
+            gift.shrink(1);
+        }
+        this.setAffection(this.getAffection() + quality);
+        player.displayClientMessage(Component.translatable(
+                "chat.enchantment_expansion.girl.gift_accepted", quality), true);
     }
 
     /** 设置坐下状态；坐下时立即停下移动。 */
@@ -1225,35 +869,27 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putBoolean("Tamed", tamed);
+        tag.putBoolean("Tamed", this.isTamed());
         tag.putBoolean("Sitting", sitting);
+        tag.putInt("Affection", this.entityData.get(DATA_AFFECTION));
+        tag.putString("LastGiftItem", lastGiftItem);
+        tag.putLong("LastGiftTick", lastGiftTick);
         tag.putInt("Variant", this.entityData.get(DATA_VARIANT));
         tag.put("MeatInventory", this.meatInventory.createTag());
         if (ownerUuid != null) {
             tag.putUUID("Owner", ownerUuid);
-        }
-        // 对话计时字段必须一并保存；仅恢复 tickCount 会让这些字段在放出后回到默认值，
-        // 从而使多个聊天事件同时满足条件并连续刷屏。
-        tag.putLong("ChatHurtCooldownUntil", hurtChatCooldownUntil);
-        tag.putLong("ChatNextIdleTick", nextIdleChatTick);
-        tag.putLong("ChatVillageCooldownUntil", villageChatCooldownUntil);
-        tag.putLong("ChatLastMealTick", lastMealTick);
-        tag.putLong("ChatCombatCooldownUntil", combatChatCooldownUntil);
-        tag.putLong("ChatLastTimeTick", lastTimeChatTick);
-        tag.putLong("ChatLastCorruptionTick", lastCorruptionChatTick);
-        tag.putInt("ChatNoEnemyTicks", noEnemyTicks);
-        tag.putLong("ChatFreezeUntilTick", freezeUntilTick);
-        tag.putBoolean("ChatCorruptionSent", corruptionChatSent);
-        if (lastVillagePos != null) {
-            tag.putLong("ChatLastVillagePos", lastVillagePos.asLong());
         }
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        tamed = tag.getBoolean("Tamed");
+        this.entityData.set(DATA_TAMED, tag.getBoolean("Tamed"));
         sitting = tag.getBoolean("Sitting");
+        this.setAffection(tag.contains("Affection") ? tag.getInt("Affection") : 0);
+        lastGiftItem = tag.getString("LastGiftItem");
+        lastGiftTick = tag.contains("LastGiftTick")
+                ? tag.getLong("LastGiftTick") : Long.MIN_VALUE;
         // 夹紧到合法范围 0~MAX_VARIANT 后写回同步数据，防止旧存档或外部命令写入异常索引
         if (tag.contains("Variant")) {
             this.entityData.set(DATA_VARIANT, Math.max(0, Math.min(MAX_VARIANT, tag.getInt("Variant"))));
@@ -1261,39 +897,8 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         }
         ownerUuid = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         this.meatInventory.fromTag(tag.getList("MeatInventory", Tag.TAG_COMPOUND));
-        // 从星尘放出时恢复收容时刻的 tickCount：实体所有对话事件
-        // （常态闲聊 / 村庄 / 战斗胜利 / 时间感应 / 意识侵蚀 / 受伤吐槽）的
-        // 冷却与计时都基于 tickCount，恢复后收容期间的时间视为完全冻结，
-        // 不会一放出就因冷却字段陈旧而瞬间刷屏或长期沉默。
         if (tag.contains("CapturedTickCount")) {
             this.tickCount = tag.getInt("CapturedTickCount");
-            if (!tag.contains("ChatNextIdleTick")) {
-                return;
-            }
-            if (tag.getBoolean("CapturedChatState")) {
-                // 星尘中保存的是相对时间；以放出后的新 tickCount 重建绝对时间。
-                hurtChatCooldownUntil = this.tickCount + tag.getLong("ChatHurtCooldownUntil");
-                nextIdleChatTick = this.tickCount + tag.getLong("ChatNextIdleTick");
-                villageChatCooldownUntil = this.tickCount + tag.getLong("ChatVillageCooldownUntil");
-                lastMealTick = this.tickCount - tag.getLong("ChatLastMealTick");
-                combatChatCooldownUntil = this.tickCount + tag.getLong("ChatCombatCooldownUntil");
-                lastTimeChatTick = this.tickCount - tag.getLong("ChatLastTimeTick");
-                lastCorruptionChatTick = this.tickCount - tag.getLong("ChatLastCorruptionTick");
-                freezeUntilTick = this.tickCount + tag.getLong("ChatFreezeUntilTick");
-            } else {
-                hurtChatCooldownUntil = tag.getLong("ChatHurtCooldownUntil");
-                nextIdleChatTick = tag.getLong("ChatNextIdleTick");
-                villageChatCooldownUntil = tag.getLong("ChatVillageCooldownUntil");
-                lastMealTick = tag.getLong("ChatLastMealTick");
-                combatChatCooldownUntil = tag.getLong("ChatCombatCooldownUntil");
-                lastTimeChatTick = tag.getLong("ChatLastTimeTick");
-                lastCorruptionChatTick = tag.getLong("ChatLastCorruptionTick");
-                freezeUntilTick = tag.getLong("ChatFreezeUntilTick");
-            }
-            noEnemyTicks = tag.getInt("ChatNoEnemyTicks");
-            corruptionChatSent = tag.getBoolean("ChatCorruptionSent");
-            lastVillagePos = tag.contains("ChatLastVillagePos")
-                    ? BlockPos.of(tag.getLong("ChatLastVillagePos")) : null;
         }
     }
 
@@ -1325,7 +930,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         @Override
         public boolean canUse() {
             ZombieGirlEntity self = ZombieGirlEntity.this;
-            if (!self.tamed || self.ownerUuid == null || self.level().isClientSide) {
+            if (!self.isTamed() || self.ownerUuid == null || self.level().isClientSide) {
                 return false;
             }
             this.owner = self.level() instanceof ServerLevel server
@@ -1343,7 +948,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         @Override
         public boolean canContinueToUse() {
             ZombieGirlEntity self = ZombieGirlEntity.this;
-            return self.tamed
+            return self.isTamed()
                     && this.owner != null
                     && this.owner.tickCount - this.ownerHurtTimestamp <= OWNER_TARGET_MEMORY_TICKS
                     && isValidOwnerTarget(this.ownerTarget)
@@ -1405,7 +1010,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
 
         @Override
         public boolean canUse() {
-            return tamed && sitting;
+            return isTamed() && sitting;
         }
 
         @Override
@@ -1488,7 +1093,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         @Override
         public boolean canUse() {
             ZombieGirlEntity self = ZombieGirlEntity.this;
-            if (!self.tamed || self.sitting || self.ownerUuid == null || self.getTarget() != null) {
+            if (!self.isTamed() || self.sitting || self.ownerUuid == null || self.getTarget() != null) {
                 return false;
             }
             this.owner = self.level() instanceof ServerLevel server

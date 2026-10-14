@@ -2,6 +2,7 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.OceanStarConfig;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.util.CuriosCompat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -241,7 +242,12 @@ public class OceanStarHandler {
                 }
             }
         }
-        
+
+        // Curios 饰品栏（软依赖）：海洋之星放入饰品槽同样生效。
+        if (CuriosCompat.isWearing(player, ModItems.OCEAN_STAR.get())) {
+            return true;
+        }
+
         return false;
     }
 }

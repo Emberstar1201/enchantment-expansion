@@ -3,6 +3,7 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 import com.github.emberstar1201.enchantmentex.entity.DrownedGirlEntity;
 import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.util.CuriosCompat;
 import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -169,6 +170,10 @@ public class DawnStarData {
             if (!armorPiece.isEmpty() && hasEmbeddedDawnStar(armorPiece)) {
                 return true;
             }
+        }
+        // Curios 饰品栏（软依赖）：晨曦之星放入饰品槽同样生效。
+        if (CuriosCompat.isWearing(entity, ModItems.DAWN_STAR.get())) {
+            return true;
         }
         // 女仆（车万女仆，软前置）：饰品栏里的晨曦之星同样视为「携带」。
         // 未安装车万女仆时 isTouhouMaid 恒为 false，此处等同空转。

@@ -8,12 +8,12 @@
       "type": "patchouli:spotlight",
       "item": "enchantment_expansion:dawn_star",
       "title": "Dawn Star",
-      "text": "§c§lAcquisition: §r Complete the 'Though We Fall, We Remain' advancement, then kill a Wither at night while holding a Dawn-enchanted weapon. The Dawn Star drops with the Wither's loot.$(br2)§lEffect: §r$(br)Active while held or embedded in armor: killing hostile mobs builds Morning Light; a Dawn-enchanted main-hand weapon builds it faster. At 10 charges, 'Dawn' activates."
+      "text": "§lAcquisition: §rAfter 'Though We Fall, We Remain', kill a Wither at night while holding a Dawn-enchanted weapon.$(br2)§lEffect: §r$(br)While held or embedded in armor, hostile kills build Morning Light; a Dawn weapon in the main hand builds it faster. At 10 charges, 'Dawn' activates."
     },
     {
       "type": "patchouli:text",
       "title": "Dawn Resonance",
-      "text": "§l'Dawn' State: §r Lasts 180 seconds. During it, Morning Light stays at 10 and cannot build any further; only when the state ends is all Morning Light cleared, followed by a 90-second cooldown — Morning Light can be built again only after the cooldown ends. During it: damage ×1.25, critical chance +10%, movement speed +10%, and 2.5 HP restored every 2 seconds.$(br2)At the moment of trigger, a golden pillar of light rises from your feet to the sound of a beacon activating — the same lineage as Dawn's 'Pierce the Night'.$(br2)§7Core loop: Dawn builds, the star bursts.$(br2)§lTouhou Little Maid Integration: §r Maids can trigger the Dawn Star too — a star in the main hand, off hand, bauble slot, or embedded in armor all count as carried. Maids run their own independent Morning Light state machine, stored on the maid itself and fully separate from the player's; the build-up rules and 'Dawn' effects are identical to the player's."
+      "text": "§l'Dawn' state: §rLasts 180 seconds with Morning Light held at 10. Damage ×1.25, critical chance and movement speed +10%, and restore 2.5 HP every 2 seconds. When it ends, charges clear and a 90-second cooldown begins.$(br2)Players and maids build charges independently; for maids, a star in either hand, a Curios slot, or embedded armor counts."
     }
   ]
 }

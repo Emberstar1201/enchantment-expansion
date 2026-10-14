@@ -62,16 +62,25 @@ public final class EnderDragonBuffHandler {
 
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
-        if (!MobBuffRuntime.isEnabled() || !MobBuffConfig.enderDragonEnabled
-                || event.getLevel().isClientSide()
+        if (event.getLevel().isClientSide()
                 || !(event.getEntity() instanceof EnderDragon dragon)) {
             return;
         }
 
+        boolean enhanced = MobBuffRuntime.isEnabled() && MobBuffConfig.enderDragonEnabled;
         AttributeInstance maxHealth = dragon.getAttribute(Attributes.MAX_HEALTH);
         if (maxHealth != null) {
-            maxHealth.setBaseValue(MobBuffConfig.enderDragonHealth);
+            maxHealth.setBaseValue(enhanced ? MobBuffConfig.enderDragonHealth : 200.0D);
         }
+        if (!enhanced) {
+            if (!event.loadedFromDisk()) {
+                dragon.setHealth(dragon.getMaxHealth());
+            } else if (dragon.getHealth() > dragon.getMaxHealth()) {
+                dragon.setHealth(dragon.getMaxHealth());
+            }
+            return;
+        }
+
         AttributeInstance armor = dragon.getAttribute(Attributes.ARMOR);
         if (armor != null) {
             armor.setBaseValue(MobBuffConfig.enderDragonArmor);
@@ -148,22 +157,40 @@ public final class EnderDragonBuffHandler {
     /** 服务端每 tick 维护末影龙的战斗强化和声音冷却。 */
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END
-                || !MobBuffRuntime.isEnabled() || !MobBuffConfig.enderDragonEnabled) {
+        if (event.phase != TickEvent.Phase.END) {
             return;
         }
 
+        boolean enhanced = MobBuffRuntime.isEnabled() && MobBuffConfig.enderDragonEnabled;
         for (ServerLevel level : event.getServer().getAllLevels()) {
             if (level.dimension() != Level.END) {
                 continue;
             }
             for (Entity entity : level.getAllEntities()) {
-                if (entity instanceof EnderDragon dragon) {
+                if (!(entity instanceof EnderDragon dragon)) {
+                    continue;
+                }
+                syncDragonHealth(dragon, enhanced);
+                if (enhanced) {
                     tickDragonExperience(level, dragon);
                     tickDragonRoar(level, dragon);
                     tickDragonAttacks(level, dragon);
                 }
             }
+        }
+    }
+
+    private static void syncDragonHealth(EnderDragon dragon, boolean enhanced) {
+        AttributeInstance maxHealth = dragon.getAttribute(Attributes.MAX_HEALTH);
+        if (maxHealth == null) {
+            return;
+        }
+        double targetHealth = enhanced ? MobBuffConfig.enderDragonHealth : 200.0D;
+        if (Math.abs(maxHealth.getBaseValue() - targetHealth) > 0.001D) {
+            maxHealth.setBaseValue(targetHealth);
+        }
+        if (dragon.getHealth() > dragon.getMaxHealth()) {
+            dragon.setHealth(dragon.getMaxHealth());
         }
     }
 

@@ -87,8 +87,8 @@ public class EternalSparkHandler {
         try {
             float newHealth = target.getHealth() - damage;
             if (newHealth <= 0) {
-                // 需要击杀 → 用 hurt 触发掉落/经验/成就
-                target.hurt(target.damageSources().magic(), damage);
+                // 需要击杀 → 用虚空伤害触发掉落/经验/成就
+                target.hurt(target.damageSources().fellOutOfWorld(), damage);
             } else {
                 target.setHealth(newHealth);
             }

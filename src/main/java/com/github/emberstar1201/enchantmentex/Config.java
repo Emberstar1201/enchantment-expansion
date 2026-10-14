@@ -692,8 +692,8 @@ public class Config {
     // 丧尸娘营地
     // ================================================================
     private static final ForgeConfigSpec.DoubleValue ZOMBIE_GIRL_CAMP_CHANCE = BUILDER
-            .comment("丧尸娘营地：候选区域生成概率（默认 15%），仅在平原类群系判定")
-            .defineInRange("zombieGirlCamp.spawnChance", 0.15D, 0.0D, 1.0D);
+            .comment("丧尸娘营地：平原和树林候选区域生成概率（默认 25%）")
+            .defineInRange("zombieGirlCamp.spawnChance", 0.25D, 0.0D, 1.0D);
 
     // ================================================================
     // 伤害/治疗浮动数字

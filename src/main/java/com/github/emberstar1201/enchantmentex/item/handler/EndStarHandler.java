@@ -2,6 +2,7 @@ package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.util.CuriosCompat;
 import com.github.emberstar1201.enchantmentex.util.TLMSafe;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.particles.ParticleTypes;
@@ -114,7 +115,14 @@ public class EndStarHandler {
     private static final String PREVIOUS_MAYFLY_KEY = "end_star_previous_mayfly";
     private static final String PREVIOUS_FLYING_KEY = "end_star_previous_flying";
     private static final String VOID_RESCUE_TICKS_KEY = "end_star_void_rescue_ticks";
+    private static final String LOW_DAMAGE_IMMUNITY_UNTIL_KEY = "end_star_low_damage_immunity_until";
+    private static final String LOW_DAMAGE_HIT_COUNT_KEY = "end_star_low_damage_hit_count";
+    private static final String LAST_LOW_DAMAGE_HIT_TICK_KEY = "end_star_last_low_damage_hit_tick";
     private static final int VOID_RESCUE_DELAY_TICKS = 60;
+    private static final float LOW_DAMAGE_THRESHOLD = 2.0F;
+    private static final int LOW_DAMAGE_HIT_WINDOW_TICKS = 20;
+    private static final int LOW_DAMAGE_HITS_TO_TRIGGER = 5;
+    private static final int LOW_DAMAGE_IMMUNITY_DURATION_TICKS = 1000;
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -381,7 +389,51 @@ public class EndStarHandler {
             return;
         }
 
+        // 末影中立拦截必须先执行；被取消的攻击不能进入低伤连击统计。
         if (isEndNeutralMob(event.getSource().getEntity())) {
+            event.setCanceled(true);
+            return;
+        }
+
+        CompoundTag data = player.getPersistentData();
+        long gameTime = player.level().getGameTime();
+        long immunityUntil = data.getLong(LOW_DAMAGE_IMMUNITY_UNTIL_KEY);
+
+        // 免疫期间取消所有伤害，确保在 LivingAttackEvent 阶段就没有受伤动画。
+        if (immunityUntil > gameTime) {
+            event.setCanceled(true);
+            data.putLong(LOW_DAMAGE_IMMUNITY_UNTIL_KEY,
+                    gameTime + LOW_DAMAGE_IMMUNITY_DURATION_TICKS);
+            return;
+        }
+
+        // 免疫已到期，清理旧状态，使下一轮攻击从头开始计数。
+        if (data.contains(LOW_DAMAGE_IMMUNITY_UNTIL_KEY)) {
+            data.remove(LOW_DAMAGE_IMMUNITY_UNTIL_KEY);
+            data.remove(LOW_DAMAGE_HIT_COUNT_KEY);
+            data.remove(LAST_LOW_DAMAGE_HIT_TICK_KEY);
+        }
+
+        float amount = event.getAmount();
+        if (amount <= 0.0F || amount > LOW_DAMAGE_THRESHOLD) {
+            return;
+        }
+
+        long lastHitTick = data.getLong(LAST_LOW_DAMAGE_HIT_TICK_KEY);
+        int hitCount = data.getInt(LOW_DAMAGE_HIT_COUNT_KEY);
+        if (!data.contains(LAST_LOW_DAMAGE_HIT_TICK_KEY)
+                || gameTime - lastHitTick > LOW_DAMAGE_HIT_WINDOW_TICKS) {
+            hitCount = 0;
+        }
+
+        hitCount++;
+        data.putInt(LOW_DAMAGE_HIT_COUNT_KEY, hitCount);
+        data.putLong(LAST_LOW_DAMAGE_HIT_TICK_KEY, gameTime);
+
+        // 第 5 次合格攻击立即触发免疫，并取消当前事件。
+        if (hitCount >= LOW_DAMAGE_HITS_TO_TRIGGER) {
+            data.putLong(LOW_DAMAGE_IMMUNITY_UNTIL_KEY,
+                    gameTime + LOW_DAMAGE_IMMUNITY_DURATION_TICKS);
             event.setCanceled(true);
         }
     }
@@ -658,6 +710,11 @@ public class EndStarHandler {
                 if (hasEmbeddedEndStar(armorPiece)) {
                     return true;
                 }
+            }
+
+            // Curios 饰品栏（软依赖）：终界之星放入饰品槽同样生效。
+            if (CuriosCompat.isWearing(player, ModItems.END_STAR.get())) {
+                return true;
             }
 
             return false;

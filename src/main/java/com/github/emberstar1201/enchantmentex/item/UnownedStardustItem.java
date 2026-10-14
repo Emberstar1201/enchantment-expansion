@@ -76,26 +76,8 @@ public class UnownedStardustItem extends Item {
         if (!player.level().isClientSide) {
             CompoundTag entityData = new CompoundTag();
             target.saveWithoutId(entityData);
-            // 保存收容时刻的 tickCount，并把聊天状态改存为相对时间。
-            // 这样无论星尘收容多久，放出后都只会继续消耗收入时剩余的时间。
+            // 保存收容时刻，放出后继续沿用实体的基础 tick 状态。
             entityData.putInt("CapturedTickCount", target.tickCount);
-            entityData.putBoolean("CapturedChatState", true);
-            entityData.putLong("ChatHurtCooldownUntil",
-                    entityData.getLong("ChatHurtCooldownUntil") - target.tickCount);
-            entityData.putLong("ChatNextIdleTick",
-                    entityData.getLong("ChatNextIdleTick") - target.tickCount);
-            entityData.putLong("ChatLastMealTick",
-                    target.tickCount - entityData.getLong("ChatLastMealTick"));
-            entityData.putLong("ChatVillageCooldownUntil",
-                    entityData.getLong("ChatVillageCooldownUntil") - target.tickCount);
-            entityData.putLong("ChatCombatCooldownUntil",
-                    entityData.getLong("ChatCombatCooldownUntil") - target.tickCount);
-            entityData.putLong("ChatLastTimeTick",
-                    target.tickCount - entityData.getLong("ChatLastTimeTick"));
-            entityData.putLong("ChatLastCorruptionTick",
-                    target.tickCount - entityData.getLong("ChatLastCorruptionTick"));
-            entityData.putLong("ChatFreezeUntilTick",
-                    entityData.getLong("ChatFreezeUntilTick") - target.tickCount);
             entityData.remove("Pos");
             entityData.remove("Motion");
             entityData.remove("Rotation");

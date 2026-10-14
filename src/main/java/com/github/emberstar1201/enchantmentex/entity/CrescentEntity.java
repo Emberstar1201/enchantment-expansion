@@ -177,10 +177,10 @@ public class CrescentEntity extends Projectile {
             for (Entity target : targets) {
                 if (target instanceof LivingEntity living) {
                     // 避免重复伤害同一目标（用 hurt 标记，但穿透攻击只触发一次 per tick）
-                    living.hurt(
-                            this.damageSources().mobProjectile(this, this.getOwner() instanceof LivingEntity lo ? lo : null),
-                            this.damage
-                    );
+                    DamageSource source = this.getCrescentType() == TYPE_ETERNAL_SPARK
+                            ? this.damageSources().fellOutOfWorld()
+                            : this.damageSources().mobProjectile(this, this.getOwner() instanceof LivingEntity lo ? lo : null);
+                    living.hurt(source, this.damage);
                 }
             }
 

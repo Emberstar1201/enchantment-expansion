@@ -15,6 +15,8 @@ import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import com.github.emberstar1201.enchantmentex.util.CuriosCompat;
+
 import java.util.UUID;
 
 import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
@@ -192,6 +194,11 @@ public class LifeStarHandler {
                     && "life_star".equals(armorPiece.getTag().getString("EmbeddedStar"))) {
                 return true;
             }
+        }
+
+        // Curios 饰品栏（软依赖）：未安装 Curios 时该检测恒为 false。
+        if (CuriosCompat.isWearing(player, ModItems.LIFE_STAR.get())) {
+            return true;
         }
 
         return false;

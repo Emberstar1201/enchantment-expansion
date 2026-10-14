@@ -290,6 +290,17 @@ public class ModItems {
                     .rarity(Rarity.RARE)
                     .fireResistant()));
 
+    public static final RegistryObject<Item> CAMP_LOCATOR = ITEMS.register(
+            "camp_locator", () -> new CampLocatorItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.UNCOMMON)));
+
+    public static final RegistryObject<Item> AFFECTION_STAGE_UP = ITEMS.register(
+            "affection_stage_up", () -> new AffectionStageUpItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> AFFECTION_STAGE_DOWN = ITEMS.register(
+            "affection_stage_down", () -> new AffectionStageDownItem(new Item.Properties()));
+
     // ========================================================================
     // 【无名诗笺】（Unsigned Verses）
     //   宝箱战利品；进入背包瞬间消失并解锁终界之书「剧情叙事」分栏。
@@ -300,6 +311,13 @@ public class ModItems {
             "unsigned_verses", () -> new UnsignedVersesItem(new Item.Properties()
                     .stacksTo(1)
                     .rarity(Rarity.UNCOMMON)));
+
+    // 【星火之绳手环】材质由后续资源覆盖；这里先固定注册 ID 和基础物品属性。
+    public static final RegistryObject<EmberstarCordBraceletItem> EMBERSTAR_CORD_BRACELET = ITEMS.register(
+            "emberstar_cord_bracelet", () -> new EmberstarCordBraceletItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.EPIC)
+                    .fireResistant()));
 
     // ========================================================================
     // 注册方法：在主类构造函数中调用此方法，将注册器绑定到模组事件总线
@@ -339,7 +357,11 @@ public class ModItems {
                 event.accept(ENHANCEMENT_SCROLL);
                 event.accept(UNOWNED_STARDUST);
                 event.accept(HOME_BELL);
+                event.accept(CAMP_LOCATOR);
+                event.accept(AFFECTION_STAGE_UP);
+                event.accept(AFFECTION_STAGE_DOWN);
                 event.accept(UNSIGNED_VERSES);
+                event.accept(EMBERSTAR_CORD_BRACELET);
             }
             // 刷怪蛋标签页
             if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {

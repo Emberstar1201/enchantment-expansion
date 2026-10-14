@@ -2,6 +2,7 @@ package com.github.emberstar1201.enchantmentex.client.handler;
 
 import com.github.emberstar1201.enchantmentex.EnchantmentExpansion;
 import com.github.emberstar1201.enchantmentex.MobBuffConfig;
+import com.github.emberstar1201.enchantmentex.MobBuffRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.LerpingBossEvent;
 import net.minecraft.client.gui.GuiGraphics;
@@ -54,9 +55,10 @@ public final class EnderDragonBossBarHandler {
         int y = event.getY();
         int width = 182;
 
+        boolean enhanced = MobBuffRuntime.isEnabled();
         long maxHealth = wither
-                ? Math.round(MobBuffConfig.witherHealth)
-                : Math.round(MobBuffConfig.enderDragonHealth);
+                ? Math.round(enhanced ? MobBuffConfig.witherHealth : 300.0D)
+                : Math.round(enhanced ? MobBuffConfig.enderDragonHealth : 200.0D);
         long health = Math.round(bossEvent.getProgress() * maxHealth);
         String healthText = Math.max(0L, health) + "/" + maxHealth;
 

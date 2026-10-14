@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.entity.client;
 
 import com.github.emberstar1201.enchantmentex.entity.DrownedGirlEntity;
+import com.github.emberstar1201.enchantmentex.entity.FriendlyGirlInventory;
 import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.core.BlockPos;
@@ -143,6 +144,31 @@ public class ZombieGirlModel<T extends Mob> extends HumanoidModel<T> {
             AnimationUtils.animateZombieArms(this.leftArm, this.rightArm,
                     entity.isAggressive(), this.attackTime, ageInTicks);
         }
+
+        // 坐姿只作用于客户端模型；实体状态由 FriendlyGirlInventory 管理，不能在这里写回实体。
+        // 该逻辑放在角色动画之后，避免被 super.setupAnim 或溺尸/丧尸专属动画覆盖。
+        if (entity instanceof FriendlyGirlInventory girl && girl.isOrderedToSit()) {
+            applySittingPose();
+        }
+    }
+
+    private void applySittingPose() {
+        // 类似原版玩家坐在船上的姿势：躯干略后仰，双腿从髋部向前弯曲。
+        this.body.xRot = -0.15F;
+        this.body.y = 1.0F;
+        this.body.z = -1.0F;
+
+        this.rightLeg.xRot = -1.4137167F;
+        this.rightLeg.yRot = 0.31415927F;
+        this.rightLeg.zRot = 0.07853982F;
+        this.rightLeg.y = 11.5F;
+        this.rightLeg.z = 1.5F;
+
+        this.leftLeg.xRot = -1.4137167F;
+        this.leftLeg.yRot = -0.31415927F;
+        this.leftLeg.zRot = -0.07853982F;
+        this.leftLeg.y = 11.5F;
+        this.leftLeg.z = 1.5F;
     }
 
     private void animateDrownedPose(float ageInTicks) {

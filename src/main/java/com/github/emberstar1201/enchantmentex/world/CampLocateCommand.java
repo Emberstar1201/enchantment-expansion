@@ -22,8 +22,7 @@ import net.minecraftforge.fml.common.Mod;
  *   <li>{@code /ee camp locate} — 兼容旧格式</li>
  * </ul>
  *
- * <p>使用确定性哈希扫描预测候选位置，并通过生成器的未缓存群系查询过滤非平原位置，
- * 不访问区块存储，不触发区块加载。</p>
+ * <p>只返回营地生成器已成功放置并写入存档的营地坐标。</p>
  */
 @Mod.EventBusSubscriber(modid = EnchantmentExpansion.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class CampLocateCommand {
@@ -59,9 +58,9 @@ public final class CampLocateCommand {
         }
 
         BlockPos from = BlockPos.containing(source.getPosition());
-        BlockPos nearest = locateNearestCamp(level, from);
+        BlockPos nearest = ZombieGirlCampSavedData.get(level).findNearest(from);
         if (nearest == null) {
-            source.sendFailure(Component.literal("附近 10000 格内未发现丧尸娘营地（需在平原区域）"));
+            source.sendFailure(Component.literal("尚未发现已生成的丧尸娘营地"));
             return 0;
         }
 
@@ -81,51 +80,4 @@ public final class CampLocateCommand {
         return 1;
     }
 
-    /**
-     * 确定性营地搜索：在玩家周围按 CHUNK_SPACING 网格扫描，
-     * 用 shouldHaveCamp 判定候选位置，并用未缓存群系采样排除非平原位置。
-     * 全程不读取区块，不触发区块加载。
-     */
-    private static BlockPos locateNearestCamp(ServerLevel level, BlockPos from) {
-        long worldSeed = level.getSeed();
-        int fromChunkX = from.getX() >> 4;
-        int fromChunkZ = from.getZ() >> 4;
-
-        // 将玩家坐标对齐到网格起点
-        int baseX = Math.floorDiv(fromChunkX, ZombieGirlCampHandler.CHUNK_SPACING) * ZombieGirlCampHandler.CHUNK_SPACING;
-        int baseZ = Math.floorDiv(fromChunkZ, ZombieGirlCampHandler.CHUNK_SPACING) * ZombieGirlCampHandler.CHUNK_SPACING;
-
-        BlockPos nearest = null;
-        double bestDist = Double.MAX_VALUE;
-
-        // 搜索半径内的网格点数
-        int range = ZombieGirlCampHandler.SEARCH_RADIUS_CHUNKS / ZombieGirlCampHandler.CHUNK_SPACING;
-
-        for (int dx = -range; dx <= range; dx++) {
-            for (int dz = -range; dz <= range; dz++) {
-                int chunkX = baseX + dx * ZombieGirlCampHandler.CHUNK_SPACING;
-                int chunkZ = baseZ + dz * ZombieGirlCampHandler.CHUNK_SPACING;
-
-                // 确定性哈希判定：不加载区块，纯数学计算
-                if (!ZombieGirlCampHandler.shouldHaveCamp(worldSeed, chunkX, chunkZ)) {
-                    continue;
-                }
-
-                int blockX = (chunkX << 4) + 8;
-                int blockZ = (chunkZ << 4) + 8;
-                if (!ZombieGirlCampHandler.isPlainsBiomeWithoutLoading(
-                        level, new BlockPos(blockX, 64, blockZ))) {
-                    continue;
-                }
-
-                // 计算距离（XZ 平面）
-                double dist = Math.pow(blockX - from.getX(), 2) + Math.pow(blockZ - from.getZ(), 2);
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    nearest = new BlockPos(blockX, 64, blockZ);
-                }
-            }
-        }
-        return nearest;
-    }
 }

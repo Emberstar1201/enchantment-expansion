@@ -1,6 +1,8 @@
 package com.github.emberstar1201.enchantmentex.item;
 
 import com.github.emberstar1201.enchantmentex.entity.FriendlyGirlInventory;
+import com.github.emberstar1201.enchantmentex.world.ZombieGirlCampSavedData;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -24,6 +26,8 @@ import net.minecraft.world.item.WrittenBookItem;
 public final class GirlDiaryBooks {
     /** 日记页数（page1 ~ pageN 翻译键按此数量读取）。 */
     private static final int PAGE_COUNT = 4;
+    private static final String CAMP_COORDINATE_KEY =
+            "book.enchantment_expansion.survivor_girl_diary.camp_coordinates";
 
     /**
      * 丧尸娘日记变种：地窖、森林、瘟疫。
@@ -74,11 +78,24 @@ public final class GirlDiaryBooks {
     /** 驯服幸存者少女时随机选取一个日记变种放进她的背包。 */
     public static void giveSurvivorGirlDiary(Mob girl) {
         String key = SURVIVOR_DIARY_VARIANTS[girl.getRandom().nextInt(SURVIVOR_DIARY_VARIANTS.length)];
-        give(girl, key, "幸存者的日记 / Survivor's Diary");
+        BlockPos camp = findNearestCamp(girl);
+        give(girl, key, "幸存者的日记 / Survivor's Diary", camp);
+    }
+
+    private static BlockPos findNearestCamp(Mob girl) {
+        if (!(girl.level() instanceof net.minecraft.server.level.ServerLevel level)
+                || level.dimension() != net.minecraft.world.level.Level.OVERWORLD) {
+            return null;
+        }
+        return ZombieGirlCampSavedData.get(level).findNearest(girl.blockPosition());
     }
 
     /** 组装成书并放入她的随身背包；背包满时掉落在她脚下。 */
     private static void give(Mob girl, String diaryKey, String title) {
+        give(girl, diaryKey, title, null);
+    }
+
+    private static void give(Mob girl, String diaryKey, String title, BlockPos camp) {
         if (!(girl instanceof FriendlyGirlInventory inventory)) {
             return;
         }
@@ -92,6 +109,11 @@ public final class GirlDiaryBooks {
             pages.add(StringTag.valueOf(Component.Serializer.toJson(
                     Component.translatable(
                             "book.enchantment_expansion." + diaryKey + ".page" + i))));
+        }
+        if (camp != null && diaryKey.startsWith("survivor_girl_diary")) {
+            pages.add(StringTag.valueOf(Component.Serializer.toJson(
+                    Component.translatable(CAMP_COORDINATE_KEY,
+                            camp.getX(), camp.getY(), camp.getZ()))));
         }
         tag.put(WrittenBookItem.TAG_PAGES, pages);
         ItemStack rest = inventory.getMeatInventory().addItem(book);

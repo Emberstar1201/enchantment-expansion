@@ -38,17 +38,16 @@ public final class WitherBuffHandler {
 
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
-        if (!enabled() || event.getLevel().isClientSide()) {
+        if (event.getLevel().isClientSide()) {
             return;
         }
         if (event.getEntity() instanceof WitherBoss wither) {
+            boolean enhanced = enabled();
             AttributeInstance health = wither.getAttribute(Attributes.MAX_HEALTH);
-            if (!event.loadedFromDisk() || !wither.getPersistentData().contains(SHIELD_TICKS_TAG)) {
-                wither.getPersistentData().putInt(SHIELD_TICKS_TAG, 600);
-            }
             if (health != null) {
                 health.removeModifier(HEALTH_MODIFIER_ID);
-                double delta = MobBuffConfig.witherHealth - health.getBaseValue();
+                double targetHealth = enhanced ? MobBuffConfig.witherHealth : 300.0D;
+                double delta = targetHealth - health.getBaseValue();
                 if (Math.abs(delta) > 0.001D) {
                     health.addPermanentModifier(new AttributeModifier(
                             HEALTH_MODIFIER_ID, HEALTH_MODIFIER_NAME, delta, AttributeModifier.Operation.ADDITION));
@@ -58,6 +57,12 @@ public final class WitherBuffHandler {
                 } else if (wither.getHealth() > wither.getMaxHealth()) {
                     wither.setHealth(wither.getMaxHealth());
                 }
+            }
+            if (!enhanced) {
+                return;
+            }
+            if (!event.loadedFromDisk() || !wither.getPersistentData().contains(SHIELD_TICKS_TAG)) {
+                wither.getPersistentData().putInt(SHIELD_TICKS_TAG, 600);
             }
             AttributeInstance armor = wither.getAttribute(Attributes.ARMOR);
             if (armor != null) {
@@ -93,20 +98,24 @@ public final class WitherBuffHandler {
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !enabled()) {
+        if (event.phase != TickEvent.Phase.END) {
             return;
         }
+        boolean enhanced = enabled();
         for (ServerLevel level : event.getServer().getAllLevels()) {
             for (Entity entity : level.getAllEntities()) {
                 if (entity instanceof WitherBoss wither) {
-                    int shield = wither.getPersistentData().getInt(SHIELD_TICKS_TAG);
-                    if (shield > 0) {
-                        wither.getPersistentData().putInt(SHIELD_TICKS_TAG, shield - 1);
+                    syncWitherHealth(wither, enhanced);
+                    if (enhanced) {
+                        int shield = wither.getPersistentData().getInt(SHIELD_TICKS_TAG);
+                        if (shield > 0) {
+                            wither.getPersistentData().putInt(SHIELD_TICKS_TAG, shield - 1);
+                        }
                     }
                 }
             }
         }
-        if (!MobBuffConfig.witherMotherSkullEnabled) {
+        if (!enhanced || !MobBuffConfig.witherMotherSkullEnabled) {
             return;
         }
         for (ServerLevel level : event.getServer().getAllLevels()) {
@@ -189,6 +198,26 @@ public final class WitherBuffHandler {
     private static void awardExperience(ServerLevel level, Vec3 position, int amount) {
         if (amount > 0) {
             ExperienceOrb.award(level, position, amount);
+        }
+    }
+
+    private static void syncWitherHealth(WitherBoss wither, boolean enhanced) {
+        AttributeInstance health = wither.getAttribute(Attributes.MAX_HEALTH);
+        if (health == null) {
+            return;
+        }
+        double targetHealth = enhanced ? MobBuffConfig.witherHealth : 300.0D;
+        double currentHealth = health.getValue();
+        if (Math.abs(currentHealth - targetHealth) > 0.001D) {
+            health.removeModifier(HEALTH_MODIFIER_ID);
+            double delta = targetHealth - health.getBaseValue();
+            if (Math.abs(delta) > 0.001D) {
+                health.addPermanentModifier(new AttributeModifier(
+                        HEALTH_MODIFIER_ID, HEALTH_MODIFIER_NAME, delta, AttributeModifier.Operation.ADDITION));
+            }
+        }
+        if (wither.getHealth() > wither.getMaxHealth()) {
+            wither.setHealth(wither.getMaxHealth());
         }
     }
 

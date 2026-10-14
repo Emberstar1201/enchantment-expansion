@@ -44,24 +44,16 @@ public interface FriendlyGirlInventory {
     /** 设置装备掉落概率，通过 GUI 放入的装备设为 100% 回收（Mob 公开方法）。 */
     void setDropChance(EquipmentSlot slot, float chance);
 
-    // ------------------------------------------------------------------
-    // 工作模式（挖矿 / 农耕 / 点灯等）。当前该功能仍在开发中：对应 Goal
-    // 尚未注册到任何实体，这里给出默认实现（永远待机、不支持切换），
-    // 让网络包与未启用的 Goal 代码能够编译且行为完全为空。
-    // 等实体正式接入工作模式时再覆写这三个方法。
-    // ------------------------------------------------------------------
+    /** 当前好感度，范围 0~100。 */
+    int getAffection();
 
-    /** 当前工作模式；默认永远待机。 */
-    default GirlWorkMode getWorkMode() {
-        return GirlWorkMode.IDLE;
-    }
+    /** 写入好感度，实体实现负责限制范围。 */
+    void setAffection(int value);
 
-    /** 切换工作模式；默认空实现（未接入该功能的实体忽略请求）。 */
-    default void setWorkMode(GirlWorkMode mode) {
-    }
+    /** 设置原地停留状态。 */
+    void setOrderedToSit(boolean sitting);
 
-    /** 是否支持指定工作模式；默认全部不支持。 */
-    default boolean supportsWorkMode(GirlWorkMode mode) {
-        return false;
-    }
+    /** 服务端处理玩家送礼请求，实体实现负责判定接受与好感度变化。 */
+    void receiveGift(Player player);
+
 }

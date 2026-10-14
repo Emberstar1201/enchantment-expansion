@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "enchantment_expansion:end_star",
+    "enchantment_expansion:ocean_star",
+    "enchantment_expansion:life_star",
+    "enchantment_expansion:void_star",
+    "enchantment_expansion:starlight_star",
+    "enchantment_expansion:dawn_star"
+  ]
+}

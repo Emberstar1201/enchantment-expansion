@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.item.handler;
 
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.util.CuriosCompat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -162,6 +163,11 @@ public class VoidStarHandler {
                     && "void_star".equals(armorPiece.getTag().getString("EmbeddedStar"))) {
                 return true;
             }
+        }
+
+        // Curios 饰品栏（软依赖）：虚空之星放入饰品槽同样生效。
+        if (CuriosCompat.isWearing(player, ModItems.VOID_STAR.get())) {
+            return true;
         }
 
         return false;

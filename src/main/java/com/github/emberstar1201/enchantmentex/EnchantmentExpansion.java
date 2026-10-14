@@ -55,6 +55,8 @@ import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.entity.ModMenuTypes;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
 import com.github.emberstar1201.enchantmentex.item.handler.EnhancementScrollHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.EmberstarCordBraceletHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.EmberstarCordBraceletLootHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.EternalTotemHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.LifeStarHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.MaidStarHandler;
@@ -216,6 +218,9 @@ public class EnchantmentExpansion {
         // 永恒图腾：致命伤抵挡 + 回满血 + 消耗耐久
         MinecraftForge.EVENT_BUS.register(EternalTotemHandler.class);
         MinecraftForge.EVENT_BUS.register(EnhancementScrollHandler.class);
+        // 星火之绳手环：监测范围、成长减伤、夜间战斗和虚空伤害转化。
+        MinecraftForge.EVENT_BUS.register(EmberstarCordBraceletHandler.class);
+        MinecraftForge.EVENT_BUS.register(EmberstarCordBraceletLootHandler.class);
         MinecraftForge.EVENT_BUS.register(SwiftCrossbowHandler.class);
         MinecraftForge.EVENT_BUS.register(AgricultureHandler.class);
         MinecraftForge.EVENT_BUS.register(SmokelessDashHandler.class);

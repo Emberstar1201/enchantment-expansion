@@ -1,0 +1,14 @@
+{
+  "name": "星尘手绳",
+  "category": "enchantment_expansion:items",
+  "icon": "enchantment_expansion:emberstar_cord_bracelet",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "enchantment_expansion:emberstar_cord_bracelet",
+      "title": "星尘手绳",
+      "text": "§l获取方式：§r 任意 chests/* 战利品箱有 1% 概率获得。$(br2)§l装备方式：§r 放入 Curios 的星星、星尘或星火之绳槽位，或装备在玩家副手；主手持有不算装备。$(br2)§l效果：§r 怪物监测范围减少 75%；虚无庇护初始减伤 27.5%，随游戏时间增长，最高 75%；“火堆外的夜晚”仅为名称，装备后伤害 ×3.5，攻击冷却时间减少 50%；“解离星尘”命中时有 5% 概率转化为虚空伤害。"
+    }
+  ]
+}

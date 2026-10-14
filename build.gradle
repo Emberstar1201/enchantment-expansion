@@ -142,9 +142,20 @@ repositories {
         name = 'BlameJared'
         url = 'https://maven.blamejared.com'
     }
+
+    // Illusive Soulworks Maven：提供 Curios API
+    maven {
+        name = 'IllusiveSoulworks'
+        url = 'https://maven.theillusivec4.top/'
+    }
 }
 
 dependencies {
+    // MP3 解码：使用 JLayer 解码成 PCM，再交给 Java Sound 播放。
+    implementation 'javazoom:jlayer:1.0.1'
+    jarJar 'javazoom:jlayer:[1.0.1,1.0.2)'
+    jarJar.enable()
+
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
     // The "userdev" classifier will be requested and setup by ForgeGradle.
@@ -166,7 +177,12 @@ dependencies {
     compileOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}:api")
     runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}")
 
-    // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
+    // Curios API 软前置：编译期提供 API，最终模组不会打包 Curios
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}:api")
+    // 开发客户端运行时加载完整 Curios，便于测试饰品栏；不会嵌入本模组 JAR
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
+
+    // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your current mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
@@ -192,6 +208,7 @@ tasks.named('processResources', ProcessResources).configure {
             forge_version: forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
             patchouli_version_range: patchouli_version_range,
+            curios_version_range: curios_version_range,
             touhou_little_maid_version_range: touhou_little_maid_version_range,
             mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
             mod_authors: mod_authors, mod_description: mod_description,
@@ -260,4 +277,9 @@ repositories {
 
 dependencies {
     implementation fg.deobf("maven.modrinth:touhou-little-maid:${touhou_little_maid_version}")
+
+    // IMBlocker（输入法冲突修复）：只作为开发环境运行时依赖。
+    // 发布版 jar 使用 SRG 命名，直接丢进 run/mods 会在 dev 环境
+    // NoSuchMethodError 崩溃，必须经 fg.deobf 重映射到当前 mappings。
+    implementation fg.deobf("maven.modrinth:imblocker-original:5.6.2.1")
 }

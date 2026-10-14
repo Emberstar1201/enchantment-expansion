@@ -37,6 +37,19 @@ public final class TerminalBookHandler {
             return;
         }
 
+        CompoundTag tag = new CompoundTag();
+        // Patchouli 1.20.1 要求书籍 ID 直接放在带命名空间的 NBT 键中。
+        tag.putString(PATCHOULI_BOOK_TAG, BOOK_ID);
+
+        // 旧逻辑只会补发新书，导致物品栏第一个旧手册仍然存在。优先原地替换第一格，保留堆叠数量。
+        ItemStack firstSlot = player.getInventory().items.get(0);
+        if (firstSlot.is(guideBook) && !isTerminalBook(firstSlot, guideBook)) {
+            firstSlot.setTag(tag.copy());
+            player.getInventory().setChanged();
+            player.getPersistentData().putBoolean(BOOK_GIVEN_TAG, true);
+            return;
+        }
+
         if (player.getPersistentData().getBoolean(BOOK_GIVEN_TAG)) {
             return;
         }
@@ -46,10 +59,6 @@ public final class TerminalBookHandler {
             player.getPersistentData().putBoolean(BOOK_GIVEN_TAG, true);
             return;
         }
-
-        CompoundTag tag = new CompoundTag();
-        // Patchouli 1.20.1 要求书籍 ID 直接放在带命名空间的 NBT 键中。
-        tag.putString(PATCHOULI_BOOK_TAG, BOOK_ID);
 
         // 先标记再发放：即使发放过程中服务器异常，下次登录也不会重复领取。
         // 标记保存在玩家 ForgeData 中，跨重登、跨死亡（Forge 会在重生时复制）均保留。
