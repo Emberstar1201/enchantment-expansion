@@ -153,8 +153,6 @@ repositories {
 dependencies {
     // MP3 解码：使用 JLayer 解码成 PCM，再交给 Java Sound 播放。
     implementation 'javazoom:jlayer:1.0.1'
-    jarJar 'javazoom:jlayer:[1.0.1,1.0.2)'
-    jarJar.enable()
 
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
