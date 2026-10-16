@@ -73,4 +73,12 @@ public class SniperEnchantment extends Enchantment {
     public boolean canApplyAtEnchantingTable(ItemStack stack) {
         return canEnchant(stack);
     }
+
+    @Override
+    protected boolean checkCompatibility(Enchantment other) {
+        if (ProjectileEnchantmentExclusion.isIncompatible(this, other)) {
+            return false;
+        }
+        return super.checkCompatibility(other);
+    }
 }

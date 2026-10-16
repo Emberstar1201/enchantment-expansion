@@ -151,8 +151,12 @@ repositories {
 }
 
 dependencies {
-    // MP3 解码：使用 JLayer 解码成 PCM，再交给 Java Sound 播放。
+    // MP3 解码：AiServiceClient 直接使用 JLayer 将 TTS 返回的 MP3 转为 PCM。
+    // 使用三段式版本号，并通过版本范围配置 jarJar，兼容 ForgeGradle 的依赖解析。
     implementation 'javazoom:jlayer:1.0.1'
+    jarJar(implementation('javazoom:jlayer:1.0.1')) {
+        jarJar.ranged(it, '[1.0.1,2.0)')
+    }
 
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
@@ -276,8 +280,6 @@ repositories {
 dependencies {
     implementation fg.deobf("maven.modrinth:touhou-little-maid:${touhou_little_maid_version}")
 
-    // IMBlocker（输入法冲突修复）：只作为开发环境运行时依赖。
-    // 发布版 jar 使用 SRG 命名，直接丢进 run/mods 会在 dev 环境
-    // NoSuchMethodError 崩溃，必须经 fg.deobf 重映射到当前 mappings。
-    implementation fg.deobf("maven.modrinth:imblocker-original:5.6.2.1")
+    // IMBlocker 仅作为开发环境客户端运行时装载：减少输入法与文本输入冲突，不会打进最终 JAR。
+    runtimeOnly fg.deobf("maven.modrinth:WMDesFsZ:${imblocker_modrinth_version}")
 }

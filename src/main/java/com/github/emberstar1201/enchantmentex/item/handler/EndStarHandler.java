@@ -65,10 +65,10 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 //     对任意类型伤害 event.setAmount(amount * (1 - reduction))
 //     覆盖所有伤害类型，包括监守者音波伤害 SONIC_BOOM
 //
-//  3. 经验等级伤害加成
+//  3. 当前经验值伤害加成
 //     LivingHurtEvent 中检测玩家（作为伤害来源）是否手持终界之星
-//     根据玩家经验等级计算加成：每 10 级 +100% 伤害，上限 +1000%（100 级）
-//     公式：bonusPercent = floor(level / 10) * 100，钳制到 1000
+//     当前总经验值除以 10 后直接作为百分比伤害加成
+//     公式：bonusPercent = floor(totalExperience / 10)，再按配置钳制
 //     最终伤害 = 原伤害 × (1 + bonusPercent / 100)
 //     对近战/远程/魔法等所有玩家造成的攻击生效
 //
@@ -540,6 +540,10 @@ public class EndStarHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
         DamageSource source = event.getSource();
+        // 罪业代偿已经是最终伤害，不能被终界之星的限伤/减伤再次修改。
+        if ("enchantment_expansion.atonement".equals(source.getMsgId())) {
+            return;
+        }
         Player victim = event.getEntity() instanceof Player p ? p : null;
         // 攻击者放宽为 LivingEntity：玩家与女仆（车万女仆，软前置）都要走终界之星加成
         LivingEntity attacker = (source != null && source.getEntity() instanceof LivingEntity a) ? a : null;
@@ -598,12 +602,13 @@ public class EndStarHandler {
         }
 
         // 计算加成档位：
-        //   玩家：bonusTier = floor(experienceLevel / 10)，level=0~9 → 0 档, 10~19 → 1 档…
+        //   玩家：bonusTier = floor(totalExperience / 10)，每 10 点经验转化为 1% 加成
         //   女仆：bonusTier = floor(女仆经验 / endStarMaidXpPerTier)
         //         两者量纲不同（等级 vs 原始经验点），故除数分开配置，不可共用
         int bonusTier;
         if (attacker instanceof Player playerAttacker) {
-            bonusTier = Math.floorDiv(playerAttacker.experienceLevel, 10);
+            // 当前总经验值每 10 点转化为 1% 伤害加成：总经验 100 时获得 10% 加成。
+            bonusTier = Math.max(0, playerAttacker.totalExperience / 10);
         } else if (TLMSafe.isTouhouMaid(attacker)) {
             int maidExperience = TLMSafe.getMaidExperience(attacker);
             if (maidExperience < 0) {
@@ -615,7 +620,7 @@ public class EndStarHandler {
             return;  // 既不是玩家也不是女仆：不处理
         }
 
-        int bonusPercent = bonusTier * 100;
+        int bonusPercent = bonusTier;
 
         // 钳制上限：从配置读取（默认 1000%）
         int maxBonus = Config.endStarMaxBonusPercent;
@@ -659,7 +664,8 @@ public class EndStarHandler {
 
         int bonusTier;
         if (attacker instanceof Player playerAttacker) {
-            bonusTier = Math.floorDiv(playerAttacker.experienceLevel, 10);
+            // 与 LivingHurtEvent 主路径一致：当前总经验每 10 点增加 1% 伤害。
+            bonusTier = Math.max(0, playerAttacker.totalExperience / 10);
         } else if (TLMSafe.isTouhouMaid(attacker)) {
             int maidExperience = TLMSafe.getMaidExperience(attacker);
             if (maidExperience < 0) {
@@ -670,7 +676,7 @@ public class EndStarHandler {
             return amount;
         }
 
-        int bonusPercent = Math.min(bonusTier * 100, Config.endStarMaxBonusPercent);
+        int bonusPercent = Math.min(bonusTier, Config.endStarMaxBonusPercent);
         return bonusPercent > 0 ? amount * (1.0F + bonusPercent / 100.0F) : amount;
     }
 

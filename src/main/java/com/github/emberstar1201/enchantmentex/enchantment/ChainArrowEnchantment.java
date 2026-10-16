@@ -94,10 +94,9 @@ public class ChainArrowEnchantment extends Enchantment {
     // ========================================================================
     @Override
     protected boolean checkCompatibility(Enchantment other) {
-        if (other == ModEnchantments.EXPLOSIVE_ARROW.get()) {
+        if (ProjectileEnchantmentExclusion.isIncompatible(this, other)) {
             return false;
         }
-        // 其余附魔保持默认兼容
         return super.checkCompatibility(other);
     }
 }

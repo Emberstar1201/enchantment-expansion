@@ -1,0 +1,37 @@
+{
+  "display": {
+    "icon": {
+      "item": "enchantment_expansion:emberstar_cord_bracelet"
+    },
+    "title": {
+      "translate": "advancements.enchantment_expansion.void_stardust.title"
+    },
+    "description": {
+      "translate": "advancements.enchantment_expansion.void_stardust.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "minecraft:adventure/root",
+  "criteria": {
+    "has_emberstar_cord_bracelet": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "enchantment_expansion:emberstar_cord_bracelet"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_emberstar_cord_bracelet"
+    ]
+  ]
+}

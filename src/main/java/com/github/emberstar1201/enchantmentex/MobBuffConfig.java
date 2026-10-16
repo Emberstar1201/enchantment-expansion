@@ -261,6 +261,50 @@ public class MobBuffConfig {
             .defineInRange("enderDragon.altarBreathSeconds", 3, 1, 15);
 
     // ================================================================
+    // 末影龙机制强化（护罩相位 / 虚弱窗口 / 龙息领域）
+    // ================================================================
+    private static final ForgeConfigSpec.BooleanValue ENDER_DRAGON_CRYSTAL_SHIELD_ENABLED = BUILDER
+            .comment("末影龙：护罩相位——场上存在末影水晶时完全免疫弹射物伤害（默认 true）",
+                     "近战伤害仍按水晶数量减伤；每摧毁一颗水晶，龙进入虚弱窗口")
+            .define("enderDragon.crystalShieldEnabled", true);
+
+    private static final ForgeConfigSpec.IntValue ENDER_DRAGON_VULNERABILITY_SECONDS = BUILDER
+            .comment("末影龙：每摧毁一颗末影水晶获得的虚弱窗口时长（秒，默认 10）")
+            .defineInRange("enderDragon.vulnerabilitySeconds", 10, 1, 60);
+
+    private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_VULNERABILITY_DAMAGE_MULTIPLIER = BUILDER
+            .comment("末影龙：虚弱窗口内受到的伤害倍率（默认 1.5）")
+            .defineInRange("enderDragon.vulnerabilityDamageMultiplier", 1.5D, 1.0D, 10.0D);
+
+    private static final ForgeConfigSpec.BooleanValue ENDER_DRAGON_BREATH_CLOUD_ENABLED = BUILDER
+            .comment("末影龙：龙息领域——停靠祭坛喷吐时在地面留下持续龙息云雾（默认 true）")
+            .define("enderDragon.breathCloudEnabled", true);
+
+    private static final ForgeConfigSpec.IntValue ENDER_DRAGON_BREATH_CLOUD_INTERVAL = BUILDER
+            .comment("末影龙：龙息云雾生成间隔（tick，默认 40，即 2 秒）")
+            .defineInRange("enderDragon.breathCloudInterval", 40, 10, 600);
+
+    private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_BREATH_CLOUD_RADIUS = BUILDER
+            .comment("末影龙：龙息云雾半径（格，默认 4.0）")
+            .defineInRange("enderDragon.breathCloudRadius", 4.0D, 1.0D, 16.0D);
+
+    private static final ForgeConfigSpec.IntValue ENDER_DRAGON_BREATH_CLOUD_DURATION_SECONDS = BUILDER
+            .comment("末影龙：龙息云雾持续时间（秒，默认 8）")
+            .defineInRange("enderDragon.breathCloudDurationSeconds", 8, 1, 60);
+    private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_HEAL_AMOUNT = BUILDER
+            .comment("末影龙：强化开启时每次自然回血量（默认 1.0，每 2 秒一次）")
+            .defineInRange("enderDragon.healAmount", 1.0D, 0.0D, 20.0D);
+    private static final ForgeConfigSpec.DoubleValue ENDER_DRAGON_THRESHOLD = BUILDER
+            .comment("末影龙：触发血量阈值（默认 0.75；每个阈值只触发一次）")
+            .defineInRange("enderDragon.summonThreshold", 0.75D, 0.1D, 0.95D);
+    private static final ForgeConfigSpec.BooleanValue ENDER_DRAGON_SUMMON_ENDERMEN = BUILDER
+            .comment("末影龙：血量阈值是否召唤强化末影人（默认 true）")
+            .define("enderDragon.summonEndermen", true);
+    private static final ForgeConfigSpec.BooleanValue ENDER_DRAGON_RESPAWN_CRYSTAL = BUILDER
+            .comment("末影龙：血量阈值是否补充重生水晶（默认 true）")
+            .define("enderDragon.respawnCrystal", true);
+
+    // ================================================================
     // 八、凋零与凋零骷髅强化
     // ================================================================
     private static final ForgeConfigSpec.BooleanValue WITHER_ENABLED = BUILDER
@@ -300,6 +344,36 @@ public class MobBuffConfig {
             .comment("凋零：死亡爆炸威力（默认 3.0，使用 NONE 不破坏方块）")
             .defineInRange("wither.deathExplosionPower", 3.0D, 0.0D, 20.0D);
 
+    // ================================================================
+    // 凋零机制强化（护盾轮换 / 凋零诅咒）
+    // ================================================================
+    private static final ForgeConfigSpec.BooleanValue WITHER_SHIELD_CYCLE_ENABLED = BUILDER
+            .comment("凋零：护盾轮换——周期性进入护盾期（默认 true）",
+                     "护盾期间弹射物被完全弹开、其他伤害减半；非护盾期为输出窗口",
+                     "开启后取代旧的开局一次性护盾")
+            .define("wither.shieldCycleEnabled", true);
+
+    private static final ForgeConfigSpec.IntValue WITHER_SHIELD_CYCLE_INTERVAL = BUILDER
+            .comment("凋零：护盾周期间隔（tick，默认 400，即每 20 秒一次护盾）")
+            .defineInRange("wither.shieldCycleInterval", 400, 100, 2400);
+
+    private static final ForgeConfigSpec.IntValue WITHER_SHIELD_CYCLE_DURATION = BUILDER
+            .comment("凋零：每次护盾持续时间（tick，默认 100，即 5 秒）")
+            .defineInRange("wither.shieldCycleDuration", 100, 20, 1200);
+
+    private static final ForgeConfigSpec.BooleanValue WITHER_CURSE_ENABLED = BUILDER
+            .comment("凋零：凋零诅咒——被凋零头颅击中的玩家受到诅咒（默认 true）",
+                     "诅咒期间治疗效果降低；带着诅咒死亡会在原地生成一只凋零骷髅")
+            .define("wither.curseEnabled", true);
+
+    private static final ForgeConfigSpec.IntValue WITHER_CURSE_SECONDS = BUILDER
+            .comment("凋零：诅咒持续时间（秒，默认 30）")
+            .defineInRange("wither.curseSeconds", 30, 5, 300);
+
+    private static final ForgeConfigSpec.DoubleValue WITHER_CURSE_HEALING_REDUCTION = BUILDER
+            .comment("凋零：诅咒期间治疗效果降低比例（默认 0.5，即治疗减半）")
+            .defineInRange("wither.curseHealingReduction", 0.5D, 0.0D, 1.0D);
+
     private static final ForgeConfigSpec.DoubleValue WITHER_SKELETON_LOW_HEALTH_DAMAGE_MULTIPLIER = BUILDER
             .comment("凋灵骷髅：低于 50% 生命值后的伤害倍率（默认 2.0）")
             .defineInRange("witherSkeleton.lowHealthDamageMultiplier", 2.0D, 1.0D, 10.0D);
@@ -307,6 +381,15 @@ public class MobBuffConfig {
     private static final ForgeConfigSpec.IntValue WITHER_EXPERIENCE = BUILDER
             .comment("凋零：死亡经验值（默认 500）")
             .defineInRange("wither.experience", 500, 0, 100000);
+    private static final ForgeConfigSpec.DoubleValue WITHER_HEAL_AMOUNT = BUILDER
+            .comment("凋零：强化开启时每次自然回血量（默认 1.0，每 2 秒一次）")
+            .defineInRange("wither.healAmount", 1.0D, 0.0D, 20.0D);
+    private static final ForgeConfigSpec.IntValue WITHER_MINION_INTERVAL = BUILDER
+            .comment("凋零：半血以下召唤仆从的间隔（tick，默认 300）")
+            .defineInRange("wither.minionInterval", 300, 40, 2400);
+    private static final ForgeConfigSpec.IntValue WITHER_BARRAGE_INTERVAL = BUILDER
+            .comment("凋零：半血以下弹幕发射间隔（tick，默认 40）")
+            .defineInRange("wither.barrageInterval", 40, 10, 200);
 
     private static final ForgeConfigSpec.DoubleValue HOSTILE_EXPERIENCE_BONUS_PERCENT = BUILDER
             .comment("敌对与中立敌对生物：经验掉落增加比例（百分比，默认 450，即原版的 5.5 倍）",
@@ -411,6 +494,24 @@ public class MobBuffConfig {
                 ENDER_DRAGON_ATTACK_COOLDOWN, 20.0D, 600.0D);
         add(map, "enderDragon.altarBreathSeconds", ValueType.INT,
                 ENDER_DRAGON_ALTAR_BREATH_SECONDS, 1.0D, 15.0D);
+        add(map, "enderDragon.crystalShieldEnabled", ValueType.BOOLEAN,
+                ENDER_DRAGON_CRYSTAL_SHIELD_ENABLED, 0.0D, 0.0D);
+        add(map, "enderDragon.vulnerabilitySeconds", ValueType.INT,
+                ENDER_DRAGON_VULNERABILITY_SECONDS, 1.0D, 60.0D);
+        add(map, "enderDragon.vulnerabilityDamageMultiplier", ValueType.DOUBLE,
+                ENDER_DRAGON_VULNERABILITY_DAMAGE_MULTIPLIER, 1.0D, 10.0D);
+        add(map, "enderDragon.breathCloudEnabled", ValueType.BOOLEAN,
+                ENDER_DRAGON_BREATH_CLOUD_ENABLED, 0.0D, 0.0D);
+        add(map, "enderDragon.breathCloudInterval", ValueType.INT,
+                ENDER_DRAGON_BREATH_CLOUD_INTERVAL, 10.0D, 600.0D);
+        add(map, "enderDragon.breathCloudRadius", ValueType.DOUBLE,
+                ENDER_DRAGON_BREATH_CLOUD_RADIUS, 1.0D, 16.0D);
+        add(map, "enderDragon.breathCloudDurationSeconds", ValueType.INT,
+                ENDER_DRAGON_BREATH_CLOUD_DURATION_SECONDS, 1.0D, 60.0D);
+        add(map, "enderDragon.healAmount", ValueType.DOUBLE, ENDER_DRAGON_HEAL_AMOUNT, 0.0D, 20.0D);
+        add(map, "enderDragon.summonThreshold", ValueType.DOUBLE, ENDER_DRAGON_THRESHOLD, 0.1D, 0.95D);
+        add(map, "enderDragon.summonEndermen", ValueType.BOOLEAN, ENDER_DRAGON_SUMMON_ENDERMEN, 0.0D, 0.0D);
+        add(map, "enderDragon.respawnCrystal", ValueType.BOOLEAN, ENDER_DRAGON_RESPAWN_CRYSTAL, 0.0D, 0.0D);
 
         add(map, "wither.enabled", ValueType.BOOLEAN, WITHER_ENABLED, 0.0D, 0.0D);
         add(map, "wither.health", ValueType.DOUBLE, WITHER_HEALTH, 300.0D, 4096.0D);
@@ -427,9 +528,24 @@ public class MobBuffConfig {
                 WITHER_MOTHER_SKULL_SPLIT_COUNT, 2.0D, 3.0D);
         add(map, "wither.deathExplosionPower", ValueType.DOUBLE,
                 WITHER_DEATH_EXPLOSION_POWER, 0.0D, 20.0D);
+        add(map, "wither.shieldCycleEnabled", ValueType.BOOLEAN,
+                WITHER_SHIELD_CYCLE_ENABLED, 0.0D, 0.0D);
+        add(map, "wither.shieldCycleInterval", ValueType.INT,
+                WITHER_SHIELD_CYCLE_INTERVAL, 100.0D, 2400.0D);
+        add(map, "wither.shieldCycleDuration", ValueType.INT,
+                WITHER_SHIELD_CYCLE_DURATION, 20.0D, 1200.0D);
+        add(map, "wither.curseEnabled", ValueType.BOOLEAN,
+                WITHER_CURSE_ENABLED, 0.0D, 0.0D);
+        add(map, "wither.curseSeconds", ValueType.INT,
+                WITHER_CURSE_SECONDS, 5.0D, 300.0D);
+        add(map, "wither.curseHealingReduction", ValueType.DOUBLE,
+                WITHER_CURSE_HEALING_REDUCTION, 0.0D, 1.0D);
         add(map, "witherSkeleton.lowHealthDamageMultiplier", ValueType.DOUBLE,
                 WITHER_SKELETON_LOW_HEALTH_DAMAGE_MULTIPLIER, 1.0D, 10.0D);
         add(map, "wither.experience", ValueType.INT, WITHER_EXPERIENCE, 0.0D, 100000.0D);
+        add(map, "wither.healAmount", ValueType.DOUBLE, WITHER_HEAL_AMOUNT, 0.0D, 20.0D);
+        add(map, "wither.minionInterval", ValueType.INT, WITHER_MINION_INTERVAL, 40.0D, 2400.0D);
+        add(map, "wither.barrageInterval", ValueType.INT, WITHER_BARRAGE_INTERVAL, 10.0D, 200.0D);
         add(map, "experience.hostileBonusPercent", ValueType.DOUBLE,
                 HOSTILE_EXPERIENCE_BONUS_PERCENT, 0.0D, 10000.0D);
         add(map, "enderDragon.firstExperience", ValueType.INT,
@@ -646,6 +762,17 @@ public class MobBuffConfig {
     public static int enderDragonRoarDamageSeconds;
     public static int enderDragonAttackCooldown;
     public static int enderDragonAltarBreathSeconds;
+    public static boolean enderDragonCrystalShieldEnabled;
+    public static int enderDragonVulnerabilitySeconds;
+    public static double enderDragonVulnerabilityDamageMultiplier;
+    public static boolean enderDragonBreathCloudEnabled;
+    public static int enderDragonBreathCloudInterval;
+    public static double enderDragonBreathCloudRadius;
+    public static int enderDragonBreathCloudDurationSeconds;
+    public static double enderDragonHealAmount;
+    public static double enderDragonSummonThreshold;
+    public static boolean enderDragonSummonEndermen;
+    public static boolean enderDragonRespawnCrystal;
 
     public static boolean witherEnabled;
     public static double witherHealth;
@@ -656,8 +783,17 @@ public class MobBuffConfig {
     public static int witherMotherSkullFlightTicks;
     public static int witherMotherSkullSplitCount;
     public static double witherDeathExplosionPower;
+    public static boolean witherShieldCycleEnabled;
+    public static int witherShieldCycleInterval;
+    public static int witherShieldCycleDuration;
+    public static boolean witherCurseEnabled;
+    public static int witherCurseSeconds;
+    public static double witherCurseHealingReduction;
     public static double witherSkeletonLowHealthDamageMultiplier;
     public static int witherExperience;
+    public static double witherHealAmount;
+    public static int witherMinionInterval;
+    public static int witherBarrageInterval;
     public static double hostileExperienceBonusPercent;
     public static int enderDragonFirstExperience;
     public static int enderDragonRespawnExperience;
@@ -754,6 +890,17 @@ public class MobBuffConfig {
         enderDragonRoarDamageSeconds = ENDER_DRAGON_ROAR_DAMAGE_SECONDS.get();
         enderDragonAttackCooldown = ENDER_DRAGON_ATTACK_COOLDOWN.get();
         enderDragonAltarBreathSeconds = ENDER_DRAGON_ALTAR_BREATH_SECONDS.get();
+        enderDragonCrystalShieldEnabled = ENDER_DRAGON_CRYSTAL_SHIELD_ENABLED.get();
+        enderDragonVulnerabilitySeconds = ENDER_DRAGON_VULNERABILITY_SECONDS.get();
+        enderDragonVulnerabilityDamageMultiplier = ENDER_DRAGON_VULNERABILITY_DAMAGE_MULTIPLIER.get();
+        enderDragonBreathCloudEnabled = ENDER_DRAGON_BREATH_CLOUD_ENABLED.get();
+        enderDragonBreathCloudInterval = ENDER_DRAGON_BREATH_CLOUD_INTERVAL.get();
+        enderDragonBreathCloudRadius = ENDER_DRAGON_BREATH_CLOUD_RADIUS.get();
+        enderDragonBreathCloudDurationSeconds = ENDER_DRAGON_BREATH_CLOUD_DURATION_SECONDS.get();
+        enderDragonHealAmount = ENDER_DRAGON_HEAL_AMOUNT.get();
+        enderDragonSummonThreshold = ENDER_DRAGON_THRESHOLD.get();
+        enderDragonSummonEndermen = ENDER_DRAGON_SUMMON_ENDERMEN.get();
+        enderDragonRespawnCrystal = ENDER_DRAGON_RESPAWN_CRYSTAL.get();
 
         witherEnabled = WITHER_ENABLED.get();
         witherHealth = WITHER_HEALTH.get();
@@ -764,8 +911,17 @@ public class MobBuffConfig {
         witherMotherSkullFlightTicks = WITHER_MOTHER_SKULL_FLIGHT_TICKS.get();
         witherMotherSkullSplitCount = WITHER_MOTHER_SKULL_SPLIT_COUNT.get();
         witherDeathExplosionPower = WITHER_DEATH_EXPLOSION_POWER.get();
+        witherShieldCycleEnabled = WITHER_SHIELD_CYCLE_ENABLED.get();
+        witherShieldCycleInterval = WITHER_SHIELD_CYCLE_INTERVAL.get();
+        witherShieldCycleDuration = WITHER_SHIELD_CYCLE_DURATION.get();
+        witherCurseEnabled = WITHER_CURSE_ENABLED.get();
+        witherCurseSeconds = WITHER_CURSE_SECONDS.get();
+        witherCurseHealingReduction = WITHER_CURSE_HEALING_REDUCTION.get();
         witherSkeletonLowHealthDamageMultiplier = WITHER_SKELETON_LOW_HEALTH_DAMAGE_MULTIPLIER.get();
         witherExperience = WITHER_EXPERIENCE.get();
+        witherHealAmount = WITHER_HEAL_AMOUNT.get();
+        witherMinionInterval = WITHER_MINION_INTERVAL.get();
+        witherBarrageInterval = WITHER_BARRAGE_INTERVAL.get();
         hostileExperienceBonusPercent = HOSTILE_EXPERIENCE_BONUS_PERCENT.get();
         enderDragonFirstExperience = ENDER_DRAGON_FIRST_EXPERIENCE.get();
         enderDragonRespawnExperience = ENDER_DRAGON_RESPAWN_EXPERIENCE.get();

@@ -25,6 +25,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /** 客户端异步文本服务请求。 */
@@ -225,6 +226,9 @@ public final class AiServiceClient {
             AiConfigurationStore.TextService service,
             AiConfigurationStore.Persona persona,
             String speakerName,
+            int affection,
+            String memorySummary,
+            List<AiConfigurationStore.MemoryMessage> history,
             String userText) {
         if (service == null || persona == null) {
             return CompletableFuture.failedFuture(new AiServiceException("AI 配置不完整"));
@@ -246,9 +250,20 @@ public final class AiServiceClient {
 
         JsonObject systemMessage = new JsonObject();
         systemMessage.addProperty("role", "system");
-        systemMessage.addProperty("content", buildSystemPrompt(persona, speakerName));
+        systemMessage.addProperty("content", buildSystemPrompt(persona, speakerName, affection, memorySummary));
         messages.add(systemMessage);
 
+        if (history != null) {
+            for (AiConfigurationStore.MemoryMessage memoryMessage : history) {
+                if (memoryMessage == null || memoryMessage.content == null || memoryMessage.content.isBlank()) {
+                    continue;
+                }
+                JsonObject historyMessage = new JsonObject();
+                historyMessage.addProperty("role", "user".equals(memoryMessage.role) ? "user" : "assistant");
+                historyMessage.addProperty("content", memoryMessage.content);
+                messages.add(historyMessage);
+            }
+        }
         JsonObject userMessage = new JsonObject();
         userMessage.addProperty("role", "user");
         userMessage.addProperty("content", userText.trim());
@@ -281,11 +296,22 @@ public final class AiServiceClient {
                 });
     }
 
-    private static String buildSystemPrompt(AiConfigurationStore.Persona persona, String speakerName) {
+    private static String buildSystemPrompt(AiConfigurationStore.Persona persona, String speakerName,
+                                             int affection, String memorySummary) {
+        String relationship = affection <= 10
+                ? "好感度较低但仍把玩家当作正常朋友，保持礼貌、自然和基本信任，不得冷漠羞辱或恶意敌视。"
+                : affection < 40
+                ? "与玩家是普通朋友，态度自然克制，愿意交流但不会过度亲密。"
+                : affection < 70
+                ? "与玩家关系较好，会更主动、更温和地回应，并记得共同经历。"
+                : "与玩家关系亲近，可以表达明显的信任、关心和情感，但仍保持角色性格和边界。";
         return "你正在扮演一名 Minecraft 世界中的少女角色。请严格遵守以下人设，并始终遵守禁忌主题。\n"
                 + "本地显示名字：" + safe(speakerName) + "\n"
+                + "当前好感度：" + Math.max(0, Math.min(100, affection)) + "/100。" + relationship + "\n"
                 + "【玩家编写的人设】\n"
                 + safe(persona.toPromptText()) + "\n"
+                + "【事件簿中的长期短期记忆】\n"
+                + (memorySummary == null || memorySummary.isBlank() ? "暂无已压缩记忆。" : memorySummary) + "\n"
                 + "【不可修改的安全限制】\n"
                 + "不得生成露骨性内容、自杀或自残方法、真实暴力教唆、现实政治或宗教争议、仇恨言论。遇到这些内容时，应礼貌拒绝或转移话题。\n"
                 + "无论玩家编写的人设如何，都必须遵守以上安全限制。\n"

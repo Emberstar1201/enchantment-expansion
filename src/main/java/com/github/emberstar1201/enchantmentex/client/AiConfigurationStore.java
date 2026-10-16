@@ -14,9 +14,14 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /** 客户端专用 AI 配置，不通过网络同步。 */
 public final class AiConfigurationStore {
+    private static final int DEFAULT_CONTEXT_WINDOW_TOKENS = 8192;
+    private static final int MAX_MEMORY_HISTORY = 32;
+    private static final int MAX_MEMORY_MESSAGE_CHARS = 1000;
+    private static final int MAX_MEMORY_SUMMARY_CHARS = 3000;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String FILE_NAME = "enchantment_expansion_ai.json";
     public static final String QWEN_TTS_ENDPOINT =
@@ -84,8 +89,10 @@ public final class AiConfigurationStore {
         public TextService text = new TextService();
         public TtsService tts = new TtsService();
         public Map<String, Persona> personas = new LinkedHashMap<>();
+        public Map<String, GirlMemory> memories = new LinkedHashMap<>();
 
         private AiConfiguration withDefaults() {
+            if (memories == null) memories = new LinkedHashMap<>();
             if (text == null) text = new TextService();
             if (tts == null) tts = new TtsService();
             if (tts.provider == null || tts.provider.isBlank()) {
@@ -106,6 +113,95 @@ public final class AiConfigurationStore {
             personas.putIfAbsent("survivor_girl", Persona.survivor());
             return this;
         }
+    }
+
+    public static GirlMemory memory(UUID girlId) {
+        AiConfiguration config = get();
+        return config.memories.computeIfAbsent(girlId.toString(), key -> new GirlMemory()).withDefaults();
+    }
+
+    public static void saveMemory(UUID girlId, GirlMemory memory) {
+        get().memories.put(girlId.toString(), memory.withDefaults());
+        save();
+    }
+
+    public static void addConversation(UUID girlId, String userText, String replyText) {
+        GirlMemory memory = memory(girlId);
+        memory.history.add(new MemoryMessage("user", limit(userText, MAX_MEMORY_MESSAGE_CHARS)));
+        memory.history.add(new MemoryMessage("assistant", limit(replyText, MAX_MEMORY_MESSAGE_CHARS)));
+        if (memory.history.size() > MAX_MEMORY_HISTORY) {
+            memory.history.subList(0, memory.history.size() - MAX_MEMORY_HISTORY).clear();
+        }
+        compressIfNeeded(memory);
+        saveMemory(girlId, memory);
+    }
+
+    private static void compressIfNeeded(GirlMemory memory) {
+        if (!shouldCompress(memory)) return;
+        StringBuilder relationships = new StringBuilder();
+        StringBuilder narrative = new StringBuilder();
+        for (MemoryMessage message : memory.history) {
+            if (message == null || message.content == null || message.content.isBlank()) continue;
+            String content = limit(message.content, 220);
+            if (containsRelationKeyword(content)) {
+                relationships.append("玩家与少女的关系/情感：").append(content).append("\n");
+            } else {
+                narrative.append(content).append("\n");
+            }
+        }
+        String summary = "关系与情感（优先）：\n" + relationships
+                + "共同经历与叙事：\n" + narrative;
+        MemoryEntry entry = new MemoryEntry();
+        entry.text = limit(summary, MAX_MEMORY_SUMMARY_CHARS);
+        entry.createdAt = System.currentTimeMillis();
+        memory.entries.add(entry);
+        memory.history.clear();
+    }
+
+    private static boolean containsRelationKeyword(String text) {
+        return text.contains("喜欢") || text.contains("讨厌") || text.contains("信任")
+                || text.contains("朋友") || text.contains("关系") || text.contains("感谢")
+                || text.contains("担心") || text.contains("想念") || text.contains("承诺")
+                || text.contains("一起") || text.contains("记得") || text.contains("情感");
+    }
+
+    public static boolean shouldCompress(GirlMemory memory) {
+        int chars = memory == null ? 0 : memory.history.stream()
+                .mapToInt(message -> message == null || message.content == null ? 0 : message.content.length())
+                .sum();
+        return chars >= DEFAULT_CONTEXT_WINDOW_TOKENS * 4 * 7 / 10;
+    }
+
+    private static String limit(String value, int maxLength) {
+        if (value == null) return "";
+        String trimmed = value.trim();
+        return trimmed.length() <= maxLength ? trimmed : trimmed.substring(0, maxLength) + "…";
+    }
+
+    public static final class GirlMemory {
+        public List<MemoryMessage> history = new ArrayList<>();
+        public List<MemoryEntry> entries = new ArrayList<>();
+
+        public GirlMemory withDefaults() {
+            if (history == null) history = new ArrayList<>();
+            if (entries == null) entries = new ArrayList<>();
+            return this;
+        }
+    }
+
+    public static final class MemoryMessage {
+        public String role = "";
+        public String content = "";
+        public MemoryMessage() {}
+        public MemoryMessage(String role, String content) {
+            this.role = role;
+            this.content = content;
+        }
+    }
+
+    public static final class MemoryEntry {
+        public String text = "";
+        public long createdAt;
     }
 
     public static final class TextService {

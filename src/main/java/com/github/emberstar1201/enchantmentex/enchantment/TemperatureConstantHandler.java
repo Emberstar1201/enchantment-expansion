@@ -1,6 +1,7 @@
 package com.github.emberstar1201.enchantmentex.enchantment;
 
 import com.github.emberstar1201.enchantmentex.TemperatureConstantConfig;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -27,6 +28,8 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class TemperatureConstantHandler {
+
+    private static final String LAST_HEAT_SOURCE_KEY = "temperature_constant_last_heat_source";
 
     // ========================================================================
     // ① 伤害拦截：冰冻 / 高温伤害源直接取消
@@ -64,11 +67,22 @@ public class TemperatureConstantHandler {
         if (player.level().isClientSide()) return;
 
         // 全局开关 + 防冻开关 + 有附魔时才清零
-        if (TemperatureConstantConfig.enabled
-                && TemperatureConstantConfig.preventFreeze
-                && hasEnchant(player)
-                && player.getTicksFrozen() > 0) {
-            player.setTicksFrozen(0);
+        if (TemperatureConstantConfig.enabled && hasEnchant(player)) {
+            if (TemperatureConstantConfig.preventFreeze
+                    && player.getTicksFrozen() > 0) {
+                player.setTicksFrozen(0);
+            }
+
+            boolean heatSource = player.isInLava()
+                    || player.level().getBlockState(player.blockPosition()).is(BlockTags.FIRE)
+                    || player.level().getBlockState(player.blockPosition().below()).is(BlockTags.FIRE);
+            boolean wasInHeatSource = player.getPersistentData()
+                    .getBoolean(LAST_HEAT_SOURCE_KEY);
+            if (wasInHeatSource && !heatSource && player.getRemainingFireTicks() > 0) {
+                player.setRemainingFireTicks(Math.max(
+                        0, player.getRemainingFireTicks() - 40));
+            }
+            player.getPersistentData().putBoolean(LAST_HEAT_SOURCE_KEY, heatSource);
         }
     }
 

@@ -1,22 +1,29 @@
 package com.github.emberstar1201.enchantmentex;
 
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.monster.WitherSkeleton;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.WitherSkull;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
+import net.minecraftforge.event.entity.living.LivingHealEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -32,6 +39,13 @@ public final class WitherBuffHandler {
     private static final String DEATH_HANDLED_TAG = "EEWitherDeathHandled";
     private static final String FLIGHT_TICKS_TAG = "EEWitherFlightTicks";
     private static final String SHIELD_TICKS_TAG = "EEWitherShieldTicks";
+    private static final String SHIELD_CYCLE_TICKS_TAG = "EEWitherShieldCycleTicks";
+    private static final String CURSE_TICKS_TAG = "EEWitherCurseTicks";
+    private static final String MINION_COOLDOWN_TAG = "EEWitherMinionCooldown";
+    private static final String BARRAGE_COOLDOWN_TAG = "EEWitherBarrageCooldown";
+    private static final String SMITE_SUPPRESSION_TICKS_TAG = "EEWitherSmiteSuppressionTicks";
+    private static final String MINION_SACRIFICE_TAG = "EEWitherMinionSacrifice";
+    private static final int MINION_SACRIFICE_DELAY = 60;
 
     private WitherBuffHandler() {
     }
@@ -61,8 +75,11 @@ public final class WitherBuffHandler {
             if (!enhanced) {
                 return;
             }
-            if (!event.loadedFromDisk() || !wither.getPersistentData().contains(SHIELD_TICKS_TAG)) {
-                wither.getPersistentData().putInt(SHIELD_TICKS_TAG, 600);
+            if (MobBuffConfig.witherShieldCycleEnabled
+                    && (!event.loadedFromDisk() || !wither.getPersistentData().contains(SHIELD_TICKS_TAG))) {
+                // 护盾轮换：开局直接处于护盾期，之后按周期间隔循环。
+                wither.getPersistentData().putInt(SHIELD_TICKS_TAG, MobBuffConfig.witherShieldCycleDuration);
+                wither.getPersistentData().putInt(SHIELD_CYCLE_TICKS_TAG, MobBuffConfig.witherShieldCycleInterval);
             }
             AttributeInstance armor = wither.getAttribute(Attributes.ARMOR);
             if (armor != null) {
@@ -82,17 +99,37 @@ public final class WitherBuffHandler {
             return;
         }
         if (event.getEntity() instanceof WitherBoss wither) {
+            if (event.getSource().getEntity() instanceof Player player
+                    && player.getMainHandItem().getEnchantmentLevel(Enchantments.SMITE) > 0) {
+                wither.getPersistentData().putInt(SMITE_SUPPRESSION_TICKS_TAG, 40);
+            }
             boolean bypassesReduction = event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)
                     || event.getSource().is(DamageTypes.FELL_OUT_OF_WORLD);
-            if (!bypassesReduction && wither.getPersistentData().getInt(SHIELD_TICKS_TAG) > 0) {
+            boolean shielded = MobBuffConfig.witherShieldCycleEnabled
+                    && wither.getPersistentData().getInt(SHIELD_TICKS_TAG) > 0;
+            if (!bypassesReduction && shielded) {
+                // 护盾期：弹射物被完全弹开，其他伤害减半；非护盾期才是完整输出窗口。
+                if (event.getSource().is(DamageTypeTags.IS_PROJECTILE)) {
+                    event.setCanceled(true);
+                    return;
+                }
                 event.setAmount(event.getAmount() * 0.5F);
             }
             if (!bypassesReduction && wither.getHealth() <= wither.getMaxHealth() * 0.5F) {
                 event.setAmount(event.getAmount() * (float) (1.0D - MobBuffConfig.witherLowHealthDamageReduction));
             }
         }
-        if (event.getSource().getEntity() instanceof WitherSkull) {
+        // 弹射物伤害源：getEntity() 返回射击者，getDirectEntity() 才是头颅本体。
+        if (event.getSource().getDirectEntity() instanceof WitherSkull) {
             event.setAmount(event.getAmount() * (float) MobBuffConfig.witherSkullDamageMultiplier);
+            // 凋零诅咒：被凋零头颅击中的玩家治疗受阻，带诅咒死亡会生成凋零骷髅。
+            if (MobBuffConfig.witherCurseEnabled
+                    && event.getEntity() instanceof Player player
+                    && !player.level().isClientSide()) {
+                player.getPersistentData().putInt(CURSE_TICKS_TAG, MobBuffConfig.witherCurseSeconds * 20);
+                player.displayClientMessage(Component.translatable(
+                        "message.enchantment_expansion.wither_curse"), true);
+            }
         }
     }
 
@@ -107,11 +144,16 @@ public final class WitherBuffHandler {
                 if (entity instanceof WitherBoss wither) {
                     syncWitherHealth(wither, enhanced);
                     if (enhanced) {
-                        int shield = wither.getPersistentData().getInt(SHIELD_TICKS_TAG);
-                        if (shield > 0) {
-                            wither.getPersistentData().putInt(SHIELD_TICKS_TAG, shield - 1);
-                        }
+                        tickWitherShield(level, wither);
+                        tickWitherRecovery(wither);
+                        tickWitherMinions(level, wither);
+                        tickWitherBarrage(level, wither);
                     }
+                } else if (enhanced && entity instanceof Player player) {
+                    tickWitherCurse(level, player);
+                } else if (enhanced && entity instanceof WitherSkeleton skeleton
+                        && skeleton.getPersistentData().getBoolean(MINION_SACRIFICE_TAG)) {
+                    tickWitherMinionSacrifice(level, skeleton);
                 }
             }
         }
@@ -132,6 +174,141 @@ public final class WitherBuffHandler {
                 }
                 splitSkull(level, skull);
             }
+        }
+    }
+
+    private static void tickWitherRecovery(WitherBoss wither) {
+        if (wither.tickCount % 40 == 0 && wither.getHealth() < wither.getMaxHealth()
+                && wither.getPersistentData().getInt(SMITE_SUPPRESSION_TICKS_TAG) <= 0) {
+            wither.heal((float) MobBuffConfig.witherHealAmount);
+        }
+        int suppression = wither.getPersistentData().getInt(SMITE_SUPPRESSION_TICKS_TAG);
+        if (suppression > 0) {
+            wither.getPersistentData().putInt(SMITE_SUPPRESSION_TICKS_TAG, suppression - 1);
+        }
+    }
+
+    private static void tickWitherMinions(ServerLevel level, WitherBoss wither) {
+        int cooldown = Math.max(0, wither.getPersistentData().getInt(MINION_COOLDOWN_TAG) - 1);
+        wither.getPersistentData().putInt(MINION_COOLDOWN_TAG, cooldown);
+        if (wither.getHealth() > wither.getMaxHealth() * 0.5F || cooldown > 0) {
+            return;
+        }
+        WitherSkeleton minion = EntityType.WITHER_SKELETON.create(level);
+        if (minion != null) {
+            minion.moveTo(wither.getX() + 2.0D, wither.getY(), wither.getZ(), 0.0F, 0.0F);
+            minion.getPersistentData().putBoolean(MINION_SACRIFICE_TAG, true);
+            minion.getPersistentData().putInt(MINION_COOLDOWN_TAG, MINION_SACRIFICE_DELAY);
+            minion.setTarget(null);
+            level.addFreshEntity(minion);
+            wither.getPersistentData().putInt(
+                    MINION_COOLDOWN_TAG,
+                    MobBuffConfig.witherMinionInterval
+            );
+        }
+    }
+
+    /** 仆从延迟献祭：避免生成瞬间回血，并让凋零真正消耗这只仆从。 */
+    private static void tickWitherMinionSacrifice(ServerLevel level, WitherSkeleton minion) {
+        int delay = Math.max(0,
+                minion.getPersistentData().getInt(MINION_COOLDOWN_TAG) - 1);
+        minion.getPersistentData().putInt(MINION_COOLDOWN_TAG, delay);
+        if (delay > 0) {
+            return;
+        }
+        WitherBoss wither = level.getEntitiesOfClass(
+                        WitherBoss.class,
+                        minion.getBoundingBox().inflate(16.0D))
+                .stream()
+                .filter(Entity::isAlive)
+                .min((first, second) -> Double.compare(
+                        minion.distanceToSqr(first), minion.distanceToSqr(second)))
+                .orElse(null);
+        if (wither != null && wither.getHealth() < wither.getMaxHealth()) {
+            wither.heal(8.0F);
+        }
+        level.sendParticles(ParticleTypes.SOUL,
+                minion.getX(), minion.getY() + 1.0D, minion.getZ(),
+                8, 0.4D, 0.7D, 0.4D, 0.02D);
+        minion.discard();
+    }
+
+    private static void tickWitherBarrage(ServerLevel level, WitherBoss wither) {
+        int cooldown = Math.max(0, wither.getPersistentData().getInt(BARRAGE_COOLDOWN_TAG) - 1);
+        wither.getPersistentData().putInt(BARRAGE_COOLDOWN_TAG, cooldown);
+        if (wither.getHealth() > wither.getMaxHealth() * 0.5F || cooldown > 0) {
+            return;
+        }
+        for (int i = 0; i < 3; i++) {
+            double angle = i * Math.PI * 2.0D / 3.0D;
+            WitherSkull skull = new WitherSkull(level, wither, Math.cos(angle), 0.1D, Math.sin(angle));
+            skull.setPos(wither.getX(), wither.getY() + 1.0D, wither.getZ());
+            level.addFreshEntity(skull);
+        }
+        wither.getPersistentData().putInt(BARRAGE_COOLDOWN_TAG, MobBuffConfig.witherBarrageInterval);
+    }
+
+    /** 护盾轮换：护盾期倒计时，结束后等待周期间隔，再次进入护盾期。 */
+    private static void tickWitherShield(ServerLevel level, WitherBoss wither) {
+        if (!MobBuffConfig.witherShieldCycleEnabled) {
+            return;
+        }
+        int shield = wither.getPersistentData().getInt(SHIELD_TICKS_TAG);
+        if (shield > 0) {
+            wither.getPersistentData().putInt(SHIELD_TICKS_TAG, shield - 1);
+            // 护盾期粒子提示：末地烛光点环绕，提示远程攻击无效。
+            if (shield % 5 == 0) {
+                level.sendParticles(ParticleTypes.END_ROD,
+                        wither.getX(), wither.getY() + 1.2D, wither.getZ(),
+                        6, 1.0D, 0.8D, 1.0D, 0.02D);
+            }
+            return;
+        }
+        int cycle = wither.getPersistentData().getInt(SHIELD_CYCLE_TICKS_TAG) - 1;
+        if (cycle <= 0) {
+            wither.getPersistentData().putInt(SHIELD_TICKS_TAG, MobBuffConfig.witherShieldCycleDuration);
+            cycle = MobBuffConfig.witherShieldCycleInterval;
+        }
+        wither.getPersistentData().putInt(SHIELD_CYCLE_TICKS_TAG, cycle);
+    }
+
+    /** 凋零诅咒计时：持续期间散发灵魂粒子提示。 */
+    private static void tickWitherCurse(ServerLevel level, Player player) {
+        int curse = player.getPersistentData().getInt(CURSE_TICKS_TAG);
+        if (curse <= 0) {
+            return;
+        }
+        player.getPersistentData().putInt(CURSE_TICKS_TAG, curse - 1);
+        if (curse % 10 == 0) {
+            level.sendParticles(ParticleTypes.SOUL,
+                    player.getX(), player.getY() + 1.0D, player.getZ(),
+                    2, 0.3D, 0.5D, 0.3D, 0.01D);
+        }
+    }
+
+    /** 诅咒期间治疗效果按比例降低。 */
+    @SubscribeEvent
+    public static void onLivingHeal(LivingHealEvent event) {
+        if (enabled() && MobBuffConfig.witherCurseEnabled
+                && event.getEntity().getPersistentData().getInt(CURSE_TICKS_TAG) > 0) {
+            event.setAmount(event.getAmount() * (float) (1.0D - MobBuffConfig.witherCurseHealingReduction));
+        }
+    }
+
+    /** 带着凋零诅咒死亡的玩家，在原地留下一只凋零骷髅。 */
+    @SubscribeEvent
+    public static void onPlayerDeath(LivingDeathEvent event) {
+        if (!enabled() || !MobBuffConfig.witherCurseEnabled
+                || !(event.getEntity() instanceof Player player)
+                || !(player.level() instanceof ServerLevel level)
+                || player.getPersistentData().getInt(CURSE_TICKS_TAG) <= 0) {
+            return;
+        }
+        player.getPersistentData().remove(CURSE_TICKS_TAG);
+        WitherSkeleton skeleton = EntityType.WITHER_SKELETON.create(level);
+        if (skeleton != null) {
+            skeleton.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0.0F);
+            level.addFreshEntity(skeleton);
         }
     }
 

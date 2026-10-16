@@ -3,6 +3,7 @@ package com.github.emberstar1201.enchantmentex.mixin;
 import com.github.emberstar1201.enchantmentex.Config;
 import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Items;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -50,6 +51,15 @@ public class ItemStackHurtDurabilityMixin {
 
         ItemStack stack = (ItemStack) (Object) this;
         if (stack.isEmpty()) {
+            return;
+        }
+
+        // 羽翼：鞘翅在飞行和撞击等正常损耗场景下有概率免除一次耐久损耗。
+        int featherWingLevel = EnchantmentHelper.getItemEnchantmentLevel(
+                ModEnchantments.FEATHER_WING.get(), stack);
+        if (stack.is(Items.ELYTRA) && featherWingLevel > 0
+                && pRandom.nextDouble() < Math.min(0.25D * featherWingLevel, 0.75D)) {
+            cir.setReturnValue(false);
             return;
         }
 

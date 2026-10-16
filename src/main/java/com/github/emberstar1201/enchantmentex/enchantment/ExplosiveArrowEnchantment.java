@@ -95,10 +95,9 @@ public class ExplosiveArrowEnchantment extends Enchantment {
     // ========================================================================
     @Override
     protected boolean checkCompatibility(Enchantment other) {
-        if (other == ModEnchantments.CHAIN_ARROW.get()) {
+        if (ProjectileEnchantmentExclusion.isIncompatible(this, other)) {
             return false;
         }
-        // 其余附魔（迅捷之弩、力量、火矢等）保持默认兼容
         return super.checkCompatibility(other);
     }
 }

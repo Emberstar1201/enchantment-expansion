@@ -5,6 +5,9 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -34,7 +37,7 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 // 【倍率存储】
 //   · 服务端：player.getPersistentData() + MULTIPLIER_CACHE
 //   · 客户端：MULTIPLIER_CACHE（滚轮事件中即时写入，无需等服务端）
-//   · 默认倍率 1.0（等同于原版水中速度）
+//   · 默认倍率 1.25（穿戴后立即获得温和的水中加速，仍可用滚轮调节）
 // ========================================================================
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class DeepSeaRippleHandler {
@@ -42,6 +45,9 @@ public class DeepSeaRippleHandler {
     // PersistentData 根复合标签与 key
     private static final String TAG_ROOT = "DeepSeaRippleData";
     private static final String KEY_MULTIPLIER = "multiplier";
+    private static final String KEY_NIGHT_VISION_TICKS = "nightVisionTicks";
+    private static final double DEFAULT_MULTIPLIER = 1.25;
+    private static final int NIGHT_VISION_DURATION_TICKS = 600;
 
     // 倍率缓存：Client & Server 共享，ConcurrentHashMap 线程安全
     public static final Map<UUID, Double> MULTIPLIER_CACHE =
@@ -56,9 +62,10 @@ public class DeepSeaRippleHandler {
     // ========================================================================
     private static double readMultiplier(Player player) {
         CompoundTag tag = player.getPersistentData().getCompound(TAG_ROOT);
-        double oldM = tag.getDouble(KEY_MULTIPLIER);
+        double oldM = tag.contains(KEY_MULTIPLIER)
+                ? tag.getDouble(KEY_MULTIPLIER) : DEFAULT_MULTIPLIER;
         double m = oldM;
-        if (m < 1.0) m = 1.0;
+        if (m < DEFAULT_MULTIPLIER) m = DEFAULT_MULTIPLIER;
         double max = DeepSeaRippleConfig.getMaxSwimMultiplier();
         if (m > max) m = max;
         // 只在值实际变化时才写入 NBT，避免每 tick 触发玩家数据同步包
@@ -74,7 +81,7 @@ public class DeepSeaRippleHandler {
     // 写入倍率（服务端使用）：clamp → NBT → 缓存
     // ========================================================================
     private static void writeMultiplier(Player player, double value) {
-        double clamped = Math.max(1.0,
+        double clamped = Math.max(DEFAULT_MULTIPLIER,
                 Math.min(DeepSeaRippleConfig.getMaxSwimMultiplier(), value));
         CompoundTag tag = player.getPersistentData().getCompound(TAG_ROOT);
         tag.putDouble(KEY_MULTIPLIER, clamped);
@@ -145,6 +152,23 @@ public class DeepSeaRippleHandler {
         double multiplier = isServer ? readMultiplier(player)
                                      : getCachedMultiplier(uuid);
 
+        // 水中刷新夜视计时；离水后最多保留 30 秒。
+        if (player instanceof ServerPlayer serverPlayer) {
+            CompoundTag tag = player.getPersistentData().getCompound(TAG_ROOT);
+            if (isUnderwater(player)) {
+                tag.putInt(KEY_NIGHT_VISION_TICKS, NIGHT_VISION_DURATION_TICKS);
+            } else {
+                int remaining = tag.getInt(KEY_NIGHT_VISION_TICKS);
+                if (remaining <= 0) {
+                    return;
+                }
+                tag.putInt(KEY_NIGHT_VISION_TICKS, remaining - 1);
+            }
+            player.getPersistentData().put(TAG_ROOT, tag);
+            serverPlayer.addEffect(new MobEffectInstance(
+                    MobEffects.NIGHT_VISION, 3, 0, false, false, true));
+        }
+
         // 3) 不在水中 → 不做速度修改（保留倍率）
         if (!isUnderwater(player)) return;
 
@@ -164,6 +188,19 @@ public class DeepSeaRippleHandler {
             ACTIONBAR_COOLDOWN.put(uuid, 0);
             sendActionBar(sp, multiplier);
         }
+    }
+
+    @SubscribeEvent
+    public static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
+        Player player = event.getEntity();
+        if (!isUnderwater(player)
+                || EnchantmentHelper.getItemEnchantmentLevel(
+                        ModEnchantments.DEEP_SEA_RIPPLE.get(),
+                        player.getItemBySlot(EquipmentSlot.FEET)) <= 0
+                || EnchantmentHelper.hasAquaAffinity(player)) {
+            return;
+        }
+        event.setNewSpeed(event.getNewSpeed() * 5.0F);
     }
 
     // ========================================================================

@@ -93,10 +93,10 @@ import java.util.UUID;
  */
 public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, RangedAttackMob {
     private static final UUID SPEED_MODIFIER_UUID = UUID.fromString("6b8c9bb8-8fcb-4d0d-9f68-9c4f7b4e4f31");
-    // MULTIPLY_TOTAL 运算：成人 0.1 → 最终为原版僵尸的 1.1 倍
-    private static final double SPEED_MULTIPLIER_ADULT = 0.1D;
-    // MULTIPLY_TOTAL 运算：幼年 0.2 → 最终为小僵尸的 1.2 倍
-    private static final double SPEED_MULTIPLIER_BABY = 0.2D;
+    // MULTIPLY_TOTAL 运算：成人 0.1 → 最终为原版僵尸的 1.24 倍
+    private static final double SPEED_MULTIPLIER_ADULT = 0.24D;
+    // MULTIPLY_TOTAL 运算：幼年 0.2 → 最终为小僵尸的 1.24 倍
+    private static final double SPEED_MULTIPLIER_BABY = 0.24D;
     private static final String SPEED_MODIFIER_NAME = "zombie_girl_base_speed";
 
     private static final EntityDataAccessor<Boolean> DATA_TAMED =
@@ -131,7 +131,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
      */
     private boolean variantAssigned;
     /**
-     * 皮肤变种的网络同步数据：0~19 对应 zombie_girl.png 到 zombie_girl_19.png。
+     * 皮肤变种的网络同步数据：0~9 对应 zombie_girl.png 到 zombie_girl_9.png。
      * 为什么不能用普通字段：finalizeSpawn 只在服务端执行，普通字段不会同步，
      * 客户端的 variant 永远是默认值 0，渲染器就只能拿到 zombie_girl.png。
      * SynchedEntityData 会在生成 / 数据变化时自动把值同步给所有追踪的客户端。
@@ -144,7 +144,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
      * 变种 0 使用默认贴图 zombie_girl.png，其余按编号使用 zombie_girl_N.png。
      * 新增皮肤时只需把最大编号写进 MAX_VARIANT（贴图文件需提前放入正确路径）。
      */
-    private static final int MAX_VARIANT = 19;
+    private static final int MAX_VARIANT = 18;
 
     /** 预生成的变种贴图表（下标即 variant 值），避免渲染时反复构造 ResourceLocation。 */
     private static final List<ResourceLocation> VARIANT_TEXTURES = new ArrayList<>();
@@ -227,7 +227,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         super.aiStep();
         // 兜底分配皮肤变种：/summon、/ee girl summon 等未经 finalizeSpawn、
         // 也不带 Variant NBT 的实体（幼年体主要靠这些途径产生）在首个服务端 tick 补随机。
-        // 幸存者少女的 aiStep 会先走这里，随机范围 0~19 与 human_girl 20 张贴图一致。
+        // 幸存者少女的 aiStep 会先走这里，随机范围 0~18 与 human_girl 19 张贴图一致。
         if (!this.level().isClientSide && !this.variantAssigned) {
             setVariant(this.random.nextInt(MAX_VARIANT + 1));
         }
@@ -790,12 +790,8 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
 
     @Override
     public int getAffection() {
-        if (!this.isTamed()) {
-            return 0;
-        }
-        int affection = Math.max(0, Math.min(MAX_AFFECTION, this.entityData.get(DATA_AFFECTION)));
-        // 兼容旧实体或驯服同步的短暂时序：已驯服但没有好感数据时按初始值处理。
-        return affection == 0 ? 10 : affection;
+        return this.isTamed()
+                ? Math.max(0, Math.min(MAX_AFFECTION, this.entityData.get(DATA_AFFECTION))) : 0;
     }
 
     @Override
@@ -1122,7 +1118,7 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
             }
             if (--this.timeToRecalcPath <= 0) {
                 this.timeToRecalcPath = 10;
-                self.navigation.moveTo(this.owner, 1.1D);
+                self.navigation.moveTo(this.owner, 1.24D);
             }
         }
     }

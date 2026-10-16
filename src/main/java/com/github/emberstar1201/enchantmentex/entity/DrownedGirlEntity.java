@@ -59,9 +59,9 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
     private static final UUID SPEED_MODIFIER_UUID = UUID.fromString("8b14dfcb-75b1-4c42-8ea2-4f75d7a0c1e9");
     private static final String SPEED_MODIFIER_NAME = "drowned_girl_base_speed";
     // MULTIPLY_TOTAL 运算：成人 0.1 → 最终为原版溺尸的 1.1 倍（陆地与游泳同样生效）
-    private static final double SPEED_MULTIPLIER_ADULT = 0.1D;
+    private static final double SPEED_MULTIPLIER_ADULT = 0.24D;
     // MULTIPLY_TOTAL 运算：幼年 0.2 → 最终为小溺尸的 1.2 倍
-    private static final double SPEED_MULTIPLIER_BABY = 0.2D;
+    private static final double SPEED_MULTIPLIER_BABY = 0.24D;
     private static final EntityDataAccessor<Integer> DATA_VARIANT =
             SynchedEntityData.defineId(DrownedGirlEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_TAMED =
@@ -731,7 +731,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
             }
             if (--this.timeToRecalcPath <= 0) {
                 this.timeToRecalcPath = 10;
-                self.navigation.moveTo(this.owner, 1.1D);
+                self.navigation.moveTo(this.owner, 1.24D);
             }
         }
     }

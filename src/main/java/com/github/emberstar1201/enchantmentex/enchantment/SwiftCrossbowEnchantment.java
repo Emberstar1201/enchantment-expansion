@@ -106,8 +106,9 @@ public class SwiftCrossbowEnchantment extends Enchantment {
     @Override
     protected boolean checkCompatibility(Enchantment other) {
         ResourceLocation otherRL = ForgeRegistries.ENCHANTMENTS.getKey(other);
-        if (QUICK_CHARGE_RL.equals(otherRL)) {
-            return false;  // 与快速装填互斥
+        if (QUICK_CHARGE_RL.equals(otherRL)
+                || ProjectileEnchantmentExclusion.isIncompatible(this, other)) {
+            return false;
         }
         return super.checkCompatibility(other);
     }

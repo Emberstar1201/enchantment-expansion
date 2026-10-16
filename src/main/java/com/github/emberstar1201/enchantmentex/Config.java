@@ -12,6 +12,14 @@ public class Config {
 
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
+    private static final ForgeConfigSpec.IntValue THORNS_CROWN_SETTLEMENT_INTERVAL_TICKS = BUILDER
+            .comment("荆棘之冠：罪业代偿帧伤脉冲间隔（tick，默认 10；间隔期间只累计、不造成帧伤）")
+            .defineInRange("thornsCrown.settlementIntervalTicks", 10, 1, 1200);
+
+    private static final ForgeConfigSpec.IntValue THORNS_CROWN_SIN_INTERVAL_TICKS = BUILDER
+            .comment("荆棘之冠：罪业值增长间隔（tick，默认 2400，即 2 分钟）")
+            .defineInRange("thornsCrown.sinIntervalTicks", 2400, 1, 72000);
+
     // ================================================================
     // 古·云来弓法 & 云来弓法 配置
     // ================================================================
@@ -583,13 +591,13 @@ public class Config {
             .defineInRange("endStar.end_star_damage_reduction_percent", 0.8, 0.0, 1.0);
 
     private static final ForgeConfigSpec.BooleanValue ENABLE_END_STAR_DAMAGE_BONUS = BUILDER
-            .comment("是否允许手持终界之星时根据经验等级获得伤害加成（默认 true）",
-                    "加成公式：每 10 级 +100% 伤害，上限 1000%（100 级达到上限）")
+            .comment("是否允许手持终界之星时根据当前总经验值获得伤害加成（默认 true）",
+                    "加成公式：当前总经验值 ÷ 10 = 伤害加成百分比，上限由 endStar.end_star_max_bonus_percent 控制")
             .define("endStar.enable_end_star_damage_bonus", true);
 
     private static final ForgeConfigSpec.IntValue END_STAR_MAX_BONUS_PERCENT = BUILDER
-            .comment("经验等级伤害加成上限（百分比，默认 1000 即 1000% 加成）",
-                    "100 级玩家达到上限：floor(100/10)*100 = 1000")
+            .comment("当前总经验值伤害加成上限（百分比，默认 1000 即 1000% 加成）",
+                    "当前总经验值达到 10000 时达到默认上限")
             .defineInRange("endStar.end_star_max_bonus_percent", 1000, 0, 100000);
 
     private static final ForgeConfigSpec.IntValue END_STAR_MAID_XP_PER_TIER = BUILDER
@@ -881,6 +889,7 @@ public class Config {
     public static double smokelessDashMaxMultiplier;
     public static double smokelessDashScrollSensitivity;
     public static double smokelessDashBaseBoost;
+    public static int thornsCrownSettlementIntervalTicks;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -1061,6 +1070,7 @@ public class Config {
         smokelessDashMaxMultiplier = SMOKELESS_DASH_MAX_MULTIPLIER.get();
         smokelessDashScrollSensitivity = SMOKELESS_DASH_SCROLL_SENSITIVITY.get();
         smokelessDashBaseBoost = SMOKELESS_DASH_BASE_BOOST.get();
+        thornsCrownSettlementIntervalTicks = THORNS_CROWN_SETTLEMENT_INTERVAL_TICKS.get();
 
         // 伤害/治疗浮动数字
         enableDamagePopup = ENABLE_DAMAGE_POPUP.get();

@@ -17,6 +17,7 @@ public final class GirlInteractionScreen extends Screen {
     private final int entityId;
     private final boolean tamed;
     private boolean chatExpanded;
+    private boolean menuExpanded;
     private Boolean requestedSitting;
 
     public GirlInteractionScreen(int entityId, boolean tamed) {
@@ -31,7 +32,10 @@ public final class GirlInteractionScreen extends Screen {
         int x = this.width - 150;
         int y = this.height / 2 - 48;
         this.addRenderableWidget(Button.builder(Component.literal("+"),
-                        button -> this.minecraft.setScreen(new AiConfigurationScreen(this, currentPersonaKey())))
+                        button -> {
+                            this.menuExpanded = !this.menuExpanded;
+                            this.init(this.minecraft, this.width, this.height);
+                        })
                 .bounds(x - 24, y, 20, 20).build());
         this.addRenderableWidget(Button.builder(
                         Component.translatable("gui.enchantment_expansion.girl_interaction.chat"),
@@ -41,6 +45,18 @@ public final class GirlInteractionScreen extends Screen {
                         })
                 .bounds(x, y, 130, 20).build());
         y += 24;
+        if (this.menuExpanded) {
+            this.addRenderableWidget(Button.builder(
+                            Component.translatable("gui.enchantment_expansion.girl_interaction.event_book"),
+                            button -> openEventBook())
+                    .bounds(x + 10, y, 120, 20).build());
+            y += 24;
+            this.addRenderableWidget(Button.builder(
+                            Component.translatable("gui.enchantment_expansion.girl_interaction.ai_config"),
+                            button -> this.minecraft.setScreen(new AiConfigurationScreen(this, currentPersonaKey())))
+                    .bounds(x + 10, y, 120, 20).build());
+            y += 24;
+        }
         if (this.chatExpanded) {
             this.addRenderableWidget(Button.builder(
                             Component.translatable("gui.enchantment_expansion.girl_interaction.hello"),
@@ -65,7 +81,7 @@ public final class GirlInteractionScreen extends Screen {
         }
         this.addRenderableWidget(Button.builder(
                         Component.translatable("gui.enchantment_expansion.girl_interaction.gift"),
-                        button -> send(GirlInteractionPacket.GIFT))
+                        button -> this.minecraft.setScreen(new GiftScreen(this, this.entityId)))
                 .bounds(x, y, 130, 20).build());
         y += 24;
         boolean sitting = this.requestedSitting != null
@@ -124,6 +140,15 @@ public final class GirlInteractionScreen extends Screen {
         return "zombie_girl";
     }
 
+    private void openEventBook() {
+        if (this.minecraft.level != null) {
+            Entity entity = this.minecraft.level.getEntity(this.entityId);
+            if (entity != null) {
+                this.minecraft.setScreen(new AiMemoryScreen(this, entity.getUUID(), entity.getName().getString()));
+            }
+        }
+    }
+
     private void openAiDialogue() {
         if (this.minecraft.level == null) {
             this.minecraft.player.displayClientMessage(Component.translatable(
@@ -160,7 +185,8 @@ public final class GirlInteractionScreen extends Screen {
                 : entity.getCustomName().getString();
         if (configuredName != null && !configuredName.isBlank()) {
             this.minecraft.setScreen(new AiDialogueScreen(
-                    this, configuration.text, persona, configuredName));
+                    this, entity.getUUID(), configuration.text, persona, configuredName,
+                    entity instanceof FriendlyGirlInventory girl ? girl.getAffection() : 0));
             return;
         }
         String defaultName = persona.name == null || persona.name.isBlank() ? "少女" : persona.name;
@@ -169,7 +195,8 @@ public final class GirlInteractionScreen extends Screen {
             NetworkHandler.CHANNEL.sendToServer(new GirlInteractionPacket(
                     this.entityId, GirlInteractionPacket.RENAME, name));
             this.minecraft.setScreen(new AiDialogueScreen(
-                    this, configuration.text, persona, name));
+                    this, entity.getUUID(), configuration.text, persona, name,
+                    entity instanceof FriendlyGirlInventory girl ? girl.getAffection() : 0));
         }));
     }
 

@@ -6,24 +6,35 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 /** 当前少女的客户端 AI 文本对话界面。 */
 public final class AiDialogueScreen extends Screen {
+    /** 未发送草稿只保存在客户端内存：按少女 UUID 区分，切屏 / 窗口重建后恢复。 */
+    private static final Map<UUID, String> UNSENT_DRAFTS = new HashMap<>();
+
     private final Screen parent;
+    private final UUID girlId;
     private final AiConfigurationStore.TextService service;
     private final AiConfigurationStore.Persona persona;
     private final String speakerName;
+    private final int affection;
     private EditBox input;
     private Button sendButton;
     private Component status = Component.empty();
     private boolean requesting;
 
-    public AiDialogueScreen(Screen parent, AiConfigurationStore.TextService service,
-                             AiConfigurationStore.Persona persona, String speakerName) {
+    public AiDialogueScreen(Screen parent, UUID girlId, AiConfigurationStore.TextService service,
+                             AiConfigurationStore.Persona persona, String speakerName, int affection) {
         super(Component.translatable("gui.enchantment_expansion.ai.dialogue.title"));
         this.parent = parent;
+        this.girlId = girlId;
         this.service = service;
         this.persona = persona;
         this.speakerName = speakerName;
+        this.affection = affection;
     }
 
     @Override
@@ -36,6 +47,9 @@ public final class AiDialogueScreen extends Screen {
         this.input.setMaxLength(2048);
         this.input.setTextColor(0xFFFFFF);
         this.input.setHint(Component.translatable("gui.enchantment_expansion.ai.dialogue.input"));
+        // 先回填草稿再监听输入：发送成功后清空输入框时会顺带清掉对应草稿。
+        this.input.setValue(UNSENT_DRAFTS.getOrDefault(this.girlId, ""));
+        this.input.setResponder(text -> UNSENT_DRAFTS.put(this.girlId, text));
         this.addRenderableWidget(this.input);
         this.sendButton = Button.builder(
                         Component.translatable("gui.enchantment_expansion.ai.dialogue.send"),
@@ -63,7 +77,14 @@ public final class AiDialogueScreen extends Screen {
         this.requesting = true;
         this.sendButton.active = false;
         this.status = Component.translatable("gui.enchantment_expansion.ai.dialogue.requesting");
-        AiServiceClient.generateDialogue(this.service, this.persona, this.speakerName, userText)
+        AiConfigurationStore.GirlMemory memory = AiConfigurationStore.memory(this.girlId);
+        String memorySummary = memory.entries.stream()
+                .map(entry -> entry.text == null ? "" : entry.text)
+                .filter(text -> !text.isBlank())
+                .reduce((left, right) -> left + "\n" + right)
+                .orElse("");
+        AiServiceClient.generateDialogue(this.service, this.persona, this.speakerName, this.affection,
+                        memorySummary, memory.history, userText)
                 .whenComplete((dialogue, error) -> this.minecraft.execute(() -> {
                     this.requesting = false;
                     if (this.sendButton != null) {
@@ -76,6 +97,7 @@ public final class AiDialogueScreen extends Screen {
                     }
                     this.status = Component.empty();
                     displayChat(Component.literal(this.speakerName + "：" + dialogue.text()));
+                    AiConfigurationStore.addConversation(this.girlId, userText, dialogue.text());
                     AiServiceClient.speak(AiConfigurationStore.get().tts, dialogue.text())
                             .exceptionally(ttsError -> {
                                 this.minecraft.execute(() -> displayChat(Component.literal(

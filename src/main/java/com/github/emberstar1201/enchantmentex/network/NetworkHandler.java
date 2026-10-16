@@ -157,5 +157,19 @@ public class NetworkHandler {
                 GirlInteractionPacket::new,
                 GirlInteractionPacket::handle
         );
+        CHANNEL.registerMessage(
+                packetId++,
+                GiftPacket.class,
+                GiftPacket::encode,
+                GiftPacket::new,
+                GiftPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                GiftPromptPacket.class,
+                GiftPromptPacket::encode,
+                GiftPromptPacket::new,
+                GiftPromptPacket::handle
+        );
     }
 }

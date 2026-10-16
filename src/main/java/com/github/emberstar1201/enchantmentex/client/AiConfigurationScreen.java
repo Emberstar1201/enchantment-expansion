@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 /** AI 服务、本地人设和少女名称配置界面。 */
@@ -39,6 +40,14 @@ public final class AiConfigurationScreen extends Screen {
     private MultiLineEditBox personaText;
     private int section;
     private Component status = Component.empty();
+    // 长报错最多画 3 行；超出部分通过悬停 tooltip 与点击复制查看，避免直接画出屏幕。
+    private static final int STATUS_MAX_LINES = 3;
+    private static final int STATUS_LINE_HEIGHT = 10;
+    private int statusBoxX;
+    private int statusBoxY;
+    private int statusBoxWidth;
+    private int statusBoxHeight;
+    private boolean statusTruncated;
 
     public AiConfigurationScreen(Screen parent, String selectedPersona) {
         super(Component.translatable("gui.enchantment_expansion.ai.title"));
@@ -159,9 +168,9 @@ public final class AiConfigurationScreen extends Screen {
                 .bounds(left, y, 300, 20).build());
         y += 26;
 
-        // 给底部状态文字预留空间，人设正文使用普通自然语言，不要求 JSON 格式。
+        // 给底部最多三行状态文字预留空间，人设正文使用普通自然语言，不要求 JSON 格式。
         y += 18;
-        int statusY = footerY - 14;
+        int statusY = footerY - 38;
         int textHeight = Math.max(36, statusY - y - 8);
         this.personaText = editPersona(y, textHeight, persona().toPromptText());
         this.personaText.setCharacterLimit(8192);
@@ -352,9 +361,51 @@ public final class AiConfigurationScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics);
         graphics.drawCenteredString(this.font, this.title, this.width / 2, 10, 0xFFFFFF);
-        int statusY = Math.max(34, Math.max(44, this.height - 26) - 14);
-        graphics.drawString(this.font, status, this.width / 2 - 150, statusY, 0xA0FFA0);
+
+        int footerY = Math.max(44, this.height - 26);
+        int statusWidth = Math.min(300, this.width - 16);
+        this.statusBoxX = (this.width - statusWidth) / 2;
+        this.statusBoxWidth = statusWidth;
+        List<FormattedCharSequence> statusLines = this.font.split(this.status, statusWidth);
+        int visibleLines = Math.min(statusLines.size(), STATUS_MAX_LINES);
+        this.statusTruncated = statusLines.size() > STATUS_MAX_LINES;
+        this.statusBoxHeight = visibleLines * STATUS_LINE_HEIGHT;
+        this.statusBoxY = Math.max(34, footerY - 6 - this.statusBoxHeight);
+
+        int statusColor = this.status.getString().startsWith("测试失败") ? 0xFF8080 : 0xA0FFA0;
+        for (int i = 0; i < visibleLines; i++) {
+            graphics.drawString(this.font, statusLines.get(i), this.statusBoxX,
+                    this.statusBoxY + i * STATUS_LINE_HEIGHT, statusColor);
+        }
+        if (this.statusTruncated && visibleLines > 0) {
+            String more = "…";
+            graphics.drawString(this.font, more, this.statusBoxX + statusWidth - this.font.width(more),
+                    this.statusBoxY + (visibleLines - 1) * STATUS_LINE_HEIGHT, statusColor);
+        }
+
         super.render(graphics, mouseX, mouseY, partialTick);
+        if (this.statusTruncated && isMouseOverStatus(mouseX, mouseY)) {
+            graphics.renderTooltip(this.font,
+                    this.font.split(this.status, Math.max(180, this.width - 80)), mouseX, mouseY);
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && this.statusTruncated && isMouseOverStatus(mouseX, mouseY)) {
+            // 屏幕内只放摘要；完整报错交给剪贴板，方便直接发给服务商或日志排查。
+            this.minecraft.keyboardHandler.setClipboard(this.status.getString());
+            this.status = Component.translatable("gui.enchantment_expansion.ai.copied");
+            this.statusTruncated = false;
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private boolean isMouseOverStatus(double mouseX, double mouseY) {
+        return this.statusBoxHeight > 0
+                && mouseX >= this.statusBoxX && mouseX < this.statusBoxX + this.statusBoxWidth
+                && mouseY >= this.statusBoxY && mouseY < this.statusBoxY + this.statusBoxHeight;
     }
 
     @Override

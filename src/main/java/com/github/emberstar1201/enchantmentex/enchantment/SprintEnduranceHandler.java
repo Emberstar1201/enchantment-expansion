@@ -2,7 +2,11 @@ package com.github.emberstar1201.enchantmentex.enchantment;
 
 import com.github.emberstar1201.enchantmentex.SprintEnduranceConfig;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+
+import java.util.UUID;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.event.TickEvent;
@@ -31,6 +35,9 @@ import static com.github.emberstar1201.enchantmentex.EnchantmentExpansion.MODID;
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class SprintEnduranceHandler {
 
+    private static final UUID SPRINT_KNOCKBACK_UUID =
+            UUID.fromString("4f96e8b7-7d82-4dd8-9d4a-9e5a1e6b7c20");
+
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
@@ -43,13 +50,23 @@ public class SprintEnduranceHandler {
         if (!SprintEnduranceConfig.isEnabled()) return;
 
         // 只有疾跑时才需要抵消疾跑带来的额外疲劳值
-        if (!player.isSprinting()) return;
-
         // 护腿上是否有疾跑节能附魔
         ItemStack legs = player.getItemBySlot(EquipmentSlot.LEGS);
         int level = EnchantmentHelper.getTagEnchantmentLevel(
                 ModEnchantments.SPRINT_ENDURANCE.get(), legs);
-        if (level <= 0) return;
+        var knockback = player.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+        if (knockback != null) {
+            knockback.removeModifier(SPRINT_KNOCKBACK_UUID);
+            if (player.isSprinting() && level > 0) {
+                knockback.addTransientModifier(new AttributeModifier(
+                        SPRINT_KNOCKBACK_UUID,
+                        "疾跑节能抗击退",
+                        level == 1 ? 0.10D : 0.20D,
+                        AttributeModifier.Operation.ADDITION));
+            }
+        }
+
+        if (!player.isSprinting() || level <= 0) return;
 
         // 按等级抵消对应的\"疾跑额外疲劳值\"。
         // 说明：1.20.1 中 FoodData.exhaustion 为私有字段，无法直接读写，

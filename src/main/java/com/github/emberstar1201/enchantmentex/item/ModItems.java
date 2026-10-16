@@ -6,6 +6,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.common.ForgeSpawnEggItem;
+import com.github.emberstar1201.enchantmentex.item.ThornsCrownItem;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -319,8 +320,15 @@ public class ModItems {
                     .rarity(Rarity.EPIC)
                     .fireResistant()));
 
+    // 荆棘之冠：副手或 Curios 饰品栏装备；材质由资源包/用户后续提供。
+    public static final RegistryObject<ThornsCrownItem> THORNS_CROWN = ITEMS.register(
+            "thorns_crown", () -> new ThornsCrownItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.EPIC)
+                    .fireResistant()));
+
     // ========================================================================
-    // 注册方法：在主类构造函数中调用此方法，将注册器绑定到模组事件总线
+    // 注册方法：在主类构造函数中调用，将物品注册器绑定到模组事件总线
     // ========================================================================
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
@@ -340,29 +348,8 @@ public class ModItems {
 
         @SubscribeEvent
         public static void onBuildCreativeTab(BuildCreativeModeTabContentsEvent event) {
-            // 将终界之星添加到原版"工具与实用物品"标签页
-            //   旧 TAB_MISC 在 1.19.3+ 重命名为 TOOLS_AND_UTILITIES
-            //   ResourceKey<CreativeModeTab> = minecraft:tools_and_utilities
-            if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-                event.accept(END_STAR);
-                event.accept(OCEAN_STAR);
-                event.accept(LIFE_STAR);
-                event.accept(VOID_STAR);
-                event.accept(STARLIGHT_STAR);
-                event.accept(SWORD_OF_THE_FREE_WILL);
-                event.accept(RESIDUAL_SCYTHE);
-                event.accept(LUOHONGYU);
-                event.accept(DAWN_STAR);
-                event.accept(ETERNAL_TOTEM);
-                event.accept(ENHANCEMENT_SCROLL);
-                event.accept(UNOWNED_STARDUST);
-                event.accept(HOME_BELL);
-                event.accept(CAMP_LOCATOR);
-                event.accept(AFFECTION_STAGE_UP);
-                event.accept(AFFECTION_STAGE_DOWN);
-                event.accept(UNSIGNED_VERSES);
-                event.accept(EMBERSTAR_CORD_BRACELET);
-            }
+            // 模组物品改由 ModCreativeModeTabs 的三个独立分区展示。
+            // 原版刷怪蛋标签页仍保留，方便测试实体。
             // 刷怪蛋标签页
             if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
                 event.accept(ZOMBIE_GIRL_SPAWN_EGG);

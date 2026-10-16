@@ -54,6 +54,7 @@ import com.github.emberstar1201.enchantmentex.entity.FriendlyGirlPeacefulSpawnHa
 import com.github.emberstar1201.enchantmentex.entity.ModEntities;
 import com.github.emberstar1201.enchantmentex.entity.ModMenuTypes;
 import com.github.emberstar1201.enchantmentex.item.ModItems;
+import com.github.emberstar1201.enchantmentex.item.ModCreativeModeTabs;
 import com.github.emberstar1201.enchantmentex.item.handler.EnhancementScrollHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.EmberstarCordBraceletHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.EmberstarCordBraceletLootHandler;
@@ -69,6 +70,7 @@ import com.github.emberstar1201.enchantmentex.item.handler.ResidualScytheHandler
 import com.github.emberstar1201.enchantmentex.item.handler.LuohongyuHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.TerminalBookHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.VoidStarHandler;
+import com.github.emberstar1201.enchantmentex.item.handler.ThornsCrownHandler;
 import com.github.emberstar1201.enchantmentex.client.handler.EnchantmentBookLookupHandler;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
 import com.github.emberstar1201.enchantmentex.recipe.ModRecipes;
@@ -98,6 +100,7 @@ public class EnchantmentExpansion {
         ModEnchantments.register(modEventBus);
         // 2. 物品注册器（终界之星等）
         ModItems.register(modEventBus);
+        ModCreativeModeTabs.register(modEventBus);
         // 3. 实体注册器（琉璃冰魄箭实体等）
         ModEntities.register(modEventBus);
         // 3.2 音效注册器（丧尸娘 / 溺尸娘共用的闲置、受伤、死亡语音）
@@ -211,6 +214,7 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(MaidStarHandler.class);
         // 虚空之星：免疫摔落/虚空伤害 + 坠入虚空传送回出生点
         MinecraftForge.EVENT_BUS.register(VoidStarHandler.class);
+        MinecraftForge.EVENT_BUS.register(ThornsCrownHandler.class);
         // 终界之星：飞行、减伤、虚空拦截与 3 秒虚空救援
         MinecraftForge.EVENT_BUS.register(com.github.emberstar1201.enchantmentex.item.handler.EndStarHandler.class);
         // 星辉之星：夜间移速加成 + 夜视 + 经验掉落翻倍

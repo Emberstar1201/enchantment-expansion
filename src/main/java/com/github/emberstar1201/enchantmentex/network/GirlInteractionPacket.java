@@ -68,8 +68,11 @@ public final class GirlInteractionPacket {
             }
 
             if (this.action == GIFT) {
-                sender.displayClientMessage(Component.translatable(
-                        "chat.enchantment_expansion.girl.gift_unavailable"), true);
+                if (!girl.isTamed() || !girl.isOwnedBy(sender)) {
+                    return;
+                }
+                GiftPacket giftPacket = new GiftPacket(this.entityId, false);
+                giftPacket.handle(() -> context);
                 return;
             }
             if (!girl.isTamed() || !girl.isOwnedBy(sender)) {

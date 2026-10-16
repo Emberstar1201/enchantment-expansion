@@ -70,9 +70,7 @@ public class EnderArrowEnchantment extends Enchantment {
 
     @Override
     protected boolean checkCompatibility(Enchantment other) {
-        // 三种箭矢命中效果同时触发会造成传送位置与取消命中事件的冲突。
-        if (other == ModEnchantments.EXPLOSIVE_ARROW.get()
-                || other == ModEnchantments.CHAIN_ARROW.get()) {
+        if (ProjectileEnchantmentExclusion.isIncompatible(this, other)) {
             return false;
         }
         return super.checkCompatibility(other);
