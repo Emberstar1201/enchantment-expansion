@@ -70,7 +70,6 @@ import com.github.emberstar1201.enchantmentex.item.handler.ResidualScytheHandler
 import com.github.emberstar1201.enchantmentex.item.handler.LuohongyuHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.TerminalBookHandler;
 import com.github.emberstar1201.enchantmentex.item.handler.VoidStarHandler;
-import com.github.emberstar1201.enchantmentex.item.handler.ThornsCrownHandler;
 import com.github.emberstar1201.enchantmentex.client.handler.EnchantmentBookLookupHandler;
 import com.github.emberstar1201.enchantmentex.network.NetworkHandler;
 import com.github.emberstar1201.enchantmentex.recipe.ModRecipes;
@@ -214,7 +213,6 @@ public class EnchantmentExpansion {
         MinecraftForge.EVENT_BUS.register(MaidStarHandler.class);
         // 虚空之星：免疫摔落/虚空伤害 + 坠入虚空传送回出生点
         MinecraftForge.EVENT_BUS.register(VoidStarHandler.class);
-        MinecraftForge.EVENT_BUS.register(ThornsCrownHandler.class);
         // 终界之星：飞行、减伤、虚空拦截与 3 秒虚空救援
         MinecraftForge.EVENT_BUS.register(com.github.emberstar1201.enchantmentex.item.handler.EndStarHandler.class);
         // 星辉之星：夜间移速加成 + 夜视 + 经验掉落翻倍

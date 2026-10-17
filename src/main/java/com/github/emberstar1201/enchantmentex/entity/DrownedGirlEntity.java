@@ -40,6 +40,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.item.Items;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -102,6 +105,11 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         // 陆地寻路允许穿过木门（配合 OpenDoorGoal 实际开关门），夜晚能开门进屋睡觉
         this.groundNavigation.setCanOpenDoors(true);
         this.groundNavigation.setCanFloat(true);
+        // 危险节点设为不可走，减少陆地跟随/靠岸时踏入火焰或岩浆。
+        this.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.DAMAGE_FIRE, -1.0F);
+        this.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.DANGER_FIRE, -1.0F);
+        this.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.LAVA, -1.0F);
+        this.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.DAMAGE_OTHER, -1.0F);
     }
 
     // ====================================================================
@@ -166,6 +174,26 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         attribute.addPermanentModifier(new AttributeModifier(
                 SPEED_MODIFIER_UUID, SPEED_MODIFIER_NAME, amount,
                 Operation.MULTIPLY_TOTAL));
+    }
+
+    @Override
+    public void performRangedAttack(LivingEntity target, float distanceFactor) {
+        ThrownTrident trident = new ThrownTrident(this.level(), this, new ItemStack(Items.TRIDENT));
+        double flightTicks = Math.sqrt(this.distanceToSqr(target)) / 1.6D;
+        double dx = target.getX() + target.getDeltaMovement().x * flightTicks - this.getX();
+        double dy = target.getY(0.3333333333333333D) + target.getDeltaMovement().y * flightTicks - trident.getY();
+        double dz = target.getZ() + target.getDeltaMovement().z * flightTicks - this.getZ();
+        if (isFriendlyInShotLine(target)) {
+            trident.discard();
+            return;
+        }
+        double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+        float inaccuracy = Math.max(0.5F,
+                14.0F - this.level().getDifficulty().getId() * 4.0F - 2.0F);
+        trident.shoot(dx, dy + horizontalDistance * 0.2D, dz, 1.6F, inaccuracy);
+        this.playSound(SoundEvents.DROWNED_SHOOT, 1.0F,
+                1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.level().addFreshEntity(trident);
     }
 
     @Override
@@ -248,6 +276,19 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
                             "chat.enchantment_expansion.drowned_girl.inventory_denied"), true);
         }
         return InteractionResult.sidedSuccess(this.level().isClientSide);
+    }
+
+    /** 射击前检查发射者到目标之间是否有主人或少女同伴挡路。 */
+    private boolean isFriendlyInShotLine(LivingEntity target) {
+        net.minecraft.world.phys.Vec3 start = this.getEyePosition();
+        net.minecraft.world.phys.Vec3 end = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D);
+        net.minecraft.world.phys.AABB bounds = new net.minecraft.world.phys.AABB(start, end).inflate(0.45D);
+        return this.level().getEntitiesOfClass(LivingEntity.class, bounds,
+                entity -> entity != this && entity != target && entity.isAlive()
+                        && (entity instanceof Player player && this.isOwnedBy(player)
+                        || entity instanceof ZombieGirlEntity || entity instanceof DrownedGirlEntity))
+                .stream().anyMatch(entity -> entity.getBoundingBox().inflate(0.15D)
+                        .clip(start, end).isPresent());
     }
 
     private void receiveWeapon(Player player, ItemStack held) {
@@ -533,6 +574,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         // 在原版基础上追加：跟随主人（优先级 1，与攻击同级但互斥，高于寻水）、靠岸（优先级 3）。
         // 原版 DrownedGoToWaterGoal 优先级为 2，因此跟随（1）会压过寻水，避免被拉回水里。
         this.goalSelector.addGoal(1, new FollowOwnerGoal());
+        this.goalSelector.addGoal(1, new RetreatWhenHurtGoal());
         this.goalSelector.addGoal(3, new MoveToLandGoal());
     }
 
@@ -575,6 +617,7 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
         this.targetSelector.getAvailableGoals().removeIf(goal -> goal.getGoal() instanceof HurtByTargetGoal
                 || goal.getGoal() instanceof NearestAttackableTargetGoal);
         // 优先级 1：主人协同攻击（主人攻击的目标，600 tick 记忆窗口）
+        this.targetSelector.addGoal(0, new OwnerHurtByTargetGoal());
         this.targetSelector.addGoal(1, new OwnerHurtTargetGoal());
         // 优先级 2：被攻击时反击敌对亡灵
         this.targetSelector.addGoal(2, new FriendlyUndeadHurtByTargetGoal(this));
@@ -608,6 +651,35 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
                 && target.getMobType() == MobType.UNDEAD
                 && !(target instanceof DrownedGirlEntity)
                 && !(target instanceof ZombieGirlEntity);
+    }
+
+    private class OwnerHurtByTargetGoal extends TargetGoal {
+        private Player owner;
+        private int timestamp;
+
+        OwnerHurtByTargetGoal() {
+            super(DrownedGirlEntity.this, true);
+            this.setFlags(EnumSet.of(Goal.Flag.TARGET));
+        }
+
+        @Override
+        public boolean canUse() {
+            DrownedGirlEntity self = DrownedGirlEntity.this;
+            if (!self.isTamed() || self.ownerUuid == null || self.level().isClientSide) return false;
+            this.owner = self.level() instanceof ServerLevel server
+                    ? server.getPlayerByUUID(self.ownerUuid) : null;
+            LivingEntity attacker = this.owner == null ? null : this.owner.getLastHurtByMob();
+            return attacker != null && attacker.isAlive() && isValidAttackTarget(attacker)
+                    && this.owner.getLastHurtByMobTimestamp() != this.timestamp
+                    && this.canAttack(attacker, TargetingConditions.forCombat());
+        }
+
+        @Override
+        public void start() {
+            this.timestamp = this.owner.getLastHurtByMobTimestamp();
+            DrownedGirlEntity.this.setTarget(this.owner.getLastHurtByMob());
+            super.start();
+        }
     }
 
     // ====================================================================
@@ -733,6 +805,79 @@ public class DrownedGirlEntity extends Drowned implements FriendlyGirlInventory 
                 this.timeToRecalcPath = 10;
                 self.navigation.moveTo(this.owner, 1.24D);
             }
+        }
+    }
+
+    // ====================================================================
+    // 低血撤退：低于 30% 生命时远离当前目标；有主人则朝主人方向退开。
+    // ====================================================================
+    private class RetreatWhenHurtGoal extends Goal {
+        private int cooldown;
+        private int retreatTicks;
+        private LivingEntity target;
+        private Player owner;
+
+        RetreatWhenHurtGoal() {
+            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (cooldown > 0) {
+                cooldown--;
+                return false;
+            }
+            if (sitting || getHealth() > getMaxHealth() * 0.30F || getTarget() == null) {
+                return false;
+            }
+            this.target = getTarget();
+            return this.target.isAlive();
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            boolean reachedOwner = this.owner != null && distanceToSqr(this.owner) <= 36.0D;
+            return getHealth() <= getMaxHealth() * 0.30F
+                    && target != null && target.isAlive() && retreatTicks > 0
+                    && !reachedOwner && !navigation.isDone();
+        }
+
+        @Override
+        public void start() {
+            this.owner = isTamed() && ownerUuid != null && level() instanceof ServerLevel server
+                    ? server.getPlayerByUUID(ownerUuid) : null;
+            double dx;
+            double dz;
+            if (this.owner != null && this.owner.isAlive()) {
+                // 有主人时退向主人一侧，但只移动一段距离，避免直接冲回战场中心。
+                dx = this.owner.getX() - getX();
+                dz = this.owner.getZ() - getZ();
+            } else {
+                // 主人不在线或不可用时，明确沿当前目标的反方向撤退。
+                this.owner = null;
+                dx = getX() - this.target.getX();
+                dz = getZ() - this.target.getZ();
+            }
+            double length = Math.max(0.001D, Math.sqrt(dx * dx + dz * dz));
+            BlockPos retreat = BlockPos.containing(getX() + dx / length * 8.0D,
+                    getY(), getZ() + dz / length * 8.0D);
+            navigation.moveTo(retreat.getX() + 0.5D, retreat.getY(), retreat.getZ() + 0.5D, 1.25D);
+            retreatTicks = 100;
+        }
+
+        @Override
+        public void tick() {
+            if (retreatTicks > 0) retreatTicks--;
+            if (this.owner == null && this.target != null) {
+                getLookControl().setLookAt(this.target, 10.0F, getMaxHeadXRot());
+            }
+        }
+
+        @Override
+        public void stop() {
+            navigation.stop();
+            cooldown = 40;
+            retreatTicks = 0;
         }
     }
 

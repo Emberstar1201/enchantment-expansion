@@ -54,7 +54,6 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.AFFECTION_STAGE_DOWN.get());
                         output.accept(ModItems.UNSIGNED_VERSES.get());
                         output.accept(ModItems.EMBERSTAR_CORD_BRACELET.get());
-                        output.accept(ModItems.THORNS_CROWN.get());
                     })
                     .build());
 

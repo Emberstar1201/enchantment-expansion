@@ -169,6 +169,11 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
             groundNavigation.setCanOpenDoors(true);
             groundNavigation.setCanFloat(true);
         }
+        // 危险方块设置负寻路权重，避免正常移动与撤退时主动踩入火、岩浆和仙人掌。
+        this.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.DAMAGE_FIRE, -1.0F);
+        this.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.DANGER_FIRE, -1.0F);
+        this.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.LAVA, -1.0F);
+        this.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.DAMAGE_OTHER, -1.0F);
     }
 
     @Override
@@ -310,14 +315,33 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
             arrow.setSecondsOnFire(100);
         }
         // 计算射击方向（带一点随机散布）
-        double dx = target.getX() - this.getX();
-        double dy = target.getY(0.3333333333333333D) - arrow.getY();
-        double dz = target.getZ() - this.getZ();
+        double flightTicks = Math.sqrt(this.distanceToSqr(target)) / 1.6D;
+        double dx = target.getX() + target.getDeltaMovement().x * flightTicks - this.getX();
+        double dy = target.getY(0.3333333333333333D) + target.getDeltaMovement().y * flightTicks - arrow.getY();
+        double dz = target.getZ() + target.getDeltaMovement().z * flightTicks - this.getZ();
+        if (isFriendlyInShotLine(target)) {
+            return;
+        }
         double horizontalDist = Math.sqrt(dx * dx + dz * dz);
-        arrow.shoot(dx, dy + horizontalDist * 0.2D, dz, 1.6F, (float)(14 - 4));
+        float inaccuracy = Math.max(0.5F,
+                14.0F - this.level().getDifficulty().getId() * 4.0F - 2.0F);
+        arrow.shoot(dx, dy + horizontalDist * 0.2D, dz, 1.6F, inaccuracy);
         this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F,
                 1.0F / (this.random.nextFloat() * 0.4F + 0.8F));
         this.level().addFreshEntity(arrow);
+    }
+
+    /** 检查射线段上是否有主人或其他少女，避免远程攻击误伤友军。 */
+    protected boolean isFriendlyInShotLine(LivingEntity target) {
+        net.minecraft.world.phys.Vec3 start = this.getEyePosition();
+        net.minecraft.world.phys.Vec3 end = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D);
+        net.minecraft.world.phys.AABB bounds = new net.minecraft.world.phys.AABB(start, end).inflate(0.45D);
+        return this.level().getEntitiesOfClass(LivingEntity.class, bounds,
+                entity -> entity != this && entity != target && entity.isAlive()
+                        && (entity instanceof Player player && this.isOwnedBy(player)
+                        || entity instanceof ZombieGirlEntity || entity instanceof DrownedGirlEntity))
+                .stream().anyMatch(entity -> entity.getBoundingBox().inflate(0.15D)
+                        .clip(start, end).isPresent());
     }
 
     /** 从专属背包中取一块生肉回血；每块恢复 2 颗心，受最大生命值上限自动截断。 */
@@ -423,6 +447,8 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         // 保证触发期间近战、弓箭全部让路。幸存者少女继承本方法，
         // 但 Goal 内部会显式排除幸存者少女。
         this.goalSelector.addGoal(0, new GirlConfusionGoal(this));
+        // 低血时优先脱离战斗；比坐下低一级，坐下命令仍保持最高移动优先权。
+        this.goalSelector.addGoal(1, new RetreatWhenHurtGoal());
         // 坐下时独占移动 / 跳跃 / 视线标记，阻止其它行为目标执行
         this.goalSelector.addGoal(1, new SitWhenOrderedGoal());
         // 寻路撞门时自动开关木门（该 Goal 不占移动标记，可与其它行为并行）
@@ -445,6 +471,8 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
 
         // 受伤后保留攻击者，避免装备武器或被其它目标短暂打断后失去反击
         this.targetSelector.addGoal(0, new HostileUndeadHurtByTargetGoal());
+        // 主人受袭时优先保护主人，目标白名单仍排除玩家和少女同伴。
+        this.targetSelector.addGoal(0, new OwnerHurtByTargetGoal());
         // 目标选择：驯服后优先协助主人攻击其击中的中立 / 友好生物
         this.targetSelector.addGoal(1, new OwnerHurtTargetGoal());
         // 天生仇恨「敌对类亡灵」（僵尸、骷髅等），无论是否驯服
@@ -969,6 +997,38 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
     }
 
     // ====================================================================
+    // 八、内部目标：主人受袭时反击凶手
+    // ====================================================================
+    private class OwnerHurtByTargetGoal extends TargetGoal {
+        private Player owner;
+        private int timestamp;
+
+        OwnerHurtByTargetGoal() {
+            super(ZombieGirlEntity.this, true);
+            this.setFlags(EnumSet.of(Goal.Flag.TARGET));
+        }
+
+        @Override
+        public boolean canUse() {
+            ZombieGirlEntity self = ZombieGirlEntity.this;
+            if (!self.isTamed() || self.ownerUuid == null || self.level().isClientSide) return false;
+            this.owner = self.level() instanceof ServerLevel server
+                    ? server.getPlayerByUUID(self.ownerUuid) : null;
+            LivingEntity attacker = this.owner == null ? null : this.owner.getLastHurtByMob();
+            return attacker != null && attacker.isAlive() && isValidAttackTarget(attacker)
+                    && this.owner.getLastHurtByMobTimestamp() != this.timestamp
+                    && this.canAttack(attacker, TargetingConditions.forCombat());
+        }
+
+        @Override
+        public void start() {
+            this.timestamp = this.owner.getLastHurtByMobTimestamp();
+            ZombieGirlEntity.this.setTarget(this.owner.getLastHurtByMob());
+            super.start();
+        }
+    }
+
+    // ====================================================================
     // 八、内部目标：只对敌对亡灵反击
     // ====================================================================
     private class HostileUndeadHurtByTargetGoal extends TargetGoal {
@@ -1042,6 +1102,82 @@ public class ZombieGirlEntity extends Zombie implements FriendlyGirlInventory, R
         public boolean canContinueToUse() {
             return super.canContinueToUse() && isValidAttackTarget(ZombieGirlEntity.this.getTarget())
                     && !(ZombieGirlEntity.this.getMainHandItem().getItem() instanceof BowItem);
+        }
+    }
+
+    // ====================================================================
+    // 低血撤退：生命低于 30% 时向主人附近退开；无主人则远离当前目标。
+    // ====================================================================
+    private class RetreatWhenHurtGoal extends Goal {
+        private int cooldown;
+        private int retreatTicks;
+        private LivingEntity target;
+        private Player owner;
+
+        RetreatWhenHurtGoal() {
+            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (this.cooldown > 0) {
+                this.cooldown--;
+                return false;
+            }
+            ZombieGirlEntity self = ZombieGirlEntity.this;
+            if (self.sitting || self.getHealth() > self.getMaxHealth() * 0.30F
+                    || self.getTarget() == null) return false;
+            this.target = self.getTarget();
+            return this.target.isAlive();
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            ZombieGirlEntity self = ZombieGirlEntity.this;
+            boolean reachedOwner = this.owner != null && self.distanceToSqr(this.owner) <= 36.0D;
+            return self.getHealth() <= self.getMaxHealth() * 0.30F
+                    && this.target != null && this.target.isAlive()
+                    && this.retreatTicks > 0 && !reachedOwner && !self.getNavigation().isDone();
+        }
+
+        @Override
+        public void start() {
+            ZombieGirlEntity self = ZombieGirlEntity.this;
+            this.owner = self.isTamed() && self.ownerUuid != null && self.level() instanceof ServerLevel server
+                    ? server.getPlayerByUUID(self.ownerUuid) : null;
+            double dx;
+            double dz;
+            if (this.owner != null && this.owner.isAlive()) {
+                // 有主人时退向主人一侧，但只移动一段距离，避免直接冲回战场中心。
+                dx = this.owner.getX() - self.getX();
+                dz = this.owner.getZ() - self.getZ();
+            } else {
+                // 主人不在线或不可用时，明确沿当前目标的反方向撤退。
+                this.owner = null;
+                dx = self.getX() - this.target.getX();
+                dz = self.getZ() - this.target.getZ();
+            }
+            double length = Math.max(0.001D, Math.sqrt(dx * dx + dz * dz));
+            BlockPos retreat = BlockPos.containing(self.getX() + dx / length * 8.0D,
+                    self.getY(), self.getZ() + dz / length * 8.0D);
+            self.getNavigation().moveTo(retreat.getX() + 0.5D, retreat.getY(), retreat.getZ() + 0.5D, 1.25D);
+            this.retreatTicks = 100;
+        }
+
+        @Override
+        public void tick() {
+            if (this.retreatTicks > 0) this.retreatTicks--;
+            if (this.owner == null && this.target != null) {
+                ZombieGirlEntity.this.getLookControl().setLookAt(this.target, 10.0F,
+                        ZombieGirlEntity.this.getMaxHeadXRot());
+            }
+        }
+
+        @Override
+        public void stop() {
+            ZombieGirlEntity.this.getNavigation().stop();
+            this.cooldown = 40;
+            this.retreatTicks = 0;
         }
     }
 

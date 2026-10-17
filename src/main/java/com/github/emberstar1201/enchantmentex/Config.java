@@ -12,14 +12,6 @@ public class Config {
 
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
-    private static final ForgeConfigSpec.IntValue THORNS_CROWN_SETTLEMENT_INTERVAL_TICKS = BUILDER
-            .comment("荆棘之冠：罪业代偿帧伤脉冲间隔（tick，默认 10；间隔期间只累计、不造成帧伤）")
-            .defineInRange("thornsCrown.settlementIntervalTicks", 10, 1, 1200);
-
-    private static final ForgeConfigSpec.IntValue THORNS_CROWN_SIN_INTERVAL_TICKS = BUILDER
-            .comment("荆棘之冠：罪业值增长间隔（tick，默认 2400，即 2 分钟）")
-            .defineInRange("thornsCrown.sinIntervalTicks", 2400, 1, 72000);
-
     // ================================================================
     // 古·云来弓法 & 云来弓法 配置
     // ================================================================
@@ -889,7 +881,6 @@ public class Config {
     public static double smokelessDashMaxMultiplier;
     public static double smokelessDashScrollSensitivity;
     public static double smokelessDashBaseBoost;
-    public static int thornsCrownSettlementIntervalTicks;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -1070,7 +1061,6 @@ public class Config {
         smokelessDashMaxMultiplier = SMOKELESS_DASH_MAX_MULTIPLIER.get();
         smokelessDashScrollSensitivity = SMOKELESS_DASH_SCROLL_SENSITIVITY.get();
         smokelessDashBaseBoost = SMOKELESS_DASH_BASE_BOOST.get();
-        thornsCrownSettlementIntervalTicks = THORNS_CROWN_SETTLEMENT_INTERVAL_TICKS.get();
 
         // 伤害/治疗浮动数字
         enableDamagePopup = ENABLE_DAMAGE_POPUP.get();

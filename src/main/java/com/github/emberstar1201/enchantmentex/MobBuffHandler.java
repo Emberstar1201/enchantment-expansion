@@ -8,6 +8,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -32,6 +33,7 @@ import net.minecraft.world.entity.monster.Vindicator;
 import net.minecraft.world.entity.monster.WitherSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import com.github.emberstar1201.enchantmentex.enchantment.ModEnchantments;
@@ -56,6 +58,8 @@ import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import com.github.emberstar1201.enchantmentex.mixin.CreeperSwellAccessor;
+import com.github.emberstar1201.enchantmentex.entity.ZombieGirlEntity;
+import com.github.emberstar1201.enchantmentex.entity.DrownedGirlEntity;
 
 import java.util.UUID;
 
@@ -143,6 +147,9 @@ public final class MobBuffHandler {
             return;
         }
         if (!(event.getEntity() instanceof Mob mob)) {
+            return;
+        }
+        if (mob instanceof ZombieGirlEntity || mob instanceof DrownedGirlEntity) {
             return;
         }
         if (!MobBuffRuntime.isEnabled()) {
@@ -351,6 +358,21 @@ public final class MobBuffHandler {
     // ====================================================================
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
+        LivingEntity attacker = event.getSource().getEntity() instanceof LivingEntity living
+                ? living : null;
+        if (attacker == null && event.getSource().getDirectEntity() instanceof Projectile projectile
+                && projectile.getOwner() instanceof LivingEntity owner) {
+            attacker = owner;
+        }
+        if (attacker instanceof ZombieGirlEntity || attacker instanceof DrownedGirlEntity) {
+            double difficultyMultiplier = switch (attacker.level().getDifficulty()) {
+                case EASY -> 0.5D;
+                case NORMAL -> 1.0D;
+                case HARD -> 1.5D;
+                default -> 0.0D;
+            };
+            event.setAmount((float) (event.getAmount() * difficultyMultiplier * 2.5D));
+        }
         if (!MobBuffRuntime.isEnabled()) {
             return;
         }

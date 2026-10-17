@@ -59,21 +59,6 @@ public final class GirlInteractionScreen extends Screen {
         }
         if (this.chatExpanded) {
             this.addRenderableWidget(Button.builder(
-                            Component.translatable("gui.enchantment_expansion.girl_interaction.hello"),
-                            button -> send(GirlInteractionPacket.HELLO))
-                    .bounds(x + 10, y, 120, 20).build());
-            y += 24;
-            this.addRenderableWidget(Button.builder(
-                            Component.translatable("gui.enchantment_expansion.girl_interaction.weather"),
-                            button -> send(GirlInteractionPacket.WEATHER))
-                    .bounds(x + 10, y, 120, 20).build());
-            y += 24;
-            this.addRenderableWidget(Button.builder(
-                            Component.translatable("gui.enchantment_expansion.girl_interaction.camp_location"),
-                            button -> send(GirlInteractionPacket.CAMP_LOCATION))
-                    .bounds(x + 10, y, 120, 20).build());
-            y += 24;
-            this.addRenderableWidget(Button.builder(
                             Component.translatable("gui.enchantment_expansion.girl_interaction.ai_dialogue"),
                             button -> openAiDialogue())
                     .bounds(x + 10, y, 120, 20).build());

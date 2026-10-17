@@ -540,10 +540,6 @@ public class EndStarHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
         DamageSource source = event.getSource();
-        // 罪业代偿已经是最终伤害，不能被终界之星的限伤/减伤再次修改。
-        if ("enchantment_expansion.atonement".equals(source.getMsgId())) {
-            return;
-        }
         Player victim = event.getEntity() instanceof Player p ? p : null;
         // 攻击者放宽为 LivingEntity：玩家与女仆（车万女仆，软前置）都要走终界之星加成
         LivingEntity attacker = (source != null && source.getEntity() instanceof LivingEntity a) ? a : null;

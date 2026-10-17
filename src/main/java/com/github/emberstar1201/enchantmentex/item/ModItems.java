@@ -6,7 +6,6 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.common.ForgeSpawnEggItem;
-import com.github.emberstar1201.enchantmentex.item.ThornsCrownItem;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -316,13 +315,6 @@ public class ModItems {
     // 【星火之绳手环】材质由后续资源覆盖；这里先固定注册 ID 和基础物品属性。
     public static final RegistryObject<EmberstarCordBraceletItem> EMBERSTAR_CORD_BRACELET = ITEMS.register(
             "emberstar_cord_bracelet", () -> new EmberstarCordBraceletItem(new Item.Properties()
-                    .stacksTo(1)
-                    .rarity(Rarity.EPIC)
-                    .fireResistant()));
-
-    // 荆棘之冠：副手或 Curios 饰品栏装备；材质由资源包/用户后续提供。
-    public static final RegistryObject<ThornsCrownItem> THORNS_CROWN = ITEMS.register(
-            "thorns_crown", () -> new ThornsCrownItem(new Item.Properties()
                     .stacksTo(1)
                     .rarity(Rarity.EPIC)
                     .fireResistant()));
