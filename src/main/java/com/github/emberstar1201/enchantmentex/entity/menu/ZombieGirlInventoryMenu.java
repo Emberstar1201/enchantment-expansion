@@ -172,8 +172,9 @@ public class ZombieGirlInventoryMenu extends AbstractContainerMenu {
      */
     @Override
     public boolean stillValid(Player player) {
-        return this.friendlyGirl.isAlive()
-                && !this.friendlyGirl.isRemoved()
+        return this.friendlyGirl instanceof LivingEntity living
+                && living.isAlive()
+                && !living.isRemoved()
                 && this.friendlyGirl.isTamed()
                 && this.friendlyGirl.isOwnedBy(player)
                 && ((LivingEntity) this.friendlyGirl).distanceToSqr(player) <= 64.0D;

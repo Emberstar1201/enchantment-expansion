@@ -8,6 +8,7 @@ import com.github.emberstar1201.enchantmentex.network.GirlInteractionPacket;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -52,7 +53,9 @@ public final class GirlInteractionClientHandler {
             return;
         }
         Entity target = getTarget(minecraft);
-        if (target instanceof FriendlyGirlInventory girl && girl.isAlive()
+        if (target instanceof FriendlyGirlInventory girl
+                && target instanceof LivingEntity living
+                && living.isAlive()
                 && minecraft.player.distanceToSqr(target) <= 256.0D) {
             minecraft.setScreen(new GirlInteractionScreen(target.getId(), girl.isTamed()));
         }
@@ -68,7 +71,9 @@ public final class GirlInteractionClientHandler {
             return;
         }
         Entity target = getTarget(minecraft);
-        if (!(target instanceof FriendlyGirlInventory girl) || !girl.isAlive()
+        if (!(target instanceof FriendlyGirlInventory)
+                || !(target instanceof LivingEntity living)
+                || !living.isAlive()
                 || minecraft.player.distanceToSqr(target) > 256.0D) {
             return;
         }

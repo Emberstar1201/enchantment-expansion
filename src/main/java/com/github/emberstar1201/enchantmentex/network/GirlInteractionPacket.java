@@ -5,6 +5,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -52,8 +53,9 @@ public final class GirlInteractionPacket {
             }
             Entity entity = sender.level().getEntity(this.entityId);
             if (!(entity instanceof FriendlyGirlInventory girl)
-                    || !girl.isAlive()
-                    || girl.isRemoved()
+                    || !(entity instanceof LivingEntity living)
+                    || !living.isAlive()
+                    || living.isRemoved()
                     || sender.distanceToSqr(entity) > 256.0D) {
                 return;
             }

@@ -12,8 +12,8 @@ import net.minecraft.world.item.ItemStack;
  * 因此把背包菜单（ZombieGirlInventoryMenu）需要的最小能力抽成接口：
  * 两个实体各自实现后即可共用同一套「6 装备槽 + 64 格背包」GUI。
  *
- * isAlive / isRemoved / getItemBySlot / setItemSlot / setDropChance
- * 均由父类 LivingEntity / Mob 提供公开实现，实现类只需补齐其余三个方法。
+ * 实体生命周期由 LivingEntity / Entity 提供；接口只声明少女特有能力，
+ * 避免把原版实体方法重复声明成接口 ABI。
  */
 public interface FriendlyGirlInventory {
 
@@ -29,19 +29,13 @@ public interface FriendlyGirlInventory {
     /** 随身背包容器（64 格，随实体 NBT 持久化）。 */
     SimpleContainer getMeatInventory();
 
-    /** 实体存活判定（Entity 公开方法，接口声明以便菜单持有接口引用时调用）。 */
-    boolean isAlive();
-
-    /** 实体是否已被移除（Entity 公开方法）。 */
-    boolean isRemoved();
-
-    /** 读取实体真实装备槽（LivingEntity 公开方法）。 */
+    /** 读取实体真实装备槽，避免菜单依赖具体少女实体类型。 */
     ItemStack getItemBySlot(EquipmentSlot slot);
 
-    /** 写入实体真实装备槽，盔甲等属性由原版装备系统实时结算（LivingEntity 公开方法）。 */
+    /** 写入实体真实装备槽，盔甲等属性由原版装备系统实时结算。 */
     void setItemSlot(EquipmentSlot slot, ItemStack stack);
 
-    /** 设置装备掉落概率，通过 GUI 放入的装备设为 100% 回收（Mob 公开方法）。 */
+    /** 设置装备掉落概率，通过 GUI 放入的装备设为 100% 回收。 */
     void setDropChance(EquipmentSlot slot, float chance);
 
     /** 当前好感度，范围 0~100。 */

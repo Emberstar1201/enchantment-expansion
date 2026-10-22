@@ -4,6 +4,7 @@ import com.github.emberstar1201.enchantmentex.entity.FriendlyGirlInventory;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.ItemStack;
@@ -47,8 +48,9 @@ public final class GiftPacket {
             }
             Entity entity = player.serverLevel().getEntity(this.entityId);
             if (!(entity instanceof FriendlyGirlInventory girl)
-                    || !girl.isAlive()
-                    || girl.isRemoved()
+                    || !(entity instanceof LivingEntity living)
+                    || !living.isAlive()
+                    || living.isRemoved()
                     || player.distanceToSqr(entity) > 256.0D
                     || !girl.isTamed()
                     || !girl.isOwnedBy(player)) {
